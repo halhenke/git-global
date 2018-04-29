@@ -12,7 +12,7 @@ use std::path::PathBuf;
 
 use app_dirs::{AppInfo, AppDataType, app_dir, get_app_dir};
 use git2;
-use walkdir::{DirEntry, WalkDir, WalkDirIterator};
+use walkdir::{DirEntry, WalkDir};
 
 const APP: AppInfo = AppInfo { name: "git-global", author: "peap" };
 const CACHE_FILE: &'static str = "repos.txt";
@@ -102,7 +102,7 @@ impl GitGlobalResult {
         for repo in self.repos.iter() {
             let messages = self.repo_messages.get(&repo).unwrap();
             if messages.len() > 0 {
-                println!("{}", repo);
+                // println!("{}", repo);
                 for line in messages.iter().filter(|l| *l != "") {
                     println!("{}", line);
                 }
@@ -182,8 +182,9 @@ impl GitGlobalConfig {
     fn filter(&self, entry: &DirEntry) -> bool {
         let entry_path = entry.path().to_str().expect("DirEntry without path.");
         self.ignored_patterns
+        (self.ignored_patterns.len() == 1 && self.ignored_patterns[0] == "") || !self.ignored_patterns
             .iter()
-            .fold(true, |acc, pattern| acc && !entry_path.contains(pattern))
+            .any(|pat| entry_path.contains(pat))
     }
 
     /// Returns boolean indicating if the cache file exists.
@@ -233,8 +234,7 @@ pub fn find_repos() -> Vec<Repo> {
     let user_config = GitGlobalConfig::new();
     let basedir = &user_config.basedir;
     let walker = WalkDir::new(basedir).into_iter();
-    println!("Scanning for git repos under {}; this may take a while...",
-             basedir);
+    println!("Scanning for git repos under {}; this may take a while...", basedir);
     for entry in walker.filter_entry(|e| user_config.filter(e)) {
         match entry {
             Ok(entry) => {
