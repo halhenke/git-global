@@ -21,6 +21,10 @@ fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
             .about("show meta-information about git-global"))
         .subcommand(SubCommand::with_name("list")
             .about("lists all git repos on your machine [the default]"))
+        .subcommand(SubCommand::with_name("filter")
+            .about("lists all git repos on your machine filtered by a pattern")
+                .arg(Arg::with_name("pattern")
+                .required(true)))
         .subcommand(SubCommand::with_name("scan")
             .about("update cache of git repos on your machine"))
         .subcommand(SubCommand::with_name("status")
@@ -38,6 +42,14 @@ pub fn run_from_command_line() -> i32 {
     let results = match matches.subcommand_name() {
         Some("info") => subcommands::info::get_results(),
         Some("list") => subcommands::list::get_results(),
+        Some("filter") => {
+            let pat = &matches
+                .subcommand_matches("filter")
+                .unwrap()
+                .value_of("pattern")
+                .expect("a pattern is expected");
+            subcommands::filter::get_results(pat)
+        },
         Some("scan") => subcommands::scan::get_results(),
         Some("status") => subcommands::status::get_results(),
         Some(cmd) => Err(GitGlobalError::BadSubcommand(cmd.to_string())),
