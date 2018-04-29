@@ -97,11 +97,12 @@ pub fn get_results() -> Result<GitGlobalResult> {
         let (path, lines) = rx.recv().unwrap();
         let repo = Repo::new(path.to_string());
 
-        let ss = format!("{} {}", "Status for".blue(), repo);
+        let ss = format!("{} {}", "Status for".blue(),
+            repo.path().green().underline());
         if lines.is_empty() {
-            result.add_repo_message(&repo, ss.green().dimmed().to_string());
+            result.add_repo_message(&repo, ss.dimmed().to_string());
         } else {
-            result.add_repo_message(&repo, ss.green().to_string());
+            result.add_repo_message(&repo, ss.to_string());
         }
         for line in lines {
             result.add_repo_message(&repo, line);
