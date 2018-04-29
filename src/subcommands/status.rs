@@ -1,5 +1,7 @@
 //! The `status` subcommand: shows `git status -s` for all known repos.
 
+extern crate colored;
+use self::colored::*;
 use std::io::{Write, stderr};
 use std::sync::{Arc, mpsc};
 use std::thread;
@@ -14,32 +16,35 @@ use errors::Result;
 /// Follows an example in the git2-rs crate's `examples/status.rs`.
 fn get_short_format_status(path: &str, status: git2::Status) -> String {
     let mut istatus = match status {
-        s if s.contains(git2::STATUS_INDEX_NEW) => 'A',
-        s if s.contains(git2::STATUS_INDEX_MODIFIED) => 'M',
-        s if s.contains(git2::STATUS_INDEX_DELETED) => 'D',
-        s if s.contains(git2::STATUS_INDEX_RENAMED) => 'R',
-        s if s.contains(git2::STATUS_INDEX_TYPECHANGE) => 'T',
-        _ => ' ',
+        s if s.contains(git2::STATUS_INDEX_NEW) => "A",
+        s if s.contains(git2::STATUS_INDEX_MODIFIED) => "M",
+        s if s.contains(git2::STATUS_INDEX_DELETED) => "D",
+        s if s.contains(git2::STATUS_INDEX_RENAMED) => "R",
+        s if s.contains(git2::STATUS_INDEX_TYPECHANGE) => "T",
+        _ => " ",
     };
     let mut wstatus = match status {
         s if s.contains(git2::STATUS_WT_NEW) => {
-            if istatus == ' ' {
-                istatus = '?';
+            if istatus == " " {
+                istatus = "?";
             }
-            '?'
+            "?"
         }
-        s if s.contains(git2::STATUS_WT_MODIFIED) => 'M',
-        s if s.contains(git2::STATUS_WT_DELETED) => 'D',
-        s if s.contains(git2::STATUS_WT_RENAMED) => 'R',
-        s if s.contains(git2::STATUS_WT_TYPECHANGE) => 'T',
-        _ => ' ',
+        s if s.contains(git2::STATUS_WT_MODIFIED) => "M",
+        s if s.contains(git2::STATUS_WT_DELETED) => "D",
+        s if s.contains(git2::STATUS_WT_RENAMED) => "R",
+        s if s.contains(git2::STATUS_WT_TYPECHANGE) => "T",
+        _ => " ",
     };
     if status.contains(git2::STATUS_IGNORED) {
-        istatus = '!';
-        wstatus = '!';
+        istatus = "!";
+        wstatus = "!";
     }
     // TODO: handle submodule statuses?
-    format!("{}{} {}", istatus, wstatus, path)
+    format!("{}{} {}",
+        istatus.blue().to_string(),
+        wstatus.red().to_string(),
+        path.green().to_string())
 }
 
 /// Returns "short format" output for the given repo.
@@ -91,6 +96,13 @@ pub fn get_results() -> Result<GitGlobalResult> {
     for _ in 0..n_repos {
         let (path, lines) = rx.recv().unwrap();
         let repo = Repo::new(path.to_string());
+
+        let ss = format!("{} {}", "Status for".blue(), repo);
+        if lines.is_empty() {
+            result.add_repo_message(&repo, ss.green().dimmed().to_string());
+        } else {
+            result.add_repo_message(&repo, ss.green().to_string());
+        }
         for line in lines {
             result.add_repo_message(&repo, line);
         }
