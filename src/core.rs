@@ -3,6 +3,9 @@
 //! Includes the `Repo`, `GitGlobalConfig`, and `GitGlobalResult` structs, and
 //! the `get_repos()` function.
 
+
+extern crate colored;
+use self::colored::*;
 use std::collections::HashMap;
 use std::env;
 use std::fmt;
@@ -23,12 +26,14 @@ const SETTING_IGNORED: &'static str = "global.ignore";
 #[derive(PartialEq, Eq, Hash, Clone)]
 pub struct Repo {
     path: String,
+    tags: Vec<RepoTag>,
 }
 
 impl Repo {
     pub fn new(path: String) -> Repo {
         Repo {
             path: path,
+            tags: vec![],
         }
     }
 
@@ -40,6 +45,10 @@ impl Repo {
     /// Returns the `git2::Repository` equivalent of this repo.
     pub fn as_git2_repo(&self) -> Option<git2::Repository> {
         git2::Repository::open(&self.path).ok()
+    }
+
+    pub fn tag(&mut self, tag: &str) -> () {
+        self.tags.push(RepoTag::new(tag));
     }
 }
 
@@ -139,10 +148,13 @@ impl GitGlobalResult {
     }
 }
 
+
 /// A container for git-global configuration options.
 pub struct GitGlobalConfig {
     pub basedir: String,
+    pub basedirs: Vec<String>,
     pub ignored_patterns: Vec<String>,
+    pub tags: Vec<RepoTag>,
     pub cache_file: PathBuf,
 }
 
@@ -173,6 +185,8 @@ impl GitGlobalConfig {
         };
         GitGlobalConfig {
             basedir: basedir,
+            basedirs: vec![],
+            tags: vec![],
             ignored_patterns: patterns,
             cache_file: cache_file,
         }
@@ -181,10 +195,28 @@ impl GitGlobalConfig {
     /// Returns `true` if this directory entry should be included in scans.
     fn filter(&self, entry: &DirEntry) -> bool {
         let entry_path = entry.path().to_str().expect("DirEntry without path.");
-        self.ignored_patterns
+        // self.ignored_patterns
+        //     // .into_iter()
+        //     .iter()
+        //     .for_each(|x| println!("Ignored patters is: {}", x));
+
         (self.ignored_patterns.len() == 1 && self.ignored_patterns[0] == "") || !self.ignored_patterns
             .iter()
             .any(|pat| entry_path.contains(pat))
+        // println!("The patterns are empty == {}", self.ignored_patterns.len());
+        // println!("This path {} is a {}", entry_path, a);
+        // a
+    }
+
+    fn tags(&self) -> &Vec<RepoTag> {
+        &self.tags
+    }
+
+    fn print_tags(&self) {
+        println!("Tags:");
+        for tag in &self.tags {
+            println!("{}", tag.name);
+        }
     }
 
     /// Returns boolean indicating if the cache file exists.
@@ -228,6 +260,25 @@ impl GitGlobalConfig {
     }
 }
 
+#[derive(PartialEq, Eq, Hash, Clone, Debug)]
+pub struct RepoTag {
+    name: String
+}
+
+impl RepoTag {
+    pub fn new(name: &str) -> RepoTag {
+        RepoTag {
+            name: name.to_string()
+        }
+    }
+}
+
+impl fmt::Display for RepoTag {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "RepoTag: {}", self.name)
+    }
+}
+
 /// Walks the configured base directory, looking for git repos.
 pub fn find_repos() -> Vec<Repo> {
     let mut repos = Vec::new();
@@ -236,8 +287,10 @@ pub fn find_repos() -> Vec<Repo> {
     let walker = WalkDir::new(basedir).into_iter();
     println!("Scanning for git repos under {}; this may take a while...", basedir);
     for entry in walker.filter_entry(|e| user_config.filter(e)) {
+        // println!("Its go time!!!!");
         match entry {
             Ok(entry) => {
+                // println!("We are checking {} to see if it has a repo...", entry.path().to_str().expect("MISSING"));
                 if entry.file_type().is_dir() && entry.file_name() == ".git" {
                     let parent_path = entry.path().parent().expect("Could not determine parent.");
                     match parent_path.to_str() {
@@ -259,6 +312,25 @@ pub fn find_repos() -> Vec<Repo> {
 pub fn cache_repos(repos: &Vec<Repo>) {
     let user_config = GitGlobalConfig::new();
     user_config.cache_repos(repos);
+}
+
+pub fn get_tagged_repos(tags: Vec<RepoTag>) -> Vec<Repo> {
+    if tags.len() == 0 {
+        println!("NO TAGS");
+        return get_repos();
+    } else {
+        // for tag in &tags {
+        //     println!("tag!!!! {}", tag);
+        // }
+        // println!("tags!!!! {}", tags.len());
+        return get_repos()
+            .into_iter()
+            .filter(|x|
+                tags.iter().filter(|y| x.tags.iter().any(|t| &t == y)).count() > 0
+                // tags.iter().any(|y| x.tags.iter().find(y))
+            // )
+            ).collect();
+    }
 }
 
 /// Returns all known git repos, populating the cache first, if necessary.

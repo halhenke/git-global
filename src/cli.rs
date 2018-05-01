@@ -2,7 +2,7 @@
 
 use std::io::{Write, stderr};
 
-use clap::{Arg, App, SubCommand};
+use clap::{Arg, App, SubCommand, Values};
 
 use core::GitGlobalResult;
 use errors::GitGlobalError;
@@ -23,8 +23,11 @@ fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
             .about("lists all git repos on your machine [the default]"))
         .subcommand(SubCommand::with_name("filter")
             .about("lists all git repos on your machine filtered by a pattern")
-                .arg(Arg::with_name("pattern")
-                .required(true)))
+            .arg(Arg::with_name("pattern")
+                .required(true))
+            .arg(Arg::with_name("tags")
+                .short("t")
+                .takes_value(true)))
         .subcommand(SubCommand::with_name("scan")
             .about("update cache of git repos on your machine"))
         .subcommand(SubCommand::with_name("status")
@@ -43,12 +46,28 @@ pub fn run_from_command_line() -> i32 {
         Some("info") => subcommands::info::get_results(),
         Some("list") => subcommands::list::get_results(),
         Some("filter") => {
-            let pat = &matches
-                .subcommand_matches("filter")
-                .unwrap()
+            let sub_com = matches
+                .subcommand_matches("filter").expect("filter panic");
+            let pat = sub_com
                 .value_of("pattern")
                 .expect("a pattern is expected");
-            subcommands::filter::get_results(pat)
+            // if let Some(pat) = expr {
+            //     expr
+            // }
+            // println!("tags are {}", matches.is_present("tags"));
+            let tags: Option<Values> = if sub_com.values_of("tags").is_some() {
+                sub_com
+                .values_of("tags")
+                // .unwrap()
+                // .map(|s|)
+                // .collect()
+                // .value_of("tags")
+            } else {
+                // None::Option<&str>
+                // Some("")
+                None
+            };
+            subcommands::filter::get_results(pat, tags)
         },
         Some("scan") => subcommands::scan::get_results(),
         Some("status") => subcommands::status::get_results(),
