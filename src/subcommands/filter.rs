@@ -21,11 +21,24 @@ pub fn get_results(pat: &str, tags: Option<Values>) -> Result<GitGlobalResult> {
     // println!("Now 2: {:?}", vtags);
     // println!("Now 2: {:?}", tags.unwrap().collect::<Vec<&str>>());
 
+    /// Dont understand why this takes ownership???
+    // let tt: Vec<&str> = tags
+    //     .into_iter()
+    //     .by_ref()
+    //     .map(|x| "hey")
+    //     // .map(|x| String::from("hey"))
+    //     .collect();
+    //     // .collect::<Vec<String>>();
 
+    // let pre_tag: &mut Vec<&str> = tags.unwrap().by_ref().collect();
+    // let pre_tag: Vec<&str> = tags.unwrap().by_ref().collect();
     // let tag_conv: Vec<RepoTag> = vec![];
-    let tag_conv: Vec<RepoTag> = tags
+    let tag_conv: &Vec<RepoTag> = &tags
+    // let tag_conv: &Vec<_> = &tags
             // .next()
+            // .clone()
             .unwrap()
+            .by_ref()
             // .into_iter()
             // .clone()
             // .collect::<&str>()
@@ -36,10 +49,10 @@ pub fn get_results(pat: &str, tags: Option<Values>) -> Result<GitGlobalResult> {
             // .cloned()
             // .iter()
             // .map(|x| String::from(x))
-            .map(|x| RepoTag::new(x))
+            .map(|x| RepoTag::new(&x))
             .collect();
 
-
+    // let mono_tag = tags.unwrap();
 
     // let tag_conv: Vec<RepoTag> = if let Some(tags_unwrap) = tags {
     // // let tagxxxx = if let Some(tags_unwrap) = tags {
@@ -60,7 +73,7 @@ pub fn get_results(pat: &str, tags: Option<Values>) -> Result<GitGlobalResult> {
     //     vec![]
     // };
 
-    // let tag_conv = vec![RepoTag::new("hoot")];
+    let tag_conv_2 = vec![RepoTag::new("hoot")];
 
     // let tag_conv: Vec<RepoTag> = tags
     //     .unwrap_or("")

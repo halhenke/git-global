@@ -314,7 +314,7 @@ pub fn cache_repos(repos: &Vec<Repo>) {
     user_config.cache_repos(repos);
 }
 
-pub fn get_tagged_repos(tags: Vec<RepoTag>) -> Vec<Repo> {
+pub fn get_tagged_repos(tags: &Vec<RepoTag>) -> Vec<Repo> {
     if tags.len() == 0 {
         println!("NO TAGS");
         return get_repos();
