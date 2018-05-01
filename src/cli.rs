@@ -51,31 +51,20 @@ pub fn run_from_command_line() -> i32 {
             let pat = sub_com
                 .value_of("pattern")
                 .expect("a pattern is expected");
-            // if let Some(pat) = expr {
-            //     expr
-            // }
-            // println!("tags are {}", matches.is_present("tags"));
-            // let tags: Option<Values> = if sub_com.values_of("tags").is_some() {
-            //     sub_com
-            //     .values_of("tags")
-            //     // .unwrap()
-            //     // .map(|s|)
-            //     // .collect()
-            //     // .value_of("tags")
-            // } else {
-            //     // None::Option<&str>
-            //     // Some("")
-            //     None
-            // };
-            let mut t1 = sub_com.values_of("tags").unwrap();
-            let t2: &Vec<&str> = &t1
-                .by_ref()
-                .flat_map(|x| x.split(","))
-                .collect();
-            let t3: &Vec<&str> = &t1
-                .by_ref()
-                .flat_map(|x| x.split(","))
-                .collect();
+            /// To do this iterator stuff we need to have
+            ///  - the iterator be mutable because `by_ref` takes a mutable self
+            ///  - use `by_ref`
+            ///  - use reference/borrow
+            // let mut t1 = sub_com.values_of("tags").unwrap();
+            // let t2: &Vec<&str> = &t1
+            //     .by_ref()
+            //     .flat_map(|x| x.split(","))
+            //     .collect();
+            // let t3: &Vec<&str> = &t1
+            //     .by_ref()
+            //     .flat_map(|x| x.split(","))
+            //     .collect();
+
             let tags = sub_com.values_of("tags").unwrap().collect();
             subcommands::filter::get_results(pat, tags)
         },

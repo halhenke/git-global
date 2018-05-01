@@ -316,13 +316,13 @@ pub fn cache_repos(repos: &Vec<Repo>) {
 
 pub fn get_tagged_repos(tags: &Vec<RepoTag>) -> Vec<Repo> {
     if tags.len() == 0 {
-        println!("NO TAGS");
+        // println!("NO TAGS");
         return get_repos();
     } else {
-        // for tag in &tags {
+        // for tag in tags {
         //     println!("tag!!!! {}", tag);
         // }
-        // println!("tags!!!! {}", tags.len());
+        println!("tags!!!! {}", tags.len());
         return get_repos()
             .into_iter()
             .filter(|x|
