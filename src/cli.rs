@@ -67,6 +67,15 @@ pub fn run_from_command_line() -> i32 {
             //     // Some("")
             //     None
             // };
+            let mut t1 = sub_com.values_of("tags").unwrap();
+            let t2: &Vec<&str> = &t1
+                .by_ref()
+                .flat_map(|x| x.split(","))
+                .collect();
+            let t3: &Vec<&str> = &t1
+                .by_ref()
+                .flat_map(|x| x.split(","))
+                .collect();
             let tags = sub_com.values_of("tags").unwrap().collect();
             subcommands::filter::get_results(pat, tags)
         },
