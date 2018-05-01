@@ -55,18 +55,19 @@ pub fn run_from_command_line() -> i32 {
             //     expr
             // }
             // println!("tags are {}", matches.is_present("tags"));
-            let tags: Option<Values> = if sub_com.values_of("tags").is_some() {
-                sub_com
-                .values_of("tags")
-                // .unwrap()
-                // .map(|s|)
-                // .collect()
-                // .value_of("tags")
-            } else {
-                // None::Option<&str>
-                // Some("")
-                None
-            };
+            // let tags: Option<Values> = if sub_com.values_of("tags").is_some() {
+            //     sub_com
+            //     .values_of("tags")
+            //     // .unwrap()
+            //     // .map(|s|)
+            //     // .collect()
+            //     // .value_of("tags")
+            // } else {
+            //     // None::Option<&str>
+            //     // Some("")
+            //     None
+            // };
+            let tags = sub_com.values_of("tags").unwrap().collect();
             subcommands::filter::get_results(pat, tags)
         },
         Some("scan") => subcommands::scan::get_results(),

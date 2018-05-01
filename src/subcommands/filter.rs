@@ -6,7 +6,7 @@ use errors::Result;
 use subcommands::utilities::{print_str_pat};
 
 /// Forces the display of each repo path, without any extra output.
-pub fn get_results(pat: &str, tags: Option<Values>) -> Result<GitGlobalResult> {
+pub fn get_results(pat: &str, tags: Vec<&str>) -> Result<GitGlobalResult> {
 // pub fn get_results(pat: &str, tags: &Option<Values>) -> Result<GitGlobalResult> {
     // println!("Now 1");
     // let vtags: Vec<_> = tags
@@ -30,27 +30,37 @@ pub fn get_results(pat: &str, tags: Option<Values>) -> Result<GitGlobalResult> {
     //     .collect();
     //     // .collect::<Vec<String>>();
 
+    // let tag_conv = tags.iter()
+    //     .map(|x| )
+    let tag_conv = &tags.iter()
+        .flat_map(|x| x.split(","))
+        // .collect::<&str>()
+        // .collect::<Vec<&str>>()
+        .map(|x| x.trim())
+        .map(|x| RepoTag::new(&x))
+        .collect();
+
     // let pre_tag: &mut Vec<&str> = tags.unwrap().by_ref().collect();
     // let pre_tag: Vec<&str> = tags.unwrap().by_ref().collect();
     // let tag_conv: Vec<RepoTag> = vec![];
-    let tag_conv: &Vec<RepoTag> = &tags
-    // let tag_conv: &Vec<_> = &tags
-            // .next()
-            // .clone()
-            .unwrap()
-            .by_ref()
-            // .into_iter()
-            // .clone()
-            // .collect::<&str>()
-            .next()
-            .unwrap()
-            .split(",")
-            .map(|x| x.trim())
-            // .cloned()
-            // .iter()
-            // .map(|x| String::from(x))
-            .map(|x| RepoTag::new(&x))
-            .collect();
+    // let tag_conv: &Vec<RepoTag> = &tags
+    // // let tag_conv: &Vec<_> = &tags
+    //         // .next()
+    //         // .clone()
+    //         .unwrap()
+    //         .by_ref()
+    //         // .into_iter()
+    //         // .clone()
+    //         // .collect::<&str>()
+    //         .next()
+    //         .unwrap()
+    //         .split(",")
+    //         .map(|x| x.trim())
+    //         // .cloned()
+    //         // .iter()
+    //         // .map(|x| String::from(x))
+    //         .map(|x| RepoTag::new(&x))
+    //         .collect();
 
     // let mono_tag = tags.unwrap();
 
