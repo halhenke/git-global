@@ -1,9 +1,13 @@
 //! The command line interface for git-global.
 
 use std::io::{Write, stderr};
-
+// use std::default::Default;
 use clap::{Arg, App, SubCommand, Values};
 
+// extern crate core;
+// use self::core::default::Default;
+
+// use super::GitGlobalResult;
 use core::GitGlobalResult;
 use errors::GitGlobalError;
 use subcommands;
@@ -19,6 +23,8 @@ fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
             .help("Output results in JSON."))
         .subcommand(SubCommand::with_name("info")
             .about("show meta-information about git-global"))
+        .subcommand(SubCommand::with_name("prompt")
+            .about("demo the TUI library"))
         .subcommand(SubCommand::with_name("list")
             .about("lists all git repos on your machine [the default]"))
         .subcommand(SubCommand::with_name("tag")
@@ -74,6 +80,7 @@ pub fn run_from_command_line() -> i32 {
             subcommands::filter::get_results(pat, tags)
         },
         Some("scan") => subcommands::scan::get_results(),
+        Some("prompt") => subcommands::prompt::go(),
         Some("tag") => {
             let sub_com = matches
                 .subcommand_matches("tag")
@@ -81,6 +88,8 @@ pub fn run_from_command_line() -> i32 {
             let tag = sub_com
                 .values_of("tag_arg")
                 .unwrap()
+                // .unwrap_or_default()
+                // .unwrap_or(Values::default())
                 .collect();
             subcommands::tag::get_results(tag)
         },
