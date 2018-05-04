@@ -16,9 +16,11 @@ keywords = ["git"]
 categories = ["command-line-utilities", "development-tools"]
 
 [[bin]]
-name = "git-global"
+name = "git-global-hal"
 doc = false
+path = "src/main.rs"
 
+[lib]
 [dependencies]
 app_dirs = "1.2.1"
 clap = "2"
@@ -26,6 +28,7 @@ chrono = "0.3"
 colored = "1.6.0"
 itertools = "0.7.3"
 json = "0.11"
+tui = "0.2.1"
 walkdir = "2.1.4"
 
 [dev-dependencies]

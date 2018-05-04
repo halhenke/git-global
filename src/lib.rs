@@ -47,6 +47,8 @@ extern crate git2;
 #[macro_use]
 extern crate json;
 extern crate walkdir;
+extern crate tui;
+
 
 mod cli;
 mod core;

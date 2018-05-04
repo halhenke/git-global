@@ -5,4 +5,5 @@ pub mod scan;
 pub mod status;
 pub mod filter;
 pub mod tag;
+pub mod prompt;
 pub mod utilities;
