@@ -152,6 +152,7 @@ impl GitGlobalResult {
 /// A container for git-global configuration options.
 pub struct GitGlobalConfig {
     pub basedir: String,
+    // pub basedirs: String,
     pub basedirs: Vec<String>,
     pub ignored_patterns: Vec<String>,
     pub tags: Vec<RepoTag>,
@@ -165,16 +166,25 @@ impl GitGlobalConfig {
             .to_str()
             .expect("Could not convert home directory path to string.")
             .to_string();
-        let (basedir, patterns) = match git2::Config::open_default() {
+        let (basedir, basedirs, patterns) = match git2::Config::open_default() {
             Ok(config) => {
-                (config.get_string(SETTING_BASEDIR).unwrap_or(home_dir),
+                (config.get_string(SETTING_BASEDIR).unwrap_or(home_dir.clone()),
+                //  vec![config.get_string(SETTING_BASEDIR).unwrap_or(home_dir.clone())],
+                 config.get_string(SETTING_BASEDIR)
+                    .unwrap_or(home_dir.clone())
+                    .split(",")
+                    // .by_ref()
+                    .map(|p| p.trim().to_string())
+                    // .cloned()
+                    .collect(),
                  config.get_string(SETTING_IGNORED)
                      .unwrap_or(String::new())
                      .split(",")
                      .map(|p| p.trim().to_string())
                      .collect())
             }
-            Err(_) => (home_dir, Vec::new()),
+            Err(_) => (home_dir.clone(), vec![home_dir.clone()], Vec::new()),
+            // Err(_) => (home_dir, vec![&home_dir], Vec::new()),
         };
         let cache_file = match get_app_dir(AppDataType::UserCache, &APP, "cache") {
             Ok(mut dir) => {
@@ -185,7 +195,7 @@ impl GitGlobalConfig {
         };
         GitGlobalConfig {
             basedir: basedir,
-            basedirs: vec![],
+            basedirs: basedirs,
             tags: vec![],
             ignored_patterns: patterns,
             cache_file: cache_file,
@@ -325,10 +335,14 @@ pub fn get_tagged_repos(tags: &Vec<RepoTag>) -> Vec<Repo> {
         println!("tags!!!! {}", tags.len());
         return get_repos()
             .into_iter()
+            // .cloned()
             .filter(|x|
-                tags.iter().filter(|y| x.tags.iter().any(|t| &t == y)).count() > 0
-                // tags.iter().any(|y| x.tags.iter().find(y))
-            // )
+                tags
+                    .iter()
+                    .filter(|y| x.tags
+                        .iter()
+                        .any(|t| &t == y))
+                        .count() > 0
             ).collect();
     }
 }
