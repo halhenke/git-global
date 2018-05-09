@@ -7,3 +7,4 @@ pub mod filter;
 pub mod tag;
 pub mod prompt;
 pub mod utilities;
+pub mod bullshit;

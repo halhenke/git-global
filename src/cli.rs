@@ -23,6 +23,8 @@ fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
             .help("Output results in JSON."))
         .subcommand(SubCommand::with_name("info")
             .about("show meta-information about git-global"))
+        .subcommand(SubCommand::with_name("bullshit")
+            .about("Just mucking around with stuff"))
         .subcommand(SubCommand::with_name("prompt")
             .about("demo the TUI library"))
         .subcommand(SubCommand::with_name("list")
@@ -54,6 +56,7 @@ pub fn run_from_command_line() -> i32 {
     let matches = clap_app.get_matches();
     let use_json = matches.is_present("json");
     let results = match matches.subcommand_name() {
+        Some("bullshit") => subcommands::bullshit::get_results(),
         Some("info") => subcommands::info::get_results(),
         Some("list") => subcommands::list::get_results(),
         Some("filter") => {
