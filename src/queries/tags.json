@@ -1,0 +1,20 @@
+query {
+  repository(owner: {}, name: {}) {
+    	repositoryTopics(first: 10) {
+      	edges {
+          node {
+          	topic {
+              name
+            }
+          }
+        }
+    	}
+    	languages(first: 10) {
+      edges {
+        node {
+          name
+        }
+      }
+    }
+  }
+}

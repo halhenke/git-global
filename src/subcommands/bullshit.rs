@@ -2,10 +2,14 @@
 
 extern crate github_gql;
 extern crate serde_json;
+extern crate strfmt;
 use self::github_gql as gql;
 use self::gql::client::{Github};
 use self::gql::query::{Query};
 use self::serde_json::{Value};
+
+use self::strfmt::strfmt;
+use std::collections::HashMap;
 
 use std::path::Path;
 use std::io::Read;
@@ -13,6 +17,30 @@ use std::fs::File;
 
 use core::{GitGlobalResult, get_repos};
 use errors::Result;
+
+fn get_query(owner: &str, name: &str) -> String {
+// fn get_query(owner: &str, name: &str) -> Value {
+    let p = Path::new("src/queries/tags.json")
+        .canonicalize()
+        .unwrap()
+        .into_os_string();
+    let mut tok = File::open(p).unwrap();
+    let mut template = String::new();
+    tok.read_to_string(&mut template);
+    // let mut json = String::new();
+    // NOTE: How do I use a non string literal as a formatter?
+    // write!(json, &template, owner, name);
+    // write!(json, &template, owner, name);
+    // write_fmt()
+    let mut vars = HashMap::new();
+    vars.insert("owner".to_string(), owner);
+    vars.insert("name".to_string(), name);
+    return strfmt(&template, &vars).unwrap();
+
+    // return json;
+    // let tokVal: Value = serde_json::from_str(&json).unwrap();
+    // return tokVal;
+}
 
 /// Forces the display of each repo path, without any extra output.
 pub fn get_results() -> Result<GitGlobalResult> {
@@ -37,7 +65,6 @@ pub fn get_results() -> Result<GitGlobalResult> {
     //         }
     //     }
     // "#.replace("\n", "");
-
     let q_str =
         r#"query {
             repository(owner: \"halhenke\", name: \"stack-mate\") {
