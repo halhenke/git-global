@@ -25,6 +25,8 @@ fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
             .about("show meta-information about git-global"))
         .subcommand(SubCommand::with_name("bullshit")
             .about("Just mucking around with stuff"))
+        .subcommand(SubCommand::with_name("clean")
+            .about("Clear the cache"))
         .subcommand(SubCommand::with_name("prompt")
             .about("demo the TUI library"))
         .subcommand(SubCommand::with_name("list")
@@ -82,6 +84,7 @@ pub fn run_from_command_line() -> i32 {
             let tags = sub_com.values_of("tags").unwrap().collect();
             subcommands::filter::get_results(pat, tags)
         },
+        Some("clean") => subcommands::clean::cache_clear(),
         Some("scan") => subcommands::scan::get_results(),
         Some("prompt") => subcommands::prompt::go(),
         Some("tag") => {

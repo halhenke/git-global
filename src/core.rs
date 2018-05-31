@@ -9,8 +9,8 @@ use self::colored::*;
 use std::collections::HashMap;
 use std::env;
 use std::fmt;
-use std::fs::File;
-use std::io::{BufRead, BufReader, Write};
+use std::fs::{File, remove_file};
+use std::io::{BufRead, BufReader, Write, Result};
 use std::path::PathBuf;
 
 use app_dirs::{AppInfo, AppDataType, app_dir, get_app_dir};
@@ -230,8 +230,16 @@ impl GitGlobalConfig {
     }
 
     /// Returns boolean indicating if the cache file exists.
-    fn has_cache(&self) -> bool {
+    pub fn has_cache(&self) -> bool {
         self.cache_file.as_path().exists()
+    }
+
+    pub fn destroy_cache(&self) -> Result<()> {
+        remove_file(self.cache_file.as_path())
+    }
+
+    fn empty_cache(&self) -> bool {
+        self.get_cached_repos().len() == 0
     }
 
     /// Writes the given repo paths to the cache file.

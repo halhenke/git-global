@@ -8,3 +8,4 @@ pub mod tag;
 pub mod prompt;
 pub mod utilities;
 pub mod bullshit;
+pub mod clean;
