@@ -1,0 +1,7 @@
+[tasks.build-git-global-hal]
+command = "cargo"
+args = ["build"]
+
+[tasks.install-git-global-hal]
+command = "cargo"
+args = ["install", "--force", "--bin", "git-global-hal"]

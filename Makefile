@@ -1,5 +1,5 @@
 build-git-global-hal:
-    cargo build
+	cargo build
 
 install-git-global-hal:
-    cargo install --force --bin git-global-hal
+	cargo install --force --bin git-global-hal
