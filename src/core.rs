@@ -11,7 +11,7 @@ use std::env;
 use std::fmt;
 use std::fs::{File, remove_file};
 use std::io::{BufRead, BufReader, Write, Result};
-use std::path::PathBuf;
+use std::path::{PathBuf, Path};
 
 use app_dirs::{AppInfo, AppDataType, app_dir, get_app_dir};
 use git2;
@@ -186,6 +186,10 @@ impl GitGlobalConfig {
             Err(_) => (home_dir.clone(), vec![home_dir.clone()], Vec::new()),
             // Err(_) => (home_dir, vec![&home_dir], Vec::new()),
         };
+        // assert!(Path::exists(Path::new(&basedir)), "Your provided basedir: {} does not exist", basedir);
+        if !Path::exists(Path::new(&basedir)) {
+            panic!("Your provided basedir: {} does not exist", basedir);
+        }
         let cache_file = match get_app_dir(AppDataType::UserCache, &APP, "cache") {
             Ok(mut dir) => {
                 dir.push(CACHE_FILE);
