@@ -53,11 +53,13 @@ extern crate tui;
 mod cli;
 mod core;
 mod errors;
+pub mod new_core;
 pub mod subcommands;  // Using `pub mod` so we see the docs.
 
 pub use cli::run_from_command_line;
 // pub use core as claw;
 // pub use claw::{GitGlobalConfig, GitGlobalResult, Repo, get_repos};
 pub use core::{GitGlobalConfig, GitGlobalResult, Repo, get_repos, RepoTag, get_tagged_repos};
+// pub use new_core::{Repo, RepoTag};
 pub use errors::Result;
 pub use errors::GitGlobalError;
