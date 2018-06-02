@@ -35,27 +35,27 @@ git config --global global.ignore .cargo,.vim,Library
 
 ## Ideas
 
-* `git global unstaged`: show all repos that have unstaged changes
-* `git global staged`: show all repos that have staged changes
-* `git global stashed`: show all repos that have stashed changes
-* `git global dirty`: show all repos that have changes of any kind
-* `git global branched`: show all repos not on `master` (TODO: or a different
+* [ ] `git global unstaged`: show all repos that have unstaged changes
+* [ ] `git global staged`: show all repos that have staged changes
+* [ ] `git global stashed`: show all repos that have stashed changes
+* [ ] `git global dirty`: show all repos that have changes of any kind
+* [ ] `git global branched`: show all repos not on `master` (TODO: or a different
   default branch in .gitconfig)
-* `git global duplicates`: show repos that are checked out to multiple places
-* `git global remotes`: show all remotes (TODO: why? maybe filter by hostname?)
+* [ ] `git global duplicates`: show repos that are checked out to multiple places
+* [ ] `git global remotes`: show all remotes (TODO: why? maybe filter by hostname?)
 
-* `git global add <path>`: add a git repo to the cache that would not be found in a scan
-* `git global ignore <path>`: ignore a git repo and remove it from the cache
-* `git global ignored`: show which git repos are currently being ignored
-* `git global monitor`: launch a daemon to watch git dirs with inotify
-* `git global pull`: pull down changes from default tracking branch for clean repos
+* [ ] `git global add <path>`: add a git repo to the cache that would not be found in a scan
+* [ ] `git global ignore <path>`: ignore a git repo and remove it from the cache
+* [ ] `git global ignored`: show which git repos are currently being ignored
+* [ ] `git global monitor`: launch a daemon to watch git dirs with inotify
+* [ ] `git global pull`: pull down changes from default tracking branch for clean repos
 
-* stream results as the come in (from `git global status`, for example, so we don't
+* [ ] stream results as the come in (from `git global status`, for example, so we don't
   have to wait until they're all collected)
-* use `locate .git` if the DB is populated, instead of walking everything
-* make a `Subcommand` trait
-* do concurrency generically, not just for status subcommand
-* rename `GitGlobalResult` so it's not confused with a normal `Result`
+* [ ] use `locate .git` if the DB is populated, instead of walking everything
+* [ ] make a `Subcommand` trait
+* [ ] do concurrency generically, not just for status subcommand
+* [ ] rename `GitGlobalResult` so it's not confused with a normal `Result`
 
 ## Release Notes
 
