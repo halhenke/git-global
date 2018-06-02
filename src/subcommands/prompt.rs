@@ -1,6 +1,7 @@
 use std::io;
 use std::sync::mpsc;
 use std::thread;
+use std::collections::HashMap;
 
 use tui::Terminal;
 use tui::backend::RawBackend;
@@ -20,9 +21,51 @@ enum Event {
     Input(event::Key),
 }
 
+#[derive(Debug)]
+
+struct Selectable<'a> {
+    pub selections: [&'a str; 3],
+    pub selected: usize,
+    // pub selected: &'a mut usize,
+}
+
+// mod sel {
+//     // let hal;
+//     // let mename = Hal;
+//     // let selections = [
+//     //     "Choice 1",
+//     //     "Choice 2",
+//     //     "Choice 3",
+//     //     ];
+// }
+
+// let Selections = HashMap::from_list([
+//     ("Choice 1", 1)
+// ])
+
+// enum Selection {
+//     Choice1,
+//     Choice2,
+//     Choice3,
+// }
+
 pub fn go() -> WeirdResult<GitGlobalResult> {
     let mut terminal = init().expect("Failed initialization");
-    let mut selected = 1;
+    // let mut selected = 0;
+    // let selections = [
+    //     "Choice 1",
+    //     "Choice 2",
+    //     "Choice 3",
+    // ];
+    let mut sel = Selectable{
+        selections: [
+            "Choice 1",
+            "Choice 2",
+            "Choice 3",
+        ],
+        selected: 0,
+    };
+
 
     // Channels
     let (tx, rx) = mpsc::channel();
@@ -43,7 +86,7 @@ pub fn go() -> WeirdResult<GitGlobalResult> {
     // Draw
     terminal.clear()?;
     terminal.hide_cursor()?;
-    draw(&mut terminal, selected).expect("Failed to draw");
+    draw(&mut terminal, &sel).expect("Failed to draw");
 
     // Event Loop
     loop {
@@ -65,11 +108,11 @@ pub fn go() -> WeirdResult<GitGlobalResult> {
                 }
                 event::Key::Up => {
                     // app.messages.push(app.input.drain(..).collect());
-                    selected = selected - 1;
+                    sel.selected = (sel.selected - 1) % 3;
                 }
                 event::Key::Down => {
                     // app.messages.push(app.input.drain(..).collect());
-                    selected = selected + 1;
+                    sel.selected = (sel.selected + 1) % 3;
                 }
                 // event::Key::Char(c) => {
                 //     // app.input.push(c);
@@ -82,11 +125,12 @@ pub fn go() -> WeirdResult<GitGlobalResult> {
                 _ => {}
             },
         }
-        draw(&mut terminal, selected);
+        draw(&mut terminal, &sel);
     }
     terminal.clear()?;
     terminal.show_cursor();
 
+    println!("Selected was {}", sel.selections[sel.selected]);
 
     // Make type sig match
     Ok(GitGlobalResult::new(&vec![]))
@@ -98,7 +142,7 @@ fn init() -> Result<Terminal<RawBackend>, io::Error> {
 }
 
 // fn draw(t: &mut Terminal<RawBackend>) -> () {
-fn draw(t: &mut Terminal<RawBackend>, sel: usize) -> Result<(), io::Error> {
+fn draw(t: &mut Terminal<RawBackend>, sel: & Selectable) -> Result<(), io::Error> {
 
     let size = t.size()?;
 
@@ -117,12 +161,8 @@ fn draw(t: &mut Terminal<RawBackend>, sel: usize) -> Result<(), io::Error> {
                         .title("Choose One of these")
                         .borders(Borders::ALL)
                 )
-                .items(&[
-                    "Choice 1",
-                    "Choice 2",
-                    "Choice 3"
-                ])
-                .select(sel)
+                .items(&sel.selections)
+                .select(sel.selected)
                 .style(Style::default().fg(Color::White))
                 .highlight_style(Style::default().modifier(Modifier::Italic))
                 .highlight_symbol(">>")
