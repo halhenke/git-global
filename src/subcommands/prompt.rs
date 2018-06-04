@@ -29,6 +29,28 @@ struct Selectable<'a> {
     // pub selected: &'a mut usize,
 }
 
+impl<'a> Selectable<'a> {
+    pub fn inc(&mut self) -> usize {
+        if self.selected < (self.selections.len() - 1) {
+            self.selected = self.selected + 1;
+        }
+        else {
+            self.selected;
+        }
+        self.selected
+    }
+
+    pub fn dec(&mut self) -> usize {
+        if self.selected >= 1 {
+            self.selected = self.selected - 1;
+        }
+        else {
+            self.selected;
+        }
+        self.selected
+    }
+}
+
 // mod sel {
 //     // let hal;
 //     // let mename = Hal;
@@ -107,12 +129,12 @@ pub fn go() -> WeirdResult<GitGlobalResult> {
                     break;
                 }
                 event::Key::Up => {
-                    // app.messages.push(app.input.drain(..).collect());
-                    sel.selected = (sel.selected - 1) % 3;
+                    // sel.selected = (sel.selected - 1) % 3;
+                    sel.dec();
                 }
                 event::Key::Down => {
-                    // app.messages.push(app.input.drain(..).collect());
-                    sel.selected = (sel.selected + 1) % 3;
+                    // sel.selected = (sel.selected + 1) % 3;
+                    sel.inc();
                 }
                 // event::Key::Char(c) => {
                 //     // app.input.push(c);
