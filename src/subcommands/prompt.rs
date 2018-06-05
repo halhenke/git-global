@@ -125,15 +125,12 @@ pub fn go() -> WeirdResult<GitGlobalResult> {
                     break;
                 }
                 event::Key::Char('\n') => {
-                    // app.messages.push(app.input.drain(..).collect());
                     break;
                 }
                 event::Key::Up => {
-                    // sel.selected = (sel.selected - 1) % 3;
                     sel.dec();
                 }
                 event::Key::Down => {
-                    // sel.selected = (sel.selected + 1) % 3;
                     sel.inc();
                 }
                 // event::Key::Char(c) => {

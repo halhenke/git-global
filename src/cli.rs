@@ -28,7 +28,9 @@ fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
         .subcommand(SubCommand::with_name("clean")
             .about("Clear the cache"))
         .subcommand(SubCommand::with_name("prompt")
-            .about("demo the TUI library"))
+            .about("demo the TUI Terminal UI library"))
+        .subcommand(SubCommand::with_name("prompt-cursive")
+            .about("demo the Cursive Terminal UI library"))
         .subcommand(SubCommand::with_name("list")
             .about("lists all git repos on your machine [the default]"))
         .subcommand(SubCommand::with_name("tag")
@@ -87,6 +89,7 @@ pub fn run_from_command_line() -> i32 {
         Some("clean") => subcommands::clean::cache_clear(),
         Some("scan") => subcommands::scan::get_results(),
         Some("prompt") => subcommands::prompt::go(),
+        Some("prompt-cursive") => subcommands::prompt_cursive::go(),
         Some("tag") => {
             let sub_com = matches
                 .subcommand_matches("tag")

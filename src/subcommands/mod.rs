@@ -6,6 +6,7 @@ pub mod status;
 pub mod filter;
 pub mod tag;
 pub mod prompt;
+pub mod prompt_cursive;
 pub mod utilities;
 pub mod bullshit;
 pub mod clean;
