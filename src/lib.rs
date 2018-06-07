@@ -55,6 +55,8 @@ mod core;
 pub mod new_core;
 pub use new_core::errors;
 pub mod subcommands;  // Using `pub mod` so we see the docs.
+#[macro_use]
+pub mod macros;
 
 pub use cli::run_from_command_line;
 // pub use core as claw;
