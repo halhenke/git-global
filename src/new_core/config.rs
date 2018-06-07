@@ -104,6 +104,14 @@ impl GitGlobalConfig {
         &self.tags
     }
 
+    pub fn tag_names(&self) -> Vec<&str> {
+    // pub fn tag_names(&self) -> &Vec<&str> {
+        self.tags
+            .iter()
+            .map(|g| g.name.as_str())
+            .collect()
+    }
+
     fn print_tags(&self) {
         println!("Tags:");
         for tag in &self.tags {
@@ -116,10 +124,12 @@ impl GitGlobalConfig {
         self.cache_file.as_path().exists()
     }
 
+    /// Remove the cache file
     pub fn destroy_cache(&self) -> Result<()> {
         remove_file(self.cache_file.as_path())
     }
 
+    /// Do we have any repos in the cache?
     fn empty_cache(&self) -> bool {
         self.get_cached_repos().len() == 0
     }

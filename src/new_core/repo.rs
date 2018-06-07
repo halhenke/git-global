@@ -17,8 +17,8 @@ impl Repo {
     }
 
     /// Returns the full path to the repo as a `String`.
-    pub fn path(&self) -> String {
-        self.path.clone()
+    pub fn path(&self) -> &str {
+        self.path.as_str()
     }
 
     /// Returns the `git2::Repository` equivalent of this repo.

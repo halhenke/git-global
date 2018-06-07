@@ -88,7 +88,7 @@ pub fn get_results() -> Result<GitGlobalResult> {
         let tx = tx.clone();
         let repo = Arc::new(repo);
         thread::spawn(move || {
-            let path = repo.path();
+            let path = repo.path().to_string();
             let lines = get_status_lines(repo);
             tx.send((path, lines)).unwrap();
         });
