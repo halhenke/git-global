@@ -52,8 +52,8 @@ extern crate tui;
 
 mod cli;
 mod core;
-mod errors;
 pub mod new_core;
+pub use new_core::errors;
 pub mod subcommands;  // Using `pub mod` so we see the docs.
 
 pub use cli::run_from_command_line;
