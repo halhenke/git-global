@@ -14,6 +14,8 @@ use self::termion::input::TermRead;
 
 use errors::Result as WeirdResult;
 
+#[macro_use]
+use macros::hash_num;
 use super::super::{GitGlobalResult};
 // use super::super::{GitGlobalResult, RepoTag, get_repos, get_tagged_repos};
 
@@ -22,9 +24,8 @@ enum Event {
 }
 
 #[derive(Debug)]
-
 struct Selectable<'a> {
-    pub selections: [&'a str; 3],
+    pub selections: Vec<&'a str>,
     pub selected: usize,
     // pub selected: &'a mut usize,
 }
@@ -51,43 +52,17 @@ impl<'a> Selectable<'a> {
     }
 }
 
-// mod sel {
-//     // let hal;
-//     // let mename = Hal;
-//     // let selections = [
-//     //     "Choice 1",
-//     //     "Choice 2",
-//     //     "Choice 3",
-//     //     ];
-// }
-
-// let Selections = HashMap::from_list([
-//     ("Choice 1", 1)
-// ])
-
-// enum Selection {
-//     Choice1,
-//     Choice2,
-//     Choice3,
-// }
-
 pub fn go() -> WeirdResult<GitGlobalResult> {
     let mut terminal = init().expect("Failed initialization");
-    // let mut selected = 0;
-    // let selections = [
-    //     "Choice 1",
-    //     "Choice 2",
-    //     "Choice 3",
-    // ];
+
     let mut sel = Selectable{
-        selections: [
+        selections: vec![
             "Choice 1",
             "Choice 2",
             "Choice 3",
         ],
         selected: 0,
     };
-
 
     // Channels
     let (tx, rx) = mpsc::channel();

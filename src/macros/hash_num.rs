@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+// use std::collections::HashMap;
 // use std::prelude::v1
 // use std::hash::Hash;
 // use std::iter::FromIterator;
@@ -11,7 +11,7 @@ macro_rules! mkHash {
         use std::hash::{BuildHasher, Hash};
         use std::cmp::Eq;
 
-        let mut $e = HashMap::new()
+        let mut $e = HashMap::new();
         let mut i: i32 = 0;
         $($e.insert($s, i);
         i = i + 1;)*

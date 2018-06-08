@@ -12,8 +12,8 @@ use self::cursive::event::EventResult;
 use self::cursive::traits::*;
 use self::cursive::views::{Dialog, OnEventView, SelectView, TextView};
 
-
 use errors::Result as WeirdResult;
+
 
 use super::super::{GitGlobalConfig, RepoTag, GitGlobalResult, get_repos};
 // use super::super::{GitGlobalResult, RepoTag, get_repos, get_tagged_repos};
@@ -63,7 +63,7 @@ pub fn go() -> WeirdResult<GitGlobalResult> {
         selected: 0,
     };
 
-    // let rTags: &Vec<RepoTag> = globalGit.tag_names();
+    // let r_tags: &Vec<RepoTag> = globalGit.tag_names();
 
     // let mut siv = Cursive::default();
 
@@ -103,14 +103,14 @@ pub fn go() -> WeirdResult<GitGlobalResult> {
 
     let globalGit = GitGlobalConfig::new();
     let repos = get_repos();
-    let rTags: Vec<&str> = repos
+    let r_tags: Vec<&str> = repos
         .iter()
         .map(|r| r.path())
         .collect();
-    // let rTags: Vec<&str> = globalGit.tag_names();
+    // let r_tags: Vec<&str> = globalGit.tag_names();
 
     // select.add_all_str(content.lines());
-    select.add_all_str(rTags);
+    select.add_all_str(r_tags);
 
     // Sets the callback for when "Enter" is pressed.
     select.set_on_submit(show_next_window);

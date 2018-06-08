@@ -29,9 +29,7 @@ fn get_query(owner: &str, name: &str) -> String {
     tok.read_to_string(&mut template);
     // let mut json = String::new();
     // NOTE: How do I use a non string literal as a formatter?
-    // write!(json, &template, owner, name);
-    // write!(json, &template, owner, name);
-    // write_fmt()
+    // - you need to use a templating thing
     let mut vars = HashMap::new();
     vars.insert("owner".to_string(), owner);
     vars.insert("name".to_string(), name);

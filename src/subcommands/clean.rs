@@ -7,7 +7,7 @@ use errors::Result;
 pub fn cache_clear() -> Result<GitGlobalResult> {
 // pub fn cache_clear() -> Result<()> {
     let config = GitGlobalConfig::new();
-    config.destroy_cache();
+    config.destroy_cache()?;
     println!("Cache destroyed");
     Ok(GitGlobalResult::new(&vec![]))
 }
