@@ -100,6 +100,31 @@ impl GitGlobalConfig {
         // a
     }
 
+    pub fn add_tags(&mut self, tags: Vec<String>) -> () {
+    // pub fn add_tags(&self, tags: Vec<String>) -> Vec<RepoTag> {
+    // pub fn add_tags(&self, tags: &mut Vec<String>) ->() {
+        let new_repos = &mut tags
+            .into_iter()
+            .map(|t| t.into())
+            // .map(|t| RepoTag::from(t))
+            .collect();
+        self.tags
+            .append(
+                // tags.iter_mut().map(|t| t.into()).collect::<&mut Vec<RepoTag>>()
+                // tags.iter_mut().map(|t| t.into()).collect()
+                // tags.into_iter().map(|t| &mut RepoTag::from(t)).collect()
+                // tags.into_iter().map(|t| t.into()).collect()
+                // tags.iter().map(|& t| RepoTag::from(t)).collect()
+                // tags.into_iter().map(|t| RepoTag::from(t)).collect()
+                new_repos
+                // tags.into_iter().map(|t| RepoTag::from(t)).collect::<Vec<RepoTag>>()
+            );
+        self.tags
+            .dedup_by(|a, b|
+                a.name.as_str().eq_ignore_ascii_case(b.name.as_str())
+            );
+    }
+
     fn tags(&self) -> &Vec<RepoTag> {
         &self.tags
     }
