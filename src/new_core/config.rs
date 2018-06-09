@@ -12,6 +12,7 @@ use git2;
 
 const APP: AppInfo = AppInfo { name: "git-global", author: "peap" };
 const CACHE_FILE: &'static str = "repos.txt";
+const TAG_CACHE_FILE: &'static str = "tags.txt";
 const SETTING_BASEDIR: &'static str = "global.basedir";
 const SETTING_IGNORED: &'static str = "global.ignore";
 
@@ -25,6 +26,7 @@ pub struct GitGlobalConfig {
     pub ignored_patterns: Vec<String>,
     pub tags: Vec<RepoTag>,
     pub cache_file: PathBuf,
+    pub tags_file: PathBuf,
 }
 
 impl GitGlobalConfig {
@@ -70,6 +72,13 @@ impl GitGlobalConfig {
             }
             Err(_) => panic!("TODO: work without XDG"),
         };
+        let tags_file = match get_app_dir(AppDataType::UserCache, &APP, "cache") {
+            Ok(mut dir) => {
+                dir.push(TAG_CACHE_FILE);
+                dir
+            }
+            Err(_) => panic!("TODO: work without XDG"),
+        };
 
         // NOTE: Handle this earlier
         // if basedir == "" {
@@ -81,6 +90,7 @@ impl GitGlobalConfig {
             tags: vec![],
             ignored_patterns: patterns,
             cache_file: cache_file,
+            tags_file,
         }
     }
 
