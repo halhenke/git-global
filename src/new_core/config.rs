@@ -184,7 +184,10 @@ impl GitGlobalConfig {
             }
         }
         let mut f = File::create(&self.cache_file).expect("Could not create cache file.");
-        let serialized = serde_json::to_string(&repos).unwrap();
+
+        // let serialized = serde_json::to_string(&repos).unwrap();
+        let serialized = serde_json::to_string(&(&repos, &self.tags)).unwrap();
+
         f.write_all(serialized.as_bytes()).expect("Problem writing cache file");
         // for repo in repos.iter() {
         //     match writeln!(f, "{}", repo.path()) {
@@ -208,7 +211,20 @@ impl GitGlobalConfig {
             // f.read_to_end().unwrap();
 
             // println!("{:?}", reader);
-            repos = serde_json::from_slice(reader).unwrap();
+
+            type RepoTagTuple = (Vec<Repo>, Vec<RepoTag>);
+
+            // repos = serde_json::from_slice(reader).unwrap();
+
+            let serialized: RepoTagTuple = serde_json::from_slice(reader).unwrap();
+            repos = serialized.0;
+            // let serialized = serde_json::to_string(&(&repos, &self.tags)).unwrap();
+            // println!("{}", test_ser);
+            // let (fake_repos: Vec<Repo> , fake_tags: Vec<RepoTag>) = serde_json::from_str(&test_ser).unwrap();
+            // let fake_repos: RepoTagTuple = serde_json::from_str(&test_ser).unwrap();
+            // println!("REPOS!!!!: {:?}", fake_repos.0);
+            // println!("TAGS!!!!: {:?}", fake_repos.1);
+
             // println!("{:?}", repos);
 
             // repos = serde_json::from_reader(reader).unwrap();
