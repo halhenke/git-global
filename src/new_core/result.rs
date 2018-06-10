@@ -5,6 +5,7 @@ pub use new_core::repo::{Repo, RepoTag};
 /// The result of a git-global subcommand.
 ///
 /// Contains overall messages, per-repo messages, and a list of repos.
+#[derive(Serialize, Deserialize, Debug)]
 pub struct GitGlobalResult {
     messages: Vec<String>,
     repos: Vec<Repo>,

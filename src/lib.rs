@@ -46,6 +46,8 @@ extern crate clap;
 extern crate git2;
 #[macro_use]
 extern crate json;
+#[macro_use]
+extern crate serde_derive;
 extern crate walkdir;
 extern crate tui;
 

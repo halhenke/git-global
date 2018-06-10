@@ -2,7 +2,7 @@ use std::fmt;
 use git2;
 
 /// A git repository, represented by the full path to its base directory.
-#[derive(PartialEq, Eq, Hash, Clone)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Hash, Clone)]
 pub struct Repo {
     pub path: String,
     pub tags: Vec<RepoTag>,
@@ -37,7 +37,7 @@ impl fmt::Display for Repo {
     }
 }
 
-#[derive(PartialEq, Eq, Hash, Clone, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, Hash, Clone, Debug)]
 pub struct RepoTag {
     pub name: String
 }

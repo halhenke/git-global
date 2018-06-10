@@ -11,6 +11,9 @@ pub use new_core::config::{GitGlobalConfig};
 
 use walkdir::{WalkDir};
 
+extern crate serde;
+extern crate serde_json;
+
 
 /// Walks the configured base directory, looking for git repos.
 pub fn find_repos() -> Vec<Repo> {
@@ -75,6 +78,12 @@ pub fn get_repos() -> Vec<Repo> {
     println!("get repos");
     let user_config = GitGlobalConfig::new();
     println!("getgot config");
+
+
+    // Convert the Point to a JSON string.
+    let serialized = serde_json::to_string(&user_config).unwrap();
+    // Prints serialized = {"x":1,"y":2}
+    println!("serialized = {}", serialized);
 
     if !user_config.has_cache() {
         println!("You have no cached repos yet...");

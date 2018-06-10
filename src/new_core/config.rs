@@ -1,10 +1,12 @@
 extern crate colored;
 use std::env;
 use std::path::{PathBuf, Path};
-use std::io::{BufRead, BufReader, Write, Result};
+use std::io::{BufRead, BufReader, Read, Write, Result};
 use std::fs::{File, remove_file};
 use app_dirs::{AppInfo, AppDataType, app_dir, get_app_dir};
 use walkdir::{DirEntry};
+
+extern crate serde_json;
 
 pub use new_core::repo::{Repo, RepoTag};
 use git2;
@@ -19,6 +21,8 @@ const SETTING_IGNORED: &'static str = "global.ignore";
 
 
 /// A container for git-global configuration options.
+
+#[derive(Serialize, Deserialize, Debug)]
 pub struct GitGlobalConfig {
     pub basedir: String,
     // pub basedirs: String,
@@ -180,27 +184,47 @@ impl GitGlobalConfig {
             }
         }
         let mut f = File::create(&self.cache_file).expect("Could not create cache file.");
-        for repo in repos.iter() {
-            match writeln!(f, "{}", repo.path()) {
-                Ok(_) => (),
-                Err(e) => panic!("Problem writing cache file: {}", e),
-            }
-        }
+        let serialized = serde_json::to_string(&repos).unwrap();
+        f.write_all(serialized.as_bytes()).expect("Problem writing cache file");
+        // for repo in repos.iter() {
+        //     match writeln!(f, "{}", repo.path()) {
+        //         Ok(_) => (),
+        //         Err(e) => panic!("Problem writing cache file: {}", e),
+        //     }
+        // }
     }
 
     /// Returns the list of repos found in the cache file.
     pub fn get_cached_repos(&self) -> Vec<Repo> {
         let mut repos = Vec::new();
         if self.cache_file.as_path().exists() {
-            let f = File::open(&self.cache_file).expect("Could not open cache file.");
-            let reader = BufReader::new(f);
-            for line in reader.lines() {
-                match line {
-                    Ok(repo_path) => repos.push(Repo::new(repo_path)),
-                    Err(_) => (),  // TODO: handle errors
-                }
-            }
+            let mut f = File::open(&self.cache_file).expect("Could not open cache file.");
+
+            // let serialized = serde_json::to_string(&repos).unwrap();
+
+            // let reader = &mut BufReader::new(f);
+            let reader = &mut Vec::new();
+            f.read_to_end(reader).unwrap();
+            // f.read_to_end().unwrap();
+
+            // println!("{:?}", reader);
+            repos = serde_json::from_slice(reader).unwrap();
+            // println!("{:?}", repos);
+
+            // repos = serde_json::from_reader(reader).unwrap();
+
+            // let reader = &mut BufReader::new(f);
+            // for line in reader.lines() {
+            //     match line {
+            //         Ok(repo_path) => repos.push(Repo::new(repo_path)),
+            //         Err(_) => (),  // TODO: handle errors
+            //     }
+            // }
         }
+        // // Convert the Point to a JSON string.
+        // let serialized = serde_json::to_string(&repos).unwrap();
+        // println!("serialized = {}", serialized);
+
         repos
     }
 }
