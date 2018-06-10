@@ -63,7 +63,7 @@ pub fn go() -> WeirdResult<GitGlobalResult> {
         selected: 0,
     };
 
-    // let r_tags: &Vec<RepoTag> = globalGit.tag_names();
+    // let r_tags: &Vec<RepoTag> = global_git.tag_names();
 
     // let mut siv = Cursive::default();
 
@@ -101,13 +101,13 @@ pub fn go() -> WeirdResult<GitGlobalResult> {
     Choice 2
     Choice 3";
 
-    let globalGit = GitGlobalConfig::new();
+    let global_git = GitGlobalConfig::new();
     let repos = get_repos();
     let r_tags: Vec<&str> = repos
         .iter()
         .map(|r| r.path())
         .collect();
-    // let r_tags: Vec<&str> = globalGit.tag_names();
+    // let r_tags: Vec<&str> = global_git.tag_names();
 
     // select.add_all_str(content.lines());
     select.add_all_str(r_tags);

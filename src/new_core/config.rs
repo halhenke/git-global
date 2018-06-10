@@ -1,7 +1,7 @@
 extern crate colored;
 use std::env;
 use std::path::{PathBuf, Path};
-use std::io::{BufRead, BufReader, Read, Write, Result};
+use std::io::{BufReader, Read, Write, Result};
 use std::fs::{File, remove_file};
 use app_dirs::{AppInfo, AppDataType, app_dir, get_app_dir};
 use walkdir::{DirEntry};

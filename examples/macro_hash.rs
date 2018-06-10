@@ -1,6 +1,6 @@
 #[macro_use]
 extern crate git_global;
-use git_global::macros::hash_num::*;
+// use git_global::macros::hash_num::*;
 
 fn main() ->() {
     mkHash!(

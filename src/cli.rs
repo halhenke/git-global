@@ -2,7 +2,7 @@
 
 use std::io::{Write, stderr};
 // use std::default::Default;
-use clap::{Arg, App, SubCommand, Values};
+use clap::{Arg, App, SubCommand};
 
 // extern crate core;
 // use self::core::default::Default;

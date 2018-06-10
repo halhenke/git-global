@@ -36,8 +36,8 @@ fn get_query(owner: &str, name: &str) -> String {
     return strfmt(&template, &vars).unwrap();
 
     // return json;
-    // let tokVal: Value = serde_json::from_str(&json).unwrap();
-    // return tokVal;
+    // let tok_val: Value = serde_json::from_str(&json).unwrap();
+    // return tok_val;
 }
 
 /// Forces the display of each repo path, without any extra output.
@@ -51,9 +51,9 @@ pub fn get_results() -> Result<GitGlobalResult> {
     let mut tok = File::open(p).unwrap();
     let mut json = String::new();
     tok.read_to_string(&mut json);
-    let tokVal: Value = serde_json::from_str(&json).unwrap();
+    let tok_val: Value = serde_json::from_str(&json).unwrap();
 
-    let mut gh = Github::new(&tokVal["github"].as_str().unwrap())
+    let mut gh = Github::new(&tok_val["github"].as_str().unwrap())
         .unwrap();
 
     // let q_str = r#"
