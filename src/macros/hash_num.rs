@@ -47,27 +47,3 @@ macro_rules! mkHash {
         }
     )
 }
-
-// trait Invertible<K, V>
-//     // where V: Hash + Eq
-//     // where V: std::cmp::Hash,
-// {
-//     type H;
-//     fn invert(&self) -> Self::H;
-//     // fn invert(& self) -> Self;
-// }
-
-
-
-
-// Original working version of invert
-// pub fn invert_map<K, V, S>(hmap: HashMap<K, V, S>) -> HashMap<V, K, S> where
-//     V: Hash + Eq,
-//     K: Eq + Hash,
-//     S: BuildHasher + Default,
-// {
-//     hmap.into_iter()
-//         .map(|(k,v)| (v,k) )
-//         // .collect::<HashMap<V, K, S>>()
-//         .collect()
-// }

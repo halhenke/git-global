@@ -55,9 +55,6 @@ pub fn get_tagged_repos(tags: &Vec<RepoTag>) -> Vec<Repo> {
         // println!("NO TAGS");
         return get_repos();
     } else {
-        // for tag in tags {
-        //     println!("tag!!!! {}", tag);
-        // }
         println!("tags!!!! {}", tags.len());
         return get_repos()
             .into_iter()

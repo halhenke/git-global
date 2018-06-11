@@ -124,14 +124,7 @@ impl GitGlobalConfig {
             .collect();
         self.tags
             .append(
-                // tags.iter_mut().map(|t| t.into()).collect::<&mut Vec<RepoTag>>()
-                // tags.iter_mut().map(|t| t.into()).collect()
-                // tags.into_iter().map(|t| &mut RepoTag::from(t)).collect()
-                // tags.into_iter().map(|t| t.into()).collect()
-                // tags.iter().map(|& t| RepoTag::from(t)).collect()
-                // tags.into_iter().map(|t| RepoTag::from(t)).collect()
                 new_repos
-                // tags.into_iter().map(|t| RepoTag::from(t)).collect::<Vec<RepoTag>>()
             );
         self.tags
             .dedup_by(|a, b|
@@ -189,12 +182,6 @@ impl GitGlobalConfig {
         let serialized = serde_json::to_string(&(&repos, &self.tags)).unwrap();
 
         f.write_all(serialized.as_bytes()).expect("Problem writing cache file");
-        // for repo in repos.iter() {
-        //     match writeln!(f, "{}", repo.path()) {
-        //         Ok(_) => (),
-        //         Err(e) => panic!("Problem writing cache file: {}", e),
-        //     }
-        // }
     }
 
     /// Returns the list of repos found in the cache file.
@@ -229,18 +216,7 @@ impl GitGlobalConfig {
 
             // repos = serde_json::from_reader(reader).unwrap();
 
-            // let reader = &mut BufReader::new(f);
-            // for line in reader.lines() {
-            //     match line {
-            //         Ok(repo_path) => repos.push(Repo::new(repo_path)),
-            //         Err(_) => (),  // TODO: handle errors
-            //     }
-            // }
         }
-        // // Convert the Point to a JSON string.
-        // let serialized = serde_json::to_string(&repos).unwrap();
-        // println!("serialized = {}", serialized);
-
         repos
     }
 }
