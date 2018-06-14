@@ -29,6 +29,8 @@ fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
             .about("demo the Cursive Terminal UI library"))
         .subcommand(SubCommand::with_name("list")
             .about("lists all git repos on your machine [the default]"))
+        .subcommand(SubCommand::with_name("list-tags")
+            .about("lists all tags on your machine [the default]"))
         .subcommand(SubCommand::with_name("tag")
             .about("tag a single git repo")
                 .arg(Arg::with_name("tag_arg")
@@ -59,6 +61,8 @@ pub fn run_from_command_line() -> i32 {
         Some("bullshit") => subcommands::bullshit::get_results(),
         Some("info") => subcommands::info::get_results(),
         Some("list") => subcommands::list::get_results(),
+        Some("list-tags") => subcommands::list_tags::get_results(),
+        Some("add-tags") => subcommands::add_tags::go(),
         Some("filter") => {
             let sub_com = matches
                 .subcommand_matches("filter").expect("filter panic");
@@ -79,8 +83,6 @@ pub fn run_from_command_line() -> i32 {
             let tag = sub_com
                 .values_of("tag_arg")
                 .unwrap()
-                // .unwrap_or_default()
-                // .unwrap_or(Values::default())
                 .collect();
             subcommands::tag::get_results(tag)
         },

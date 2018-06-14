@@ -1,6 +1,7 @@
 //! Subcommand implementations.
 pub mod info;
 pub mod list;
+pub mod list_tags;
 pub mod scan;
 pub mod status;
 pub mod filter;

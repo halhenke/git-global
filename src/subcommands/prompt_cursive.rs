@@ -16,18 +16,11 @@ use errors::Result as WeirdResult;
 
 
 use super::super::{GitGlobalConfig, RepoTag, GitGlobalResult, get_repos};
-// use super::super::{GitGlobalResult, RepoTag, get_repos, get_tagged_repos};
-
-// enum Event {
-//     Input(event::Key),
-// }
 
 #[derive(Debug)]
-
 struct Selectable<'a> {
     pub selections: [&'a str; 3],
     pub selected: usize,
-    // pub selected: &'a mut usize,
 }
 
 impl<'a> Selectable<'a> {
@@ -134,7 +127,6 @@ pub fn go() -> WeirdResult<GitGlobalResult> {
         Dialog::around(select.fixed_size((20, 10)))
             .title("Where are you from?"),
     );
-
 
     siv.run();
     Ok(GitGlobalResult::new(&vec![]))
