@@ -94,6 +94,7 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     let mutContent = TextContent::new("Original");
     let mutCon = Rc::new(RefCell::new(mutContent));
     let m2Con = &mutCon.clone();
+    let m3Con = m2Con.clone();
 
     // let fuck = (&seen_content).borrow();
     // let seen_more = RefCell::new(&seen_content);
@@ -115,7 +116,20 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     // let mut siv = cursor.siv;
     // let tags = cursor.tags;
 
-
+    let editCB = move |s: &mut Cursive, name: &str| {
+        // let name = s.call_on_id(
+        //     "tag",
+        //     |view: &mut EditView| view.get_content(),
+        // ).unwrap();
+        let nutCon = m3Con.clone();
+        let mut b1 = nutCon.borrow_mut();
+        show_next_screen(s, &name.clone().deref(), &mut b1);
+    };
+    // let ecb = Rc::new(editCB);
+    // let ec2 = ecb.clone();
+    // let ec3 = Rc::clone(&ecb);
+    // // let ec2 = Rc::clone(&ecb);
+    // // let ec3 = Rc::clone(&ecb);
 
 
     // siv.tags = Vec::new();
@@ -133,10 +147,16 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
                     .padding((1, 1, 1, 0))
                     .content(
                         EditView::new()
-                            .on_submit(show_popup)
+                            // .on_submit(show_popup)
+                            .on_submit(editCB)
+                            // .on_submit(Rc::try_unwrap(ec2).expect())
                             .with_id("tag")
                             .fixed_width(20),
                     )
+                    .button("q",  move |s: &mut Cursive| {
+                        // s.pop_layer()
+                        s.quit()
+                    })
                     // .button("Ok", |s| {
                     // .button("Ok", |s: &mut Cursive| {
                     .button("Ok", move |s: &mut Cursive| {
@@ -157,12 +177,10 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
                         //     &TextContent::new("Hey Man")
                         // );
 
-                        // boxContent.pu
                         let nutCon = mutCon.clone();
                         let mut b1 = nutCon.borrow_mut();
-                        // b1.append("hey");
-                        // let mut b2 = RefMut::map(b1, move |&mut t| &mut t.append("hellsbells") );
                         show_next_screen(s, &name.clone().deref(), &mut b1);
+                        // &editCB(s, &name.clone().deref());
 
 
                         // let mut borrowed = seen_cell.borrow_mut();
@@ -270,6 +288,12 @@ fn show_popup(s: &mut Cursive, name: &str) {
     } else {
         // c.set_content(name);
         let content = format!("Hello {}!", name);
+        s.call_on_id("tag",
+            |view: &mut EditView|
+                {
+                    view.set_content("")
+                    // view.set_cursor(0)
+                }).unwrap();
         // s.pop_layer();
         // s.add_layer(Dialog::around(TextView::new(content))
         //     .button("Quit", |s| s.quit()));
