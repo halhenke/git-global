@@ -13,7 +13,10 @@ use self::cursive::Cursive;
 // use cursive::views::{Dialog, TextView};
 use self::cursive::align::HAlign;
 use self::cursive::event::EventResult;
-use self::cursive::traits::*;
+use self::cursive::{
+    traits::*,
+    view::Selector
+    };
 use self::cursive::views::{
     Dialog,
     EditView,
@@ -77,7 +80,7 @@ impl TagCursive {
 
 pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     let mut siv = Cursive::new();
-    let tags = Vec::<&str>::new();
+    let mut tags = Vec::<&str>::new();
     // static mut tagBag: Vec<&str> = vec![];
     // NOTE: No real idea why this works but nothing works without it
     // - see https://stackoverflow.com/a/28521985/935470
@@ -87,6 +90,10 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     // let seen_content = RefCell::new(content);
 
     // let shared = Rc::new(&TextContent::new("Original"));
+
+    let mutContent = TextContent::new("Original");
+    let mutCon = Rc::new(RefCell::new(mutContent));
+    let m2Con = &mutCon.clone();
 
     // let fuck = (&seen_content).borrow();
     // let seen_more = RefCell::new(&seen_content);
@@ -126,13 +133,13 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
                     .padding((1, 1, 1, 0))
                     .content(
                         EditView::new()
-                            // .on_submit(show_popup)
+                            .on_submit(show_popup)
                             .with_id("tag")
                             .fixed_width(20),
                     )
                     // .button("Ok", |s| {
-                    .button("Ok", |s: &mut Cursive| {
-                    // .button("Ok", move |s: &mut Cursive| {
+                    // .button("Ok", |s: &mut Cursive| {
+                    .button("Ok", move |s: &mut Cursive| {
                         let name = s.call_on_id(
                             "tag",
                             |view: &mut EditView| view.get_content(),
@@ -143,7 +150,7 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
                         my_vec.push("name");
                         let mut my_tc = STAT_TC.write().unwrap();
                         // my_tc.append("name");
-                        my_tc.append(Rc::try_unwrap(name).unwrap());
+                        // my_tc.append(Rc::try_unwrap(name).unwrap());
 
                         // &shared.clone();
                         // Rc::try_unwrap(&shared.clone()).unwrap_or(
@@ -151,10 +158,16 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
                         // );
 
                         // boxContent.pu
+                        let nutCon = mutCon.clone();
+                        let mut b1 = nutCon.borrow_mut();
+                        // b1.append("hey");
+                        // let mut b2 = RefMut::map(b1, move |&mut t| &mut t.append("hellsbells") );
+                        show_next_screen(s, &name.clone().deref(), &mut b1);
+
 
                         // let mut borrowed = seen_cell.borrow_mut();
                         // borrowed.push("fuck");
-                        // &tags.push("fuck");
+                        // tags.push("fuck");
 
                         // let mut borrowed_content = seen_content.borrow_mut();
 
@@ -173,7 +186,7 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
                         // let t = &mut tags;
                         // t.push(name);
                         // show_popup_tags(s, &name, &mut tags);
-                    }),
+                    }).with_id("dialog"),
             )
             .child(
                 TextView::new_with_content(
@@ -182,14 +195,21 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
                     // *Rc::try_unwrap(shared.clone()).unwrap_or(
                     //     &TextContent::new("Hey Man")
                     // )
+
+                    // {
+                    //     let temp = STAT_TC.read().unwrap();
+                    //     // let tc: &TextContent = STAT_TC.read().unwrap();
+                    //     // let tc: &TextContent = STAT_TC.read().unwrap();
+                    //     // tc.clone()
+                    //     temp.clone()
+                    //     // tc.get_content()
+                    //     // tc
+                    // }
                     {
-                        let temp = STAT_TC.read().unwrap();
-                        // let tc: &TextContent = STAT_TC.read().unwrap();
-                        // let tc: &TextContent = STAT_TC.read().unwrap();
-                        // tc.clone()
-                        temp.clone()
-                        // tc.get_content()
-                        // tc
+                        // let x1 =  Rc::clone(& mutCon);
+                        let x1 = m2Con.borrow();
+                        // TextContent::new("Hey Man")
+                        x1.deref().clone()
                     }
 
                     // (&seen_content).as_ptr() as TextContent
@@ -205,7 +225,8 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
 
                     // content
                     // borrowed_content
-                )
+                ).with_id("tagList")
+
                 // ListView::new()
                     // .child("-----")
             )
@@ -224,7 +245,21 @@ fn show_next_screen(s: &mut Cursive, name: &str, c: &mut TextContent) {
     if name.is_empty() {
         s.add_layer(Dialog::info("Please enter a name!"));
     } else {
-        c.set_content(name);
+        c.append("\n");
+        c.append(name);
+        s.call_on_id("tag",
+            |view: &mut EditView|
+                {
+                    view.set_content("")
+                    // view.set_cursor(0)
+                }).unwrap();
+        // s.focus_id("tag").unwrap();
+        s.focus(&Selector::Id("tag"));
+        // s.focus_id("dialog").unwrap();
+        // s.call_on_id(
+        //     "tag",
+        //     |view: &mut EditView| view.set_cursor(0),
+        // ).unwrap();
     }
 }
 
