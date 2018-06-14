@@ -31,6 +31,8 @@ fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
             .about("lists all git repos on your machine [the default]"))
         .subcommand(SubCommand::with_name("list-tags")
             .about("lists all tags on your machine [the default]"))
+        .subcommand(SubCommand::with_name("add-tags")
+            .about("add tags on your machine [the default]"))
         .subcommand(SubCommand::with_name("tag")
             .about("tag a single git repo")
                 .arg(Arg::with_name("tag_arg")

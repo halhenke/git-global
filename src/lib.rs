@@ -41,15 +41,18 @@
 
 extern crate app_dirs;
 extern crate chrono;
+extern crate walkdir;
+extern crate tui;
+extern crate git2;
+extern crate mut_static;
 #[macro_use]
 extern crate clap;
-extern crate git2;
 #[macro_use]
 extern crate json;
 #[macro_use]
 extern crate serde_derive;
-extern crate walkdir;
-extern crate tui;
+#[macro_use]
+extern crate lazy_static;
 
 
 mod cli;
