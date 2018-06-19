@@ -144,8 +144,12 @@ impl GitGlobalConfig {
             .collect()
     }
 
-    fn print_tags(&self) {
+    pub fn print_tags(&self) {
         println!("Tags:");
+        if self.tags.is_empty() {
+            println!("You have no tags defined as yet");
+            return;
+        }
         for tag in &self.tags {
             println!("{}", tag.name);
         }

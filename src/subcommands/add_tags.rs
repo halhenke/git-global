@@ -33,6 +33,8 @@ use super::super::{GitGlobalConfig, RepoTag, GitGlobalResult, get_repos};
 
 use mut_static::MutStatic;
 
+type RMut = Rc<RefCell<TextContent>>;
+
 lazy_static! {
     pub static ref STAT_TAG: MutStatic<Vec<&'static str>> = {
         return MutStatic::from(vec![]);
@@ -94,7 +96,9 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     let mutContent = TextContent::new("Original");
     let mutCon = Rc::new(RefCell::new(mutContent));
     let m2Con = &mutCon.clone();
-    let m3Con = m2Con.clone();
+    // let m3Con = m2Con.clone();
+    let m3Con = Rc::clone(&mutCon);
+    let m4Con = Rc::clone(&mutCon);
 
     // let fuck = (&seen_content).borrow();
     // let seen_more = RefCell::new(&seen_content);
@@ -121,6 +125,8 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
         //     "tag",
         //     |view: &mut EditView| view.get_content(),
         // ).unwrap();
+        println!("editCB was called...");
+
         let nutCon = m3Con.clone();
         let mut b1 = nutCon.borrow_mut();
         show_next_screen(s, &name.clone().deref(), &mut b1);
@@ -153,9 +159,11 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
                             .with_id("tag")
                             .fixed_width(20),
                     )
-                    .button("q",  move |s: &mut Cursive| {
-                        // s.pop_layer()
-                        s.quit()
+                    .button("q", move |s: &mut Cursive| {
+                        // s.quit()
+                        println!("q was called...");
+                        // println!("we are going with {:?}", &m4Con);
+                        save_tags_and_quit(s, &m4Con);
                     })
                     // .button("Ok", |s| {
                     // .button("Ok", |s: &mut Cursive| {
@@ -164,6 +172,9 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
                             "tag",
                             |view: &mut EditView| view.get_content(),
                         ).unwrap();
+
+                        println!("OK was called...");
+
 
                         // let mut tag = STAT_TAG.push("name");
                         let mut my_vec = STAT_TAG.write().unwrap();
@@ -209,44 +220,8 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
             .child(
                 TextView::new_with_content(
                     // TextContent::new("Hey Man")
-                    // **shared.clone().deref()
-                    // *Rc::try_unwrap(shared.clone()).unwrap_or(
-                    //     &TextContent::new("Hey Man")
-                    // )
-
-                    // {
-                    //     let temp = STAT_TC.read().unwrap();
-                    //     // let tc: &TextContent = STAT_TC.read().unwrap();
-                    //     // let tc: &TextContent = STAT_TC.read().unwrap();
-                    //     // tc.clone()
-                    //     temp.clone()
-                    //     // tc.get_content()
-                    //     // tc
-                    // }
-                    {
-                        // let x1 =  Rc::clone(& mutCon);
-                        let x1 = m2Con.borrow();
-                        // TextContent::new("Hey Man")
-                        x1.deref().clone()
-                    }
-
-                    // (&seen_content).as_ptr() as TextContent
-                    // (&seen_content).into_inner()
-                    // (ref (&seen_content).borrow_mut())
-                    // (&content).clone()
-                    // (&seen_content).borrow()
-                    // *fuck
-                    // other_content.borrow().deref() as TextContent
-                    // other_content.into_inner().clone()
-                    // other_content.deref().borrow()
-                    // fuck.deref().clone()
-
-                    // content
-                    // borrowed_content
+                    m2Con.borrow().deref().clone()
                 ).with_id("tagList")
-
-                // ListView::new()
-                    // .child("-----")
             )
     );
 
@@ -254,6 +229,26 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     // cursor.siv.run();
 
     Ok(GitGlobalResult::new(&vec![]))
+}
+
+fn save_tags_and_quit(s: &mut Cursive, tags: &RMut) {
+    println!("wtf???");
+    let mut user_config = GitGlobalConfig::new();
+    let tagList: String = tags.borrow().deref().get_content().source().to_string();
+    println!("i have some tags");
+    user_config.add_tags(
+        // tagList.split("\n").skip(1).collect()
+        tagList
+            .lines()
+            .skip(1)
+            // .by_ref()
+            .map(|s| s.to_string())
+            .collect()
+        // tagList.lines().skip(1).collect::Vec<String>()
+    );
+    println!("About to print tags");
+    user_config.print_tags();
+    s.quit();
 }
 
 fn show_next_screen(s: &mut Cursive, name: &str, c: &mut TextContent) {
@@ -272,7 +267,7 @@ fn show_next_screen(s: &mut Cursive, name: &str, c: &mut TextContent) {
                     // view.set_cursor(0)
                 }).unwrap();
         // s.focus_id("tag").unwrap();
-        s.focus(&Selector::Id("tag"));
+        s.focus(&Selector::Id("tag")).expect("thing");
         // s.focus_id("dialog").unwrap();
         // s.call_on_id(
         //     "tag",
@@ -300,28 +295,3 @@ fn show_popup(s: &mut Cursive, name: &str) {
     }
 }
 
-// fn show_popup_tags<'a> (s: &mut Cursive, name: &'a str, tags: &'a mut Vec<&'a str>) {
-//     let t = tags;
-//     t.push(name);
-
-
-//     if name.is_empty() {
-//         s.add_layer(Dialog::info("Please enter a name!"));
-//     } else {
-//         let content = format!("Hello {}!", name);
-//         s.pop_layer();
-//         s.add_layer(Dialog::around(TextView::new(content))
-//             .button("Quit", |s| s.quit()));
-//     }
-// }
-
-
-// // Let's put the callback in a separate function to keep it clean,
-// // but it's not required.
-// fn show_next_window(siv: &mut Cursive, city: &str) {
-//     siv.pop_layer();
-//     let text = format!("{} is a great city!", city);
-//     siv.add_layer(
-//         Dialog::around(TextView::new(text)).button("Quit", |s| s.quit()),
-//     );
-// }
