@@ -25,7 +25,7 @@ path = "src/main.rs"
 app_dirs = "1.2.1"
 clap = "2"
 chrono = "0.3"
-colored = "1.6.0"
+colored = "1.6.1"
 cursive = "0.8.2"
 itertools = "0.7.3"
 json = "0.11"
@@ -33,7 +33,7 @@ lazy_static = "1.0.1"
 mut_static = "5.0.0"
 tui = "0.2.1"
 termion = "1.5.1"
-walkdir = "2.1.4"
+walkdir = "2.2.0"
 github-gql-rs = "0.0.1"
 serde = "1.0.66"
 serde_derive = "1.0.66"
@@ -43,7 +43,7 @@ pipeline = "0.5.0"
 rustfix = "0.4.2"
 
 [dependencies.git2]
-version = "0.6"
+version = "0.7.5"
 default-features = false  # don't want SSH/HTTPS/Curl
 
 [dev-dependencies]
