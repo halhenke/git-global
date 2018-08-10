@@ -40,10 +40,11 @@ serde_derive = "1.0.66"
 serde_json = "1.0.17"
 strfmt = "0.1.6"
 pipeline = "0.5.0"
-
-[dev-dependencies]
-tempdir = "0.3"
+rustfix = "0.4.2"
 
 [dependencies.git2]
 version = "0.6"
 default-features = false  # don't want SSH/HTTPS/Curl
+
+[dev-dependencies]
+tempdir = "0.3"
