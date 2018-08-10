@@ -81,8 +81,16 @@ impl TagCursive {
 // }
 
 pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
-    let mut siv = Cursive::new();
+
+    println!("ADD TAGS -  GOOOO: did we get here - 0");
+
+    // let mut siv = Cursive::new();
+    println!("ADD TAGS -  GOOOO: did we get here - 1");
+
     let mut tags = Vec::<&str>::new();
+
+    println!("ADD TAGS -  GOOOO: did we get here - 1");
+
     // static mut tagBag: Vec<&str> = vec![];
     // NOTE: No real idea why this works but nothing works without it
     // - see https://stackoverflow.com/a/28521985/935470
@@ -110,6 +118,7 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
 
     // STAT_TC.set(TextContent::new("hello")).unwrap();
 
+    println!("ADD TAGS: did we get here - 3");
 
 
     // let tags = &mut Vec::<&str>::new();
@@ -144,89 +153,94 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     // Create a dialog with an edit text and a button.
     // The user can either hit the <Ok> button,
     // or press Enter on the edit text.
-    siv.add_layer(
-    // cursor.siv.add_layer(
-        LinearLayout::vertical()
-            .child(
-                Dialog::new()
-                    .title("Add a Tag...")
-                    .padding((1, 1, 1, 0))
-                    .content(
-                        EditView::new()
-                            // .on_submit(show_popup)
-                            .on_submit(editCB)
-                            // .on_submit(Rc::try_unwrap(ec2).expect())
-                            .with_id("tag")
-                            .fixed_width(20),
-                    )
-                    .button("q", move |s: &mut Cursive| {
-                        // s.quit()
-                        println!("q was called...");
-                        // println!("we are going with {:?}", &m4Con);
-                        save_tags_and_quit(s, &m4Con);
-                    })
-                    // .button("Ok", |s| {
-                    // .button("Ok", |s: &mut Cursive| {
-                    .button("Ok", move |s: &mut Cursive| {
-                        let name = s.call_on_id(
-                            "tag",
-                            |view: &mut EditView| view.get_content(),
-                        ).unwrap();
+    // siv.add_layer(
+    // // cursor.siv.add_layer(
+    //     LinearLayout::vertical()
+    //         .child(
+    //             Dialog::new()
+    //                 .title("Add a Tag...")
+    //                 .padding((1, 1, 1, 0))
+    //                 .content(
+    //                     EditView::new()
+    //                         // .on_submit(show_popup)
+    //                         .on_submit(editCB)
+    //                         // .on_submit(Rc::try_unwrap(ec2).expect())
+    //                         .with_id("tag")
+    //                         .fixed_width(20),
+    //                 )
+    //                 .button("q", move |s: &mut Cursive| {
+    //                     // s.quit()
+    //                     println!("q was called...");
+    //                     // println!("we are going with {:?}", &m4Con);
+    //                     save_tags_and_quit(s, &m4Con);
+    //                 })
+    //                 // .button("Ok", |s| {
+    //                 // .button("Ok", |s: &mut Cursive| {
+    //                 .button("Ok", move |s: &mut Cursive| {
+    //                     let name = s.call_on_id(
+    //                         "tag",
+    //                         |view: &mut EditView| view.get_content(),
+    //                     ).unwrap();
 
-                        println!("OK was called...");
-
-
-                        // let mut tag = STAT_TAG.push("name");
-                        let mut my_vec = STAT_TAG.write().unwrap();
-                        my_vec.push("name");
-                        let mut my_tc = STAT_TC.write().unwrap();
-                        // my_tc.append("name");
-                        // my_tc.append(Rc::try_unwrap(name).unwrap());
-
-                        // &shared.clone();
-                        // Rc::try_unwrap(&shared.clone()).unwrap_or(
-                        //     &TextContent::new("Hey Man")
-                        // );
-
-                        let nutCon = mutCon.clone();
-                        let mut b1 = nutCon.borrow_mut();
-                        show_next_screen(s, &name.clone().deref(), &mut b1);
-                        // &editCB(s, &name.clone().deref());
+    //                     println!("OK was called...");
 
 
-                        // let mut borrowed = seen_cell.borrow_mut();
-                        // borrowed.push("fuck");
-                        // tags.push("fuck");
+    //                     // let mut tag = STAT_TAG.push("name");
+    //                     let mut my_vec = STAT_TAG.write().unwrap();
+    //                     my_vec.push("name");
+    //                     let mut my_tc = STAT_TC.write().unwrap();
+    //                     // my_tc.append("name");
+    //                     // my_tc.append(Rc::try_unwrap(name).unwrap());
 
-                        // let mut borrowed_content = seen_content.borrow_mut();
+    //                     // &shared.clone();
+    //                     // Rc::try_unwrap(&shared.clone()).unwrap_or(
+    //                     //     &TextContent::new("Hey Man")
+    //                     // );
 
-                        // show_next_screen(s, &name, borrowed_content);
-                        // show_next_screen(s, &name, boxContent);
-                        // show_next_screen(s, &name, &mut boxContent.deref_mut());
+    //                     let nutCon = mutCon.clone();
+    //                     let mut b1 = nutCon.borrow_mut();
+    //                     show_next_screen(s, &name.clone().deref(), &mut b1);
+    //                     // &editCB(s, &name.clone().deref());
 
-                        // show_popup(s, &name);
+
+    //                     // let mut borrowed = seen_cell.borrow_mut();
+    //                     // borrowed.push("fuck");
+    //                     // tags.push("fuck");
+
+    //                     // let mut borrowed_content = seen_content.borrow_mut();
+
+    //                     // show_next_screen(s, &name, borrowed_content);
+    //                     // show_next_screen(s, &name, boxContent);
+    //                     // show_next_screen(s, &name, &mut boxContent.deref_mut());
+
+    //                     // show_popup(s, &name);
 
 
-                        // &tags.push(&String::from("fuck"));
-                        // &tags.push(&String::from("fuck"));
+    //                     // &tags.push(&String::from("fuck"));
+    //                     // &tags.push(&String::from("fuck"));
 
-                        // &cursor.tags.push(String::from("fuck"));
-                        // tags.push(name.clone());
-                        // let t = &mut tags;
-                        // t.push(name);
-                        // show_popup_tags(s, &name, &mut tags);
-                    }).with_id("dialog"),
-            )
-            .child(
-                TextView::new_with_content(
-                    // TextContent::new("Hey Man")
-                    m2Con.borrow().deref().clone()
-                ).with_id("tagList")
-            )
-    );
+    //                     // &cursor.tags.push(String::from("fuck"));
+    //                     // tags.push(name.clone());
+    //                     // let t = &mut tags;
+    //                     // t.push(name);
+    //                     // show_popup_tags(s, &name, &mut tags);
+    //                 }).with_id("dialog"),
+    //         )
+    //         .child(
+    //             TextView::new_with_content(
+    //                 // TextContent::new("Hey Man")
+    //                 m2Con.borrow().deref().clone()
+    //             ).with_id("tagList")
+    //         )
+    // );
 
-    siv.run();
-    // cursor.siv.run();
+    // siv.run();
+    println!("ADD TAGS: called - 33");
+
+    let gc = GitGlobalConfig::new();
+    println!("ADD TAGS: called - 34");
+
+    gc.write_tags();
 
     Ok(GitGlobalResult::new(&vec![]))
 }
@@ -234,21 +248,40 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
 fn save_tags_and_quit(s: &mut Cursive, tags: &RMut) {
     println!("wtf???");
     let mut user_config = GitGlobalConfig::new();
-    let tagList: String = tags.borrow().deref().get_content().source().to_string();
-    println!("i have some tags");
+    let mut tagList: String = tags
+        .borrow()
+        .deref()
+        .get_content()
+        .source()
+        .to_string();
+    // println!("i have some tags");
+
+    s.call_on_id("tag",
+        |view: &mut EditView|
+            {
+                &tagList.push_str("abra-cadabra");
+                let po = &tagList.clone();
+                view.set_content(po.to_string());
+                // view.append("abra-cadabra");
+                // view.set_cursor(0)
+            }).unwrap();
+    let tagListList = tagList
+        .lines()
+        .skip(1)
+        // .by_ref()
+        .map(|s| s.to_string())
+        .collect();
+    println!("About to print tags");
+    println!("tags are: {:?}", &tagListList);
     user_config.add_tags(
+        tagListList
         // tagList.split("\n").skip(1).collect()
-        tagList
-            .lines()
-            .skip(1)
-            // .by_ref()
-            .map(|s| s.to_string())
-            .collect()
         // tagList.lines().skip(1).collect::Vec<String>()
     );
-    println!("About to print tags");
-    user_config.print_tags();
-    s.quit();
+    user_config.write_tags();
+    // user_config.print_tags();
+    // s.quit();
+    s.cb_sink().send(Box::new(|siv: &mut Cursive| siv.quit()));
 }
 
 fn show_next_screen(s: &mut Cursive, name: &str, c: &mut TextContent) {

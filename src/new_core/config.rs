@@ -1,7 +1,7 @@
 extern crate colored;
 use std::env;
 use std::path::{PathBuf, Path};
-use std::io::{BufReader, Read, Write, Result};
+use std::io::{Read, Write, Result};
 use std::fs::{File, remove_file};
 use app_dirs::{AppInfo, AppDataType, app_dir, get_app_dir};
 use walkdir::{DirEntry};
@@ -32,6 +32,36 @@ pub struct GitGlobalConfig {
     pub cache_file: PathBuf,
     pub tags_file: PathBuf,
 }
+
+#[derive(Serialize, Deserialize, Debug)]
+struct RepoTagCache {
+    repos: Vec<Repo>,
+    tags: Vec<RepoTag>,
+}
+
+impl RepoTagCache {
+    fn new(repos: &Vec<Repo>, tags: &Vec<RepoTag>) -> RepoTagCache {
+        RepoTagCache {
+            repos: repos.clone(),
+            tags: tags.clone(),
+        }
+    }
+}
+
+// #[derive(Serialize, Deserialize, Debug)]
+// struct RepoTagCache<'a> {
+//     repos: &'a Vec<Repo>,
+//     tags: &'a Vec<RepoTag>,
+// }
+
+// impl<'a> RepoTagCache<'a> {
+//     fn new(repos: &'a Vec<Repo>, tags: &'a Vec<RepoTag>) -> RepoTagCache<'a> {
+//         RepoTagCache {
+//             repos,
+//             tags
+//         }
+//     }
+// }
 
 impl GitGlobalConfig {
     // pub fn new() -> Result<GitGlobalConfig, Error> {
@@ -170,6 +200,41 @@ impl GitGlobalConfig {
         self.get_cached_repos().len() == 0
     }
 
+    pub fn write_tags(&self) {
+        println!("WRITING TAGS: called");
+
+        if !self.cache_file.as_path().exists() {
+            // Try to create the cache directory if the cache *file* doesn't
+            // exist; app_dir() handles an existing directory just fine.
+            match app_dir(AppDataType::UserCache, &APP, "cache") {
+                Ok(_) => (),
+                Err(e) => panic!("Could not create cache directory: {}", e),
+            }
+        }
+        println!("WRITING TAGS: called - 2");
+
+        let mut f = File::create(&self.cache_file).expect("Could not create cache file.");
+        let repos = self.get_cached_repos();
+
+        println!("WRITING TAGS: called - 3");
+
+
+        type RepoTagTuple<'a> = (&'a Vec<Repo>, &'a Vec<RepoTag>);
+        let wowser: RepoTagTuple = (&repos, &self.tags);
+
+        println!("WRITING TAGS: repos:\n{:?}", &repos);
+
+        let rt: RepoTagCache = RepoTagCache::new(&repos, &self.tags);
+        let serialized = serde_json::to_string(&rt).unwrap();
+
+        // let serialized = serde_json::to_string(&wowser).expect("here we fail?");
+
+        println!("WRITING TAGS: SERIALIZED:\n{}", serialized);
+
+
+        f.write_all(serialized.as_bytes()).expect("Problem writing cache file");
+    }
+
     /// Writes the given repo paths to the cache file.
     pub fn cache_repos(&self, repos: &Vec<Repo>) {
         if !self.cache_file.as_path().exists() {
@@ -182,14 +247,30 @@ impl GitGlobalConfig {
         }
         let mut f = File::create(&self.cache_file).expect("Could not create cache file.");
 
+        type RepoTagTuple<'a> = (&'a Vec<Repo>, &'a Vec<RepoTag>);
+
+
+        let thing: RepoTagTuple = (&repos, &self.tags);
+
         // let serialized = serde_json::to_string(&repos).unwrap();
-        let serialized = serde_json::to_string(&(&repos, &self.tags)).unwrap();
+        // let serialized = serde_json::to_string(&(&repos, &self.tags)).unwrap();
+
+        let rt: RepoTagCache = RepoTagCache::new(repos, &self.tags);
+        let serialized = serde_json::to_string(&rt).unwrap();
+
+        // let serialized = serde_json::to_string(&(&repos, &self.tags)).unwrap();
+
+        println!("CACHING REPOS: SERIALIZED:\n{}", &serialized);
+
+        // f.write_all("serialized is nearilalized".as_bytes()).expect("Problem writing cache file");
 
         f.write_all(serialized.as_bytes()).expect("Problem writing cache file");
     }
 
     /// Returns the list of repos found in the cache file.
     pub fn get_cached_repos(&self) -> Vec<Repo> {
+        println!("GET CACHED REPOS - 0");
+
         let mut repos = Vec::new();
         if self.cache_file.as_path().exists() {
             let mut f = File::open(&self.cache_file).expect("Could not open cache file.");
@@ -202,13 +283,41 @@ impl GitGlobalConfig {
             // f.read_to_end().unwrap();
 
             // println!("{:?}", reader);
+            println!("GET CACHED REPOS - 1");
 
             type RepoTagTuple = (Vec<Repo>, Vec<RepoTag>);
+            // type RepoTagTuple<'a> = (&'a Vec<Repo>, &'a Vec<RepoTag>);
+
 
             // repos = serde_json::from_slice(reader).unwrap();
 
-            let serialized: RepoTagTuple = serde_json::from_slice(reader).unwrap();
-            repos = serialized.0;
+            // let spare: RepoTagTuple = (vec![], vec![]);
+
+            // println!("GET CACHED REPOS - READER\n{:?}", &reader);
+
+
+            // let oo: RepoTagTuple = serde_json::from_slice(reader)
+            //     .unwrap();
+            //     // .expect("disaster!!!!");
+
+            // println!("GET CACHED REPOS - READER\n{:?}", &oo);
+
+            // use std::alloc::vec::Vec;
+
+            println!("reader is {}", String::from_utf8(reader.clone()).expect("more"));
+
+            println!("GET CACHED REPOS - 2");
+
+            let serialized: RepoTagCache = serde_json::from_slice(reader)
+                .unwrap();
+            // let serialized: RepoTagTuple = serde_json::from_slice(reader)
+                // .expect("dont fail");
+
+            println!("GET CACHED REPOS - 3");
+
+            let repos: Vec<Repo> = serialized.repos;
+            // repos = *serialized.0;
+
             // let serialized = serde_json::to_string(&(&repos, &self.tags)).unwrap();
             // println!("{}", test_ser);
             // let (fake_repos: Vec<Repo> , fake_tags: Vec<RepoTag>) = serde_json::from_str(&test_ser).unwrap();
