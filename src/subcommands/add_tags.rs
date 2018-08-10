@@ -94,19 +94,19 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     // static mut tagBag: Vec<&str> = vec![];
     // NOTE: No real idea why this works but nothing works without it
     // - see https://stackoverflow.com/a/28521985/935470
-    let seen_cell = RefCell::new(tags);
+    let _seen_cell = RefCell::new(tags);
     let content = TextContent::new("Original");
-    let seen_content = Rc::new(RefCell::new(content));
+    let _seen_content = Rc::new(RefCell::new(content));
     // let seen_content = RefCell::new(content);
 
     // let shared = Rc::new(&TextContent::new("Original"));
 
     let mutContent = TextContent::new("Original");
     let mutCon = Rc::new(RefCell::new(mutContent));
-    let m2Con = &mutCon.clone();
+    let _m2Con = &mutCon.clone();
     // let m3Con = m2Con.clone();
     let m3Con = Rc::clone(&mutCon);
-    let m4Con = Rc::clone(&mutCon);
+    let _m4Con = Rc::clone(&mutCon);
 
     // let fuck = (&seen_content).borrow();
     // let seen_more = RefCell::new(&seen_content);
@@ -114,7 +114,7 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     // let other_content = Rc::clone(&seen_content);
 
     let mut moreContent  = TextContent::new("Original");
-    let boxContent = Box::new(moreContent);
+    let _boxContent = Box::new(moreContent);
 
     // STAT_TC.set(TextContent::new("hello")).unwrap();
 
@@ -129,7 +129,7 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     // let mut siv = cursor.siv;
     // let tags = cursor.tags;
 
-    let editCB = move |s: &mut Cursive, name: &str| {
+    let _editCB = move |s: &mut Cursive, name: &str| {
         // let name = s.call_on_id(
         //     "tag",
         //     |view: &mut EditView| view.get_content(),
@@ -315,7 +315,7 @@ fn show_popup(s: &mut Cursive, name: &str) {
         s.add_layer(Dialog::info("Please enter a name!"));
     } else {
         // c.set_content(name);
-        let content = format!("Hello {}!", name);
+        let _content = format!("Hello {}!", name);
         s.call_on_id("tag",
             |view: &mut EditView|
                 {

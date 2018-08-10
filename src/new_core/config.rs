@@ -220,7 +220,7 @@ impl GitGlobalConfig {
 
 
         type RepoTagTuple<'a> = (&'a Vec<Repo>, &'a Vec<RepoTag>);
-        let wowser: RepoTagTuple = (&repos, &self.tags);
+        let _wowser: RepoTagTuple = (&repos, &self.tags);
 
         println!("WRITING TAGS: repos:\n{:?}", &repos);
 
@@ -250,7 +250,7 @@ impl GitGlobalConfig {
         type RepoTagTuple<'a> = (&'a Vec<Repo>, &'a Vec<RepoTag>);
 
 
-        let thing: RepoTagTuple = (&repos, &self.tags);
+        let _thing: RepoTagTuple = (&repos, &self.tags);
 
         // let serialized = serde_json::to_string(&repos).unwrap();
         // let serialized = serde_json::to_string(&(&repos, &self.tags)).unwrap();
@@ -315,7 +315,7 @@ impl GitGlobalConfig {
 
             println!("GET CACHED REPOS - 3");
 
-            let repos: Vec<Repo> = serialized.repos;
+            let _repos: Vec<Repo> = serialized.repos;
             // repos = *serialized.0;
 
             // let serialized = serde_json::to_string(&(&repos, &self.tags)).unwrap();

@@ -47,7 +47,7 @@ impl<'a> Selectable<'a> {
 
 
 pub fn go() -> WeirdResult<GitGlobalResult> {
-    let mut sel = Selectable{
+    let mut _sel = Selectable{
         selections: [
             "Choice 1",
             "Choice 2",
@@ -89,12 +89,12 @@ pub fn go() -> WeirdResult<GitGlobalResult> {
     //     String::from("Choice 3"),
     // ];
 
-    let content = "
+    let _content = "
     Choice 1
     Choice 2
     Choice 3";
 
-    let global_git = GitGlobalConfig::new();
+    let _global_git = GitGlobalConfig::new();
     let repos = get_repos();
     let r_tags: Vec<&str> = repos
         .iter()
