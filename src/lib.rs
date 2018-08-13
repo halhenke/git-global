@@ -57,13 +57,24 @@ extern crate lazy_static;
 
 mod cli;
 mod core;
-pub mod new_core;
-pub use new_core::errors;
-pub mod subcommands;  // Using `pub mod` so we see the docs.
+// pub use core;
+// pub use core::errors;
+// pub use core::config;
+// pub use core::result;
+
+mod subcommands;  // Using `pub mod` so we see the docs.
 #[macro_use]
 pub mod macros;
 
 pub use cli::run_from_command_line;
-pub use core::{GitGlobalConfig, GitGlobalResult, Repo, get_repos, RepoTag, get_tagged_repos};
-pub use errors::Result;
-pub use errors::GitGlobalError;
+
+// pub use core::{
+//     GitGlobalConfig,
+//     GitGlobalResult,
+//     Repo,
+//     get_repos,
+//     RepoTag,
+//     get_tagged_repos
+// };
+// pub use core::Result;
+// pub use core::GitGlobalError;

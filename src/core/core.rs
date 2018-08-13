@@ -5,9 +5,9 @@
 
 
 use std::fmt;
-pub use new_core::repo::{Repo, RepoTag};
-pub use new_core::result::{GitGlobalResult};
-pub use new_core::config::{GitGlobalConfig};
+pub use core::repo::{Repo, RepoTag};
+pub use core::result::{GitGlobalResult};
+pub use core::config::{GitGlobalConfig};
 
 use walkdir::{WalkDir};
 

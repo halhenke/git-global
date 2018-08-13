@@ -6,7 +6,7 @@ use std::path::PathBuf;
 use std::time::SystemTime;
 
 use core::{GitGlobalConfig, GitGlobalResult, get_repos};
-use errors::Result;
+use core::errors::Result;
 
 /// Returns the age of a file in terms of days, hours, minutes, and seconds.
 fn get_age(filename: PathBuf) -> Option<String> {

@@ -2,7 +2,7 @@
 
 use core::{GitGlobalResult, RepoTag, get_tagged_repos};
 use clap::{Arg, App, SubCommand, Values};
-use errors::Result;
+use core::errors::Result;
 use subcommands::utilities::{print_str_pat};
 
 /// Forces the display of each repo path, without any extra output.

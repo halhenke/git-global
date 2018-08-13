@@ -12,10 +12,10 @@ use self::cursive::event::EventResult;
 use self::cursive::traits::*;
 use self::cursive::views::{Dialog, OnEventView, SelectView, TextView};
 
-use errors::Result as WeirdResult;
+use core::errors::Result as WeirdResult;
 
 
-use super::super::{GitGlobalConfig, RepoTag, GitGlobalResult, get_repos};
+use core::{GitGlobalConfig, RepoTag, GitGlobalResult, get_repos};
 
 #[derive(Debug)]
 struct Selectable<'a> {

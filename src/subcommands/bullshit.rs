@@ -16,7 +16,7 @@ use std::io::Read;
 use std::fs::File;
 
 use core::{GitGlobalResult, get_repos};
-use errors::Result;
+use core::errors::Result;
 
 fn get_query(owner: &str, name: &str) -> String {
 // fn get_query(owner: &str, name: &str) -> Value {

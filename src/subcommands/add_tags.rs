@@ -27,9 +27,9 @@ use self::cursive::views::{
     TextContent,
     TextView
 };
-use errors::Result as WeirdResult;
+use core::errors::Result as WeirdResult;
 
-use super::super::{GitGlobalConfig, RepoTag, GitGlobalResult, get_repos};
+use core::{GitGlobalConfig, RepoTag, GitGlobalResult, get_repos};
 
 use mut_static::MutStatic;
 

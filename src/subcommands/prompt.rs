@@ -12,11 +12,11 @@ extern crate termion;
 use self::termion::event;
 use self::termion::input::TermRead;
 
-use errors::Result as WeirdResult;
+use core::errors::Result as WeirdResult;
 
 #[macro_use]
 use macros::hash_num;
-use super::super::{GitGlobalResult};
+use core::{GitGlobalResult};
 // use super::super::{GitGlobalResult, RepoTag, get_repos, get_tagged_repos};
 
 enum Event {

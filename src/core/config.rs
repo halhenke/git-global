@@ -5,11 +5,11 @@ use std::io::{Read, Write, Result};
 use std::fs::{File, remove_file};
 use app_dirs::{AppInfo, AppDataType, app_dir, get_app_dir};
 use walkdir::{DirEntry};
+use git2;
 
 extern crate serde_json;
 
-pub use new_core::repo::{Repo, RepoTag};
-use git2;
+use core::repo::{Repo, RepoTag};
 
 
 const APP: AppInfo = AppInfo { name: "git-global", author: "peap" };
@@ -273,7 +273,8 @@ impl GitGlobalConfig {
 
         let mut repos = Vec::new();
         if self.cache_file.as_path().exists() {
-            let mut f = File::open(&self.cache_file).expect("Could not open cache file.");
+            let mut f = File::open(&self.cache_file)
+                .expect("Could not open cache file.");
 
             // let serialized = serde_json::to_string(&repos).unwrap();
 
@@ -317,6 +318,7 @@ impl GitGlobalConfig {
 
             let _repos: Vec<Repo> = serialized.repos;
             // repos = *serialized.0;
+            repos = _repos;
 
             // let serialized = serde_json::to_string(&(&repos, &self.tags)).unwrap();
             // println!("{}", test_ser);
@@ -325,7 +327,7 @@ impl GitGlobalConfig {
             // println!("REPOS!!!!: {:?}", fake_repos.0);
             // println!("TAGS!!!!: {:?}", fake_repos.1);
 
-            // println!("{:?}", repos);
+            println!("repos length is {:?}", &repos.len());
 
             // repos = serde_json::from_reader(reader).unwrap();
 

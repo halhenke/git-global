@@ -5,7 +5,8 @@ use clap::{Arg, App, SubCommand};
 
 
 use core::GitGlobalResult;
-use errors::GitGlobalError;
+// use core::GitGlobalResult;
+use core::GitGlobalError;
 use subcommands;
 
 /// Returns the definitive clap::App instance for git-global.
@@ -100,9 +101,12 @@ pub fn run_from_command_line() -> i32 {
 
 /// Writes results to STDOUT, as either text or JSON, and returns `0`.
 fn show_results(results: GitGlobalResult, use_json: bool) -> i32 {
+    // println!("SHOW RESULTS");
     if use_json {
+        // println!("SHOW RESULTS - json");
         results.print_json();
     } else {
+        // println!("SHOW RESULTS - no json");
         results.print();
     }
     0

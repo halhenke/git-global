@@ -17,9 +17,9 @@ pub type Result<T> = result::Result<T, GitGlobalError>;
 
 impl fmt::Display for GitGlobalError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        use GitGlobalError::*;
-        match *self {
-            BadSubcommand(ref cmd) => write!(f, "Unknown subcommand, {}.", cmd),
+        // use GitGlobalError::*;
+        match self {
+            GitGlobalError::BadSubcommand(ref cmd) => write!(f, "Unknown subcommand, {}.", cmd),
             Generic => write!(f, "An error occured :(."),
         }
     }
@@ -27,9 +27,9 @@ impl fmt::Display for GitGlobalError {
 
 impl Error for GitGlobalError {
     fn description(&self) -> &str {
-        use GitGlobalError::*;
-        match *self {
-            BadSubcommand(_) => "unknown subcommand",
+        // use GitGlobalError::*;
+        match self {
+            GitGlobalError::BadSubcommand(_) => "unknown subcommand",
             Generic => "an error occurred :(",
         }
     }

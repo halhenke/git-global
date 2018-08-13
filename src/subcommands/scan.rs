@@ -11,7 +11,7 @@
 //! be rerun at any time to refresh the list.
 
 use core::{GitGlobalResult, cache_repos, find_repos};
-use errors::Result;
+use core::errors::Result;
 
 /// Caches the results of `find_repos()` and says how many were found.
 pub fn get_results() -> Result<GitGlobalResult> {

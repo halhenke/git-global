@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-pub use new_core::repo::{Repo, RepoTag};
+use core::repo::{Repo, RepoTag};
 
 
 /// The result of a git-global subcommand.
@@ -56,7 +56,7 @@ impl GitGlobalResult {
         for repo in self.repos.iter() {
             let messages = self.repo_messages.get(&repo).unwrap();
             if messages.len() > 0 {
-                // println!("{}", repo);
+                println!("{}", repo);
                 for line in messages.iter().filter(|l| *l != "") {
                     println!("{}", line);
                 }
