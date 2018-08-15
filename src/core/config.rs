@@ -318,3 +318,10 @@ impl GitGlobalConfig {
         repos
     }
 }
+
+
+trait Cached {
+    fn cache_repos(&self, repos: &Vec<Repo>);
+    fn get_cache_repos(&self) -> &Vec<Repo>;
+    fn empty_cache(&self) -> bool;
+}
