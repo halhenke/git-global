@@ -26,7 +26,8 @@ fn get_query(owner: &str, name: &str) -> String {
         .into_os_string();
     let mut tok = File::open(p).unwrap();
     let mut template = String::new();
-    tok.read_to_string(&mut template);
+    tok.read_to_string(&mut template)
+        .expect("Read String fail");
     // let mut json = String::new();
     // NOTE: How do I use a non string literal as a formatter?
     // - you need to use a templating thing
@@ -50,7 +51,8 @@ pub fn get_results() -> Result<GitGlobalResult> {
         .into_os_string();
     let mut tok = File::open(p).unwrap();
     let mut json = String::new();
-    tok.read_to_string(&mut json);
+    tok.read_to_string(&mut json)
+        .expect("Read String fail");
     let tok_val: Value = serde_json::from_str(&json).unwrap();
 
     let mut gh = Github::new(&tok_val["github"].as_str().unwrap())

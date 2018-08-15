@@ -119,10 +119,11 @@ pub fn go() -> WeirdResult<GitGlobalResult> {
                 _ => {}
             },
         }
-        draw(&mut terminal, &sel);
+        draw(&mut terminal, &sel).expect("Draw fail");
     }
     terminal.clear()?;
-    terminal.show_cursor();
+    terminal.show_cursor()
+        .expect("Show Cursur fail");
 
     println!("Selected was {}", sel.selections[sel.selected]);
 
