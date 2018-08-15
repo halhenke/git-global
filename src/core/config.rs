@@ -213,8 +213,10 @@ impl GitGlobalConfig {
         }
         println!("WRITING TAGS: called - 2");
 
-        let mut f = File::create(&self.cache_file).expect("Could not create cache file.");
         let repos = self.get_cached_repos();
+
+        let mut f = File::create(&self.cache_file)
+            .expect("Could not create cache file.");
 
         println!("WRITING TAGS: called - 3");
 
