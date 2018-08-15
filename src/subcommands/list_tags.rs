@@ -10,7 +10,8 @@ pub fn get_results() -> Result<GitGlobalResult> {
 
     let user_config = GitGlobalConfig::new();
     // user_config.print_tags();
-    user_config.read_tags();
-
+    let tags = user_config.read_tags();
+    tags.into_iter()
+        .for_each(|t| println!("Your tag is {}",t ));
     Ok(result)
 }

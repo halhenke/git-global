@@ -204,7 +204,7 @@ impl GitGlobalConfig {
         self.get_cached_repos().len() == 0
     }
 
-    pub fn read_tags(&self) {
+    pub fn read_tags(&self) -> Vec<RepoTag> {
         if !self.cache_file.as_path().exists() {
             // Try to create the cache directory if the cache *file* doesn't
             // exist; app_dir() handles an existing directory just fine.
@@ -236,7 +236,8 @@ impl GitGlobalConfig {
         let _tags: &Vec<RepoTag> = &_temp.tags;
         // let _repos: &Vec<Repo> = serialized.0;
         let tags = _tags.to_vec();
-        println!("Tags are {:?}", &tags)
+        println!("Tags are {:?}", &tags);
+        tags
     }
 
     pub fn write_tags(&self) {
