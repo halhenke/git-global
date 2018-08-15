@@ -101,20 +101,20 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
 
     // let shared = Rc::new(&TextContent::new("Original"));
 
-    let mutContent = TextContent::new("Original");
-    let mutCon = Rc::new(RefCell::new(mutContent));
-    let _m2Con = &mutCon.clone();
-    // let m3Con = m2Con.clone();
-    let m3Con = Rc::clone(&mutCon);
-    let _m4Con = Rc::clone(&mutCon);
+    let mut_content = TextContent::new("Original");
+    let mut_con = Rc::new(RefCell::new(mut_content));
+    let _m2_con = &mut_con.clone();
+    // let m3_con = m2Con.clone();
+    let m3_con = Rc::clone(&mut_con);
+    let _m4_con = Rc::clone(&mut_con);
 
     // let fuck = (&seen_content).borrow();
     // let seen_more = RefCell::new(&seen_content);
     // let other_text = (&seen_content).borrow();
     // let other_content = Rc::clone(&seen_content);
 
-    let mut moreContent  = TextContent::new("Original");
-    let _boxContent = Box::new(moreContent);
+    let mut more_content  = TextContent::new("Original");
+    let _box_content = Box::new(more_content);
 
     // STAT_TC.set(TextContent::new("hello")).unwrap();
 
@@ -136,7 +136,7 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
         // ).unwrap();
         println!("editCB was called...");
 
-        let nutCon = m3Con.clone();
+        let nutCon = m3_con.clone();
         let mut b1 = nutCon.borrow_mut();
         show_next_screen(s, &name.clone().deref(), &mut b1);
     };
@@ -197,7 +197,7 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     //                     //     &TextContent::new("Hey Man")
     //                     // );
 
-    //                     let nutCon = mutCon.clone();
+    //                     let nutCon = mut_con.clone();
     //                     let mut b1 = nutCon.borrow_mut();
     //                     show_next_screen(s, &name.clone().deref(), &mut b1);
     //                     // &editCB(s, &name.clone().deref());
@@ -264,24 +264,26 @@ fn save_tags_and_quit(s: &mut Cursive, tags: &RMut) {
                 view.set_content(po.to_string());
                 // view.append("abra-cadabra");
                 // view.set_cursor(0)
-            }).unwrap();
-    let tagListList = tagList
+            }).expect("final unwrap...");
+    let tag_list_list = tagList
         .lines()
         .skip(1)
         // .by_ref()
         .map(|s| s.to_string())
         .collect();
     println!("About to print tags");
-    println!("tags are: {:?}", &tagListList);
+    println!("tags are: {:?}", &tag_list_list);
     user_config.add_tags(
-        tagListList
+        tag_list_list
         // tagList.split("\n").skip(1).collect()
         // tagList.lines().skip(1).collect::Vec<String>()
     );
     user_config.write_tags();
     // user_config.print_tags();
     // s.quit();
-    s.cb_sink().send(Box::new(|siv: &mut Cursive| siv.quit()));
+    s.cb_sink()
+        .send(Box::new(|siv: &mut Cursive| siv.quit()))
+        .expect("Dont fail here");
 }
 
 fn show_next_screen(s: &mut Cursive, name: &str, c: &mut TextContent) {
@@ -298,7 +300,7 @@ fn show_next_screen(s: &mut Cursive, name: &str, c: &mut TextContent) {
                 {
                     view.set_content("")
                     // view.set_cursor(0)
-                }).unwrap();
+                }).expect("failure");
         // s.focus_id("tag").unwrap();
         s.focus(&Selector::Id("tag")).expect("thing");
         // s.focus_id("dialog").unwrap();
@@ -321,7 +323,7 @@ fn show_popup(s: &mut Cursive, name: &str) {
                 {
                     view.set_content("")
                     // view.set_cursor(0)
-                }).unwrap();
+                }).expect("show content");
         // s.pop_layer();
         // s.add_layer(Dialog::around(TextView::new(content))
         //     .button("Quit", |s| s.quit()));
