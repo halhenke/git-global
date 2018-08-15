@@ -9,7 +9,8 @@ pub fn get_results() -> Result<GitGlobalResult> {
     let mut result = GitGlobalResult::new(&repos);
 
     let user_config = GitGlobalConfig::new();
-    user_config.print_tags();
+    // user_config.print_tags();
+    user_config.read_tags();
 
     Ok(result)
 }

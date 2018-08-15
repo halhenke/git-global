@@ -204,6 +204,41 @@ impl GitGlobalConfig {
         self.get_cached_repos().len() == 0
     }
 
+    pub fn read_tags(&self) {
+        if !self.cache_file.as_path().exists() {
+            // Try to create the cache directory if the cache *file* doesn't
+            // exist; app_dir() handles an existing directory just fine.
+            match app_dir(AppDataType::UserCache, &APP, "cache") {
+                Ok(_) => (),
+                Err(e) => panic!("Could not create cache directory: {}", e),
+            }
+        }
+        let mut f = File::open(&self.cache_file)
+            .expect("Could not create cache file.");
+        let reader = &mut Vec::new();
+        f.read_to_end(reader)
+            .expect("Couldnt read ");
+
+        // println!("WRITING TAGS: called - 3");
+
+
+        // type RepoTagTuple<'a> = (&'a Vec<Repo>, &'a Vec<RepoTag>);
+        // let _wowser: RepoTagTuple = (&repos, &self.tags);
+
+        // println!("WRITING TAGS: repos:\n{:?}", &repos);
+        // let rt: RepoTagCache = serde_json::;
+
+        // let rt: RepoTagCache = RepoTagCache::new(&repos, &self.tags);
+        // let serialized = serde_json::to_string(&rt).unwrap();
+        let _temp: RepoTagCache = serde_json::from_slice(reader)
+            .expect("Could not deserialize");
+
+        let _tags: &Vec<RepoTag> = &_temp.tags;
+        // let _repos: &Vec<Repo> = serialized.0;
+        let tags = _tags.to_vec();
+        println!("Tags are {:?}", &tags)
+    }
+
     pub fn write_tags(&self) {
         println!("WRITING TAGS: called");
 
@@ -232,12 +267,6 @@ impl GitGlobalConfig {
 
         let rt: RepoTagCache = RepoTagCache::new(&repos, &self.tags);
         let serialized = serde_json::to_string(&rt).unwrap();
-
-        // let rt: RepoTagCache = RepoTagCache::new(repos, &self.tags);
-        // let serialized = serde_json::to_string(&rt).unwrap();
-        // f.write_all(serialized.as_bytes()).expect("Problem writing cache file");
-
-        // let serialized = serde_json::to_string(&wowser).expect("here we fail?");
 
         println!("WRITING TAGS: SERIALIZED:\n{}", serialized);
 
