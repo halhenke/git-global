@@ -240,6 +240,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "dirs"
+version = "1.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "libc 0.2.42 (registry+https://github.com/rust-lang/crates.io-index)",
+ "winapi 0.3.5 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "dtoa"
 version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -349,6 +358,7 @@ dependencies = [
  "clap 2.31.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "colored 1.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "cursive 0.8.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "dirs 1.0.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "git2 0.7.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "github-gql-rs 0.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "itertools 0.7.8 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1404,6 +1414,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum crossbeam-utils 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)" = "d636a8b3bcc1b409d7ffd3facef8f21dcb4009626adbd0c5e6c4305c07253c7b"
 "checksum ct-logs 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "61cd11fb222fecf889f4531855c614548e92e8bd2eb178e35296885df5ee9a7c"
 "checksum cursive 0.8.2 (registry+https://github.com/rust-lang/crates.io-index)" = "0977cf878778c3f3b7c2ede35226ecbf59316d806bac26631ce33134bc3b0660"
+"checksum dirs 1.0.3 (registry+https://github.com/rust-lang/crates.io-index)" = "f679c09c1cf5428702cc10f6846c56e4e23420d3a88bcc9335b17c630a7b710b"
 "checksum dtoa 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)" = "09c3753c3db574d215cba4ea76018483895d7bff25a31b49ba45db21c48e50ab"
 "checksum either 1.5.0 (registry+https://github.com/rust-lang/crates.io-index)" = "3be565ca5c557d7f59e7cfcf1844f9e3033650c929c6566f511e8005f205c1d0"
 "checksum enum-map 0.2.34 (registry+https://github.com/rust-lang/crates.io-index)" = "500482533edc714a844398e2f11c3aada737ac8c7aca12c38cdab9ff4682d6c6"

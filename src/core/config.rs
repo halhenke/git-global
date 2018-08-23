@@ -7,6 +7,7 @@ use app_dirs::{AppInfo, AppDataType, app_dir, get_app_dir};
 use walkdir::{DirEntry};
 use git2;
 
+extern crate dirs;
 extern crate serde_json;
 
 use core::repo::{Repo, RepoTag};
@@ -65,7 +66,7 @@ impl RepoTagCache {
 impl GitGlobalConfig {
     // pub fn new() -> Result<GitGlobalConfig, Error> {
     pub fn new() -> GitGlobalConfig {
-        let home_dir = env::home_dir()
+        let home_dir = dirs::home_dir()
             .expect("Could not determine home directory.")
             .to_str()
             .expect("Could not convert home directory path to string.")
