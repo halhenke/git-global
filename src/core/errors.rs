@@ -20,7 +20,7 @@ impl fmt::Display for GitGlobalError {
         // use GitGlobalError::*;
         match self {
             GitGlobalError::BadSubcommand(ref cmd) => write!(f, "Unknown subcommand, {}.", cmd),
-            Generic => write!(f, "An error occured :(."),
+            generic => write!(f, "An error occured :(."),
         }
     }
 }
@@ -30,7 +30,7 @@ impl Error for GitGlobalError {
         // use GitGlobalError::*;
         match self {
             GitGlobalError::BadSubcommand(_) => "unknown subcommand",
-            Generic => "an error occurred :(",
+            generic => "an error occurred :(",
         }
     }
 }

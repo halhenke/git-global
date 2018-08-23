@@ -130,18 +130,18 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     // let mut siv = cursor.siv;
     // let tags = cursor.tags;
 
-    let editCB = move |s: &mut Cursive, name: &str| {
+    let edit_cb = move |s: &mut Cursive, name: &str| {
         // let name = s.call_on_id(
         //     "tag",
         //     |view: &mut EditView| view.get_content(),
         // ).unwrap();
-        println!("editCB was called...");
+        println!("edit_cb was called...");
 
-        let nutCon = m3_con.clone();
-        let mut b1 = nutCon.borrow_mut();
+        let nut_con = m3_con.clone();
+        let mut b1 = nut_con.borrow_mut();
         show_next_screen(s, &name.clone().deref(), &mut b1);
     };
-    // let ecb = Rc::new(editCB);
+    // let ecb = Rc::new(edit_cb);
     // let ec2 = ecb.clone();
     // let ec3 = Rc::clone(&ecb);
     // // let ec2 = Rc::clone(&ecb);
@@ -164,7 +164,7 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
                     .content(
                         EditView::new()
                             // .on_submit(show_popup)
-                            .on_submit(editCB)
+                            .on_submit(edit_cb)
                             // .on_submit(Rc::try_unwrap(ec2).expect())
                             .with_id("tag")
                             .fixed_width(20),
@@ -189,7 +189,7 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
                         // let mut tag = STAT_TAG.push("name");
                         let mut my_vec = STAT_TAG.write().unwrap();
                         my_vec.push("name");
-                        let mut my_tc = STAT_TC.write().unwrap();
+                        let mut _my_tc = STAT_TC.write().unwrap();
                         // my_tc.append("name");
                         // my_tc.append(Rc::try_unwrap(name).unwrap());
 
@@ -198,10 +198,10 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
                         //     &TextContent::new("Hey Man")
                         // );
 
-                        let nutCon = mut_con.clone();
-                        let mut b1 = nutCon.borrow_mut();
+                        let nut_con = mut_con.clone();
+                        let mut b1 = nut_con.borrow_mut();
                         show_next_screen(s, &name.clone().deref(), &mut b1);
-                        // &editCB(s, &name.clone().deref());
+                        // &edit_cb(s, &name.clone().deref());
 
 
                         // let mut borrowed = seen_cell.borrow_mut();
@@ -231,7 +231,7 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
                 TextView::new_with_content(
                     // TextContent::new("Hey Man")
                     m2_con.borrow().deref().clone()
-                ).with_id("tagList")
+                ).with_id("tag_list")
             )
     );
 
@@ -248,7 +248,7 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
 fn save_tags_and_quit(s: &mut Cursive, tags: &RMut) {
     println!("wtf???");
     let mut user_config = GitGlobalConfig::new();
-    let mut tagList: String = tags
+    let mut tag_list: String = tags
         .borrow()
         .deref()
         .get_content()
@@ -259,13 +259,13 @@ fn save_tags_and_quit(s: &mut Cursive, tags: &RMut) {
     s.call_on_id("tag",
         |view: &mut EditView|
             {
-                &tagList.push_str("abra-cadabra");
-                let po = &tagList.clone();
+                &tag_list.push_str("abra-cadabra");
+                let po = &tag_list.clone();
                 view.set_content(po.to_string());
                 // view.append("abra-cadabra");
                 // view.set_cursor(0)
             }).expect("final unwrap...");
-    let tag_list_list = tagList
+    let tag_list_list = tag_list
         .lines()
         .skip(1)
         // .by_ref()
@@ -275,8 +275,8 @@ fn save_tags_and_quit(s: &mut Cursive, tags: &RMut) {
     println!("tags are: {:?}", &tag_list_list);
     user_config.add_tags(
         tag_list_list
-        // tagList.split("\n").skip(1).collect()
-        // tagList.lines().skip(1).collect::Vec<String>()
+        // tag_list.split("\n").skip(1).collect()
+        // tag_list.lines().skip(1).collect::Vec<String>()
     );
     user_config.write_tags();
     // user_config.print_tags();

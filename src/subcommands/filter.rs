@@ -1,7 +1,6 @@
 //! The `filter` subcommand: lists all repos known to git-global.
 
 use core::{GitGlobalResult, RepoTag, get_tagged_repos};
-use clap::{Arg, App, SubCommand, Values};
 use core::errors::Result;
 use subcommands::utilities::{print_str_pat};
 
