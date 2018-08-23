@@ -98,7 +98,7 @@ pub fn go() -> WeirdResult<GitGlobalResult> {
     let repos = get_repos();
     let r_tags: Vec<&str> = repos
         .iter()
-        .map(|r| r.path())
+        .map(|r| r.path().rsplit('/').nth(0).expect("repo has name?"))
         .collect();
     // let r_tags: Vec<&str> = global_git.tag_names();
 
