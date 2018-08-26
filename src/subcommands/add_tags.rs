@@ -1,16 +1,10 @@
-// use std::io;
-// use std::sync::mpsc;
-// use std::thread;
-// use std::collections::HashMap;
 use std::cell::{RefCell, RefMut};
 use std::rc::Rc;
 use std::ops::{Deref, DerefMut};
 
 extern crate cursive;
 
-
 use self::cursive::Cursive;
-// use cursive::views::{Dialog, TextView};
 use self::cursive::align::HAlign;
 use self::cursive::event::EventResult;
 use self::cursive::{
@@ -35,6 +29,9 @@ use mut_static::MutStatic;
 
 type RMut = Rc<RefCell<TextContent>>;
 
+// mk_cursive = cursive::default;
+// let mk_cursive = cursive::ncurses;
+
 lazy_static! {
     pub static ref STAT_TAG: MutStatic<Vec<&'static str>> = {
         return MutStatic::from(vec![]);
@@ -56,29 +53,12 @@ struct TagCursive {
 impl TagCursive {
     pub fn new() -> TagCursive {
         TagCursive {
-            siv: Cursive::new(),
+            siv: Cursive::default(),
             tags: vec![],
         }
     }
 }
 
-// struct TagCursive<'a> {
-//     siv: &'a Cursive,
-//     tags: &'a Vec<&'a str>,
-// }
-
-// impl<'a> TagCursive<'a> {
-//     pub fn new() -> TagCursive<'a> {
-//         TagCursive {
-//             siv: &Cursive::new(),
-//             tags: &vec![],
-//         }
-//     }
-// }
-
-// fn start(arg: Type) -> RetType {
-//     unimplemented!();
-// }
 
 pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     trace!("go");
@@ -195,35 +175,10 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
                         let nut_con = mut_con.clone();
                         let mut b1 = nut_con.borrow_mut();
                         show_next_screen(s, &name.clone().deref(), &mut b1);
-                        // &edit_cb(s, &name.clone().deref());
-
-
-                        // let mut borrowed = seen_cell.borrow_mut();
-                        // borrowed.push("fuck");
-                        // tags.push("fuck");
-
-                        // let mut borrowed_content = seen_content.borrow_mut();
-
-                        // show_next_screen(s, &name, borrowed_content);
-                        // show_next_screen(s, &name, boxContent);
-                        // show_next_screen(s, &name, &mut boxContent.deref_mut());
-
-                        // show_popup(s, &name);
-
-
-                        // &tags.push(&String::from("fuck"));
-                        // &tags.push(&String::from("fuck"));
-
-                        // &cursor.tags.push(String::from("fuck"));
-                        // tags.push(name.clone());
-                        // let t = &mut tags;
-                        // t.push(name);
-                        // show_popup_tags(s, &name, &mut tags);
                     }).with_id("dialog"),
             )
             .child(
                 TextView::new_with_content(
-                    // TextContent::new("Hey Man")
                     m2_con.borrow().deref().clone()
                 ).with_id("tag_list")
             )
@@ -244,18 +199,15 @@ fn save_tags_and_quit(s: &mut Cursive, tags: &RMut) {
         .get_content()
         .source()
         .to_string();
-    // println!("i have some tags");
 
     s.call_on_id("tag",
         |view: &mut EditView|
             {
-                &tag_list.push_str("abra-cadabra");
+                // &tag_list.push_str("abra-cadabra");
                 let po = &tag_list.clone();
                 view.set_content(po.to_string());
-                // view.append("abra-cadabra");
-                // view.set_cursor(0)
             }).expect("final unwrap...");
-    let tag_list_list = tag_list
+    let tag_list_list: Vec<String> = tag_list
         .lines()
         .skip(1)
         // .by_ref()
@@ -265,6 +217,8 @@ fn save_tags_and_quit(s: &mut Cursive, tags: &RMut) {
     debug!("tags are: {:?}", &tag_list_list);
     user_config.add_tags(
         tag_list_list
+        // vec!(String::from("Hello"))
+
         // tag_list.split("\n").skip(1).collect()
         // tag_list.lines().skip(1).collect::Vec<String>()
     );
@@ -272,8 +226,8 @@ fn save_tags_and_quit(s: &mut Cursive, tags: &RMut) {
     // user_config.print_tags();
     // s.quit();
     s.cb_sink()
-        .send(Box::new(|siv: &mut Cursive| siv.quit()))
-        .expect("Dont fail here");
+        .send(Box::new(|siv: &mut Cursive| siv.quit()));
+        // .expect("Dont fail here");
 }
 
 fn show_next_screen(s: &mut Cursive, name: &str, c: &mut TextContent) {

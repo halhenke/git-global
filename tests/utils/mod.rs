@@ -8,12 +8,12 @@ use std::path::{Path, PathBuf};
 /// that takes that Repo instance.
 #[allow(dead_code)]
 pub fn with_temp_repo<T>(test: T) -> ()
-    where T: FnOnce(git_global::Repo) -> () {
+    where T: FnOnce(git_global::core::Repo) -> () {
 
     let tempdir = tempdir::TempDir::new("git-global-test").unwrap();
     let repo_path = tempdir.path();
     git2::Repository::init(repo_path).unwrap();
-    let repo = git_global::Repo::new(repo_path.to_str().unwrap().to_string());
+    let repo = git_global::core::Repo::new(repo_path.to_str().unwrap().to_string());
     test(repo);
 }
 
