@@ -118,14 +118,17 @@ impl GitGlobalConfig {
         // if basedir == "" {
         //     unimplemented!();
         // }
-        GitGlobalConfig {
+        let mut ggc = GitGlobalConfig {
             basedir: basedir,
             basedirs: basedirs,
             tags: vec![],
+            // tags: vec![],
             ignored_patterns: patterns,
             cache_file: cache_file,
             tags_file,
-        }
+        };
+        ggc.tags = ggc.read_tags();
+        ggc
     }
 
     /// Returns `true` if this directory entry should be included in scans.
@@ -152,13 +155,16 @@ impl GitGlobalConfig {
             .map(|t| t.into())
             // .map(|t| RepoTag::from(t))
             .collect();
+        debug!("new_repos is {:?}", new_repos);
+        debug!("Before add tags - self.tags is {:?}", self.tags);
         self.tags
             .append(
                 new_repos
             );
         self.tags
             .dedup_by(|a, b|
-                a.name.as_str().eq_ignore_ascii_case(b.name.as_str())
+                a.name.as_str()
+                    .eq_ignore_ascii_case(b.name.as_str())
             );
     }
 
