@@ -81,16 +81,13 @@ impl TagCursive {
 // }
 
 pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
+    trace!("go");
 
-    println!("ADD TAGS -  GOOOO: did we get here - 0");
-
-    let mut siv = Cursive::new();
-
-    println!("ADD TAGS -  GOOOO: did we get here - 1");
-
+    debug!("ADD TAGS -  GOOOO: did we get here - 0");
+    let mut siv = Cursive::default();
+    debug!("ADD TAGS -  GOOOO: did we get here - 1");
     let mut tags = Vec::<&str>::new();
-
-    println!("ADD TAGS -  GOOOO: did we get here - 1");
+    debug!("ADD TAGS -  GOOOO: did we get here - 1");
 
     // static mut tagBag: Vec<&str> = vec![];
     // NOTE: No real idea why this works but nothing works without it
@@ -118,10 +115,7 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     let _box_content = Box::new(more_content);
 
     // STAT_TC.set(TextContent::new("hello")).unwrap();
-
-    println!("ADD TAGS: did we get here - 3");
-
-
+    debug!("ADD TAGS: did we get here - 3");
     // let tags = &mut Vec::<&str>::new();
     // const mut tags: Vec<&str> = vec![];
     // static mut tags: Vec<&str> = Vec::<&str>::new();
@@ -135,7 +129,7 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
         //     "tag",
         //     |view: &mut EditView| view.get_content(),
         // ).unwrap();
-        println!("edit_cb was called...");
+        debug!("edit_cb was called...");
 
         let nut_con = m3_con.clone();
         let mut b1 = nut_con.borrow_mut();
@@ -171,8 +165,8 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
                     )
                     .button("q", move |s: &mut Cursive| {
                         // s.quit()
-                        println!("q was called...");
-                        // println!("we are going with {:?}", &m4Con);
+                        debug!("q was called...");
+                        // debug!("we are going with {:?}", &m4Con);
                         save_tags_and_quit(s, &m4_con);
                     })
                     // .button("Ok", |s| {
@@ -183,7 +177,7 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
                             |view: &mut EditView| view.get_content(),
                         ).unwrap();
 
-                        println!("OK was called...");
+                        debug!("OK was called...");
 
 
                         // let mut tag = STAT_TAG.push("name");
@@ -236,17 +230,13 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     );
 
     siv.run();
-    println!("ADD TAGS: called - 33");
-
-    // let gc = GitGlobalConfig::new();
-    // println!("ADD TAGS: called - 34");
-    // gc.write_tags();
-
+    debug!("ADD TAGS: called - 33");
     Ok(GitGlobalResult::new(&vec![]))
 }
 
 fn save_tags_and_quit(s: &mut Cursive, tags: &RMut) {
-    println!("wtf???");
+    trace!("save_tags_and_quit");
+    debug!("wtf???");
     let mut user_config = GitGlobalConfig::new();
     let mut tag_list: String = tags
         .borrow()
@@ -271,8 +261,8 @@ fn save_tags_and_quit(s: &mut Cursive, tags: &RMut) {
         // .by_ref()
         .map(|s| s.to_string())
         .collect();
-    println!("About to print tags");
-    println!("tags are: {:?}", &tag_list_list);
+    debug!("About to print tags");
+    debug!("tags are: {:?}", &tag_list_list);
     user_config.add_tags(
         tag_list_list
         // tag_list.split("\n").skip(1).collect()
@@ -290,6 +280,7 @@ fn show_next_screen(s: &mut Cursive, name: &str, c: &mut TextContent) {
 // fn show_next_screen(s: &mut Cursive, name: &str, mut c: TextContent) {
 // fn show_popup(s: &mut Cursive, name: &str) {
 // fn show_next_screen(s: &mut Cursive, name: &str, mut c: RefMut<TextContent>) {
+    trace!("show_next_screen");
     if name.is_empty() {
         s.add_layer(Dialog::info("Please enter a name!"));
     } else {
@@ -313,6 +304,7 @@ fn show_next_screen(s: &mut Cursive, name: &str, c: &mut TextContent) {
 
 
 fn show_popup(s: &mut Cursive, name: &str) {
+    trace!("show_popup");
     if name.is_empty() {
         s.add_layer(Dialog::info("Please enter a name!"));
     } else {

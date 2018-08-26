@@ -242,7 +242,7 @@ impl GitGlobalConfig {
     }
 
     pub fn write_tags(&self) {
-        println!("WRITING TAGS: called");
+        debug!("WRITING TAGS: called");
 
         if !self.cache_file.as_path().exists() {
             // Try to create the cache directory if the cache *file* doesn't
@@ -252,25 +252,25 @@ impl GitGlobalConfig {
                 Err(e) => panic!("Could not create cache directory: {}", e),
             }
         }
-        println!("WRITING TAGS: called - 2");
+        debug!("WRITING TAGS: called - 2");
 
         let repos = self.get_cached_repos();
 
         let mut f = File::create(&self.cache_file)
             .expect("Could not create cache file.");
 
-        println!("WRITING TAGS: called - 3");
+        debug!("WRITING TAGS: called - 3");
 
 
         type RepoTagTuple<'a> = (&'a Vec<Repo>, &'a Vec<RepoTag>);
         let _wowser: RepoTagTuple = (&repos, &self.tags);
 
-        println!("WRITING TAGS: repos:\n{:?}", &repos);
+        debug!("WRITING TAGS: repos:\n{:?}", &repos);
 
         let rt: RepoTagCache = RepoTagCache::new(&repos, &self.tags);
         let serialized = serde_json::to_string(&rt).unwrap();
 
-        println!("WRITING TAGS: SERIALIZED:\n{}", serialized);
+        debug!("WRITING TAGS: SERIALIZED:\n{}", serialized);
 
         f.write_all(serialized.as_bytes())
             .expect("Problem writing cache file");
@@ -296,7 +296,7 @@ impl GitGlobalConfig {
         let serialized = serde_json::to_string(&rt).unwrap();
 
 
-        println!("CACHING REPOS: SERIALIZED:\n{}", &serialized);
+        debug!("CACHING REPOS: SERIALIZED:\n{}", &serialized);
 
 
         f.write_all(serialized.as_bytes()).expect("Problem writing cache file");
@@ -304,7 +304,7 @@ impl GitGlobalConfig {
 
     /// Returns the list of repos found in the cache file.
     pub fn get_cached_repos(&self) -> Vec<Repo> {
-        println!("GET CACHED REPOS - 0");
+        debug!("GET CACHED REPOS - 0");
 
         let mut repos = Vec::new();
         if self.cache_file.as_path().exists() {
@@ -326,7 +326,7 @@ impl GitGlobalConfig {
             // type RepoTagTuple<'a> = (&'a Vec<Repo>, &'a Vec<RepoTag>);
 
 
-            println!("reader is {}", String::from_utf8(reader.clone()).expect("more"));
+            debug!("reader is {}", String::from_utf8(reader.clone()).expect("more"));
 
             // println!("GET CACHED REPOS - 2");
 

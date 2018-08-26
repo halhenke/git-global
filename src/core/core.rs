@@ -55,7 +55,7 @@ pub fn get_tagged_repos(tags: &Vec<RepoTag>) -> Vec<Repo> {
         // println!("NO TAGS");
         return get_repos();
     } else {
-        println!("tags!!!! {}", tags.len());
+        debug!("tags!!!! {}", tags.len());
         return get_repos()
             .into_iter()
             // .cloned()
@@ -72,15 +72,15 @@ pub fn get_tagged_repos(tags: &Vec<RepoTag>) -> Vec<Repo> {
 
 /// Returns all known git repos, populating the cache first, if necessary.
 pub fn get_repos() -> Vec<Repo> {
-    println!("get repos");
+    debug!("get repos");
     let user_config = GitGlobalConfig::new();
-    println!("getgot config");
+    debug!("got config");
 
 
     // Convert the Point to a JSON string.
     let serialized = serde_json::to_string(&user_config).unwrap();
     // Prints serialized = {"x":1,"y":2}
-    println!("serialized = {}", serialized);
+    debug!("serialized = {}", serialized);
 
     if !user_config.has_cache() {
         println!("You have no cached repos yet...");

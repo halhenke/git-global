@@ -23,10 +23,9 @@ path = "src/main.rs"
 [lib]
 [dependencies]
 app_dirs = "1.2.1"
-clap = "2"
+clap = "2.32.0"
 chrono = "0.3"
 colored = "1.6.1"
-cursive = "0.8.2"
 itertools = "0.7.3"
 json = "0.11"
 lazy_static = "1.0.1"
@@ -42,6 +41,14 @@ strfmt = "0.1.6"
 pipeline = "0.5.0"
 rustfix = "0.4.2"
 dirs = "1.0.3"
+pretty_env_logger = "0.2.4"
+log = "0.4.4"
+
+
+[dependencies.cursive]
+version = "0.9.0"
+default-features = false
+features = ["termion-backend"]
 
 [dependencies.git2]
 version = "0.7.5"
