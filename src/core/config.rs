@@ -48,21 +48,6 @@ impl RepoTagCache {
     }
 }
 
-// #[derive(Serialize, Deserialize, Debug)]
-// struct RepoTagCache<'a> {
-//     repos: &'a Vec<Repo>,
-//     tags: &'a Vec<RepoTag>,
-// }
-
-// impl<'a> RepoTagCache<'a> {
-//     fn new(repos: &'a Vec<Repo>, tags: &'a Vec<RepoTag>) -> RepoTagCache<'a> {
-//         RepoTagCache {
-//             repos,
-//             tags
-//         }
-//     }
-// }
-
 impl GitGlobalConfig {
     // pub fn new() -> Result<GitGlobalConfig, Error> {
     pub fn new() -> GitGlobalConfig {
@@ -226,17 +211,6 @@ impl GitGlobalConfig {
         f.read_to_end(reader)
             .expect("Couldnt read ");
 
-        // println!("WRITING TAGS: called - 3");
-
-
-        // type RepoTagTuple<'a> = (&'a Vec<Repo>, &'a Vec<RepoTag>);
-        // let _wowser: RepoTagTuple = (&repos, &self.tags);
-
-        // println!("WRITING TAGS: repos:\n{:?}", &repos);
-        // let rt: RepoTagCache = serde_json::;
-
-        // let rt: RepoTagCache = RepoTagCache::new(&repos, &self.tags);
-        // let serialized = serde_json::to_string(&rt).unwrap();
         let _temp: RepoTagCache = serde_json::from_slice(reader)
             .expect("Could not deserialize");
 
@@ -323,34 +297,13 @@ impl GitGlobalConfig {
             let reader = &mut Vec::new();
             f.read_to_end(reader)
                 .expect("Couldnt read ");
-            // f.read_to_end().unwrap();
-
-            // println!("{:?}", reader);
-            // println!("GET CACHED REPOS - 1");
-
-            // type RepoTagTuple = (Vec<Repo>, Vec<RepoTag>);
-            // type RepoTagTuple<'a> = (&'a Vec<Repo>, &'a Vec<RepoTag>);
-
-
             debug!("reader is {}", String::from_utf8(reader.clone()).expect("more"));
-
-            // println!("GET CACHED REPOS - 2");
-
-            // let serialized: RepoTagTuple = serde_json::from_slice(reader)
-            //     .expect("Could not deserialize");
-            // let serialized: RepoTagCache = serde_json::from_slice(reader)
-            //     .expect("Could not deserialize");
-
-            // println!("GET CACHED REPOS - 3");
 
             let _temp: RepoTagCache = serde_json::from_slice(reader)
                 .expect("Could not deserialize");
 
             let _repos: &Vec<Repo> = &_temp.repos;
-            // let _repos: &Vec<Repo> = serialized.0;
             repos = _repos.to_vec();
-
-            // println!("repos length is {:?}", &repos.len());
         }
         repos
     }

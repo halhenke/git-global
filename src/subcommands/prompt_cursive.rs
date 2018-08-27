@@ -56,38 +56,7 @@ pub fn go() -> WeirdResult<GitGlobalResult> {
         selected: 0,
     };
 
-    // let r_tags: &Vec<RepoTag> = global_git.tag_names();
-
-    // let mut siv = Cursive::default();
-
-    // let content = "Press Q to quit the application.\n\nPress P to open the \
-    //                popup.";
-
-    // siv.add_global_callback('q', |s| s.quit());
-
-    // // Let's wrap the view to give it a recognizable ID, so we can look for it.
-    // // We add the P callback on the textview only (and not globally),
-    // // so that we can't call it when the popup is already visible.
-    // siv.add_layer(
-    //     OnEventView::new(
-    //         TextView::new(content)
-    //             .with_id("text"))
-    //             .on_event('p', |s| show_popup(s)),
-    // );
-
     let mut select = SelectView::new().h_align(HAlign::Center);
-
-    // Read the list of cities from separate file, and fill the view with it.
-    // (We include the file at compile-time to avoid runtime read errors.)
-
-    // let content = include_str!("../assets/cities.txt");
-    // select.add_all_str(content.lines());
-
-    // let content = [
-    //     String::from("Choice 1"),
-    //     String::from("Choice 2"),
-    //     String::from("Choice 3"),
-    // ];
 
     let _content = "
     Choice 1

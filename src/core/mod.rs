@@ -8,4 +8,3 @@ pub use self::core::*;
 pub use self::errors::*;
 pub use self::result::*;
 pub use self::repo::*;
-// pub use config;
