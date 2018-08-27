@@ -1,7 +1,6 @@
 //! The `status` subcommand: shows `git status -s` for all known repos.
 
-extern crate colored;
-use self::colored::*;
+use colored::*;
 use std::io::{Write, stderr};
 use std::sync::{Arc, mpsc};
 use std::thread;

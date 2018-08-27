@@ -1,4 +1,4 @@
-extern crate colored;
+use colored::*;
 use std::env;
 use std::path::{PathBuf, Path};
 use std::io::{Read, Write, Result};
@@ -243,7 +243,7 @@ impl GitGlobalConfig {
         let _tags: &Vec<RepoTag> = &_temp.tags;
         // let _repos: &Vec<Repo> = serialized.0;
         let tags = _tags.to_vec();
-        println!("Tags are {:?}", &tags);
+        debug!("Tags are {:?}", &tags);
         tags
     }
 

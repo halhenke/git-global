@@ -45,6 +45,7 @@ extern crate walkdir;
 extern crate tui;
 extern crate git2;
 extern crate mut_static;
+extern crate colored;
 #[macro_use]
 extern crate clap;
 #[macro_use]
@@ -59,10 +60,6 @@ extern crate log;
 
 mod cli;
 mod core;
-// pub use core;
-// pub use core::errors;
-// pub use core::config;
-// pub use core::result;
 
 mod subcommands;  // Using `pub mod` so we see the docs.
 #[macro_use]

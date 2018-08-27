@@ -8,6 +8,7 @@ use std::fmt;
 pub use core::repo::{Repo, RepoTag};
 pub use core::result::{GitGlobalResult};
 pub use core::config::{GitGlobalConfig};
+use colored::*;
 
 use walkdir::{WalkDir};
 
@@ -21,9 +22,8 @@ pub fn find_repos() -> Vec<Repo> {
     let user_config = GitGlobalConfig::new();
     let basedir = &user_config.basedir;
     let walker = WalkDir::new(basedir).into_iter();
-    println!("Scanning for git repos under {}; this may take a while...", basedir);
+    format!("{}, {}", "Scanning for git repos under {}; this may take a while...", basedir.green());
     for entry in walker.filter_entry(|e| user_config.filter(e)) {
-        // println!("Its go time!!!!");
         match entry {
             Ok(entry) => {
                 // println!("We are checking {} to see if it has a repo...", entry.path().to_str().expect("MISSING"));
@@ -83,12 +83,12 @@ pub fn get_repos() -> Vec<Repo> {
     debug!("serialized = {}", serialized);
 
     if !user_config.has_cache() {
-        println!("You have no cached repos yet...");
+        println!("{}", "You have no cached repos yet...".yellow());
         let repos = find_repos();
         cache_repos(&repos);
         repos
     } else {
-        println!("You have a cache!");
+        println!("{}", "You have a cache!".green());
         user_config.get_cached_repos()
     }
 }
