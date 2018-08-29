@@ -22,27 +22,14 @@ use self::cursive::views::{
     TextView
 };
 use core::errors::Result as WeirdResult;
-
 use core::{GitGlobalConfig, RepoTag, GitGlobalResult, get_repos};
-
 use mut_static::MutStatic;
-
 use take_mut;
 
 type RMut = Rc<RefCell<TextContent>>;
 
 // mk_cursive = cursive::default;
 // let mk_cursive = cursive::ncurses;
-
-lazy_static! {
-    pub static ref STAT_TAG: MutStatic<Vec<&'static str>> = {
-        return MutStatic::from(vec![]);
-    };
-
-    pub static ref STAT_TC: MutStatic<TextContent> = {
-        return MutStatic::from(TextContent::new("New TextContent"));
-    };
-}
 
 
 pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
@@ -54,18 +41,9 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     debug!("ADD TAGS -  GOOOO: did we get here - 0");
     let mut siv = Cursive::default();
     debug!("ADD TAGS -  GOOOO: did we get here - 1");
-    let tags = Vec::<&str>::new();
     debug!("ADD TAGS -  GOOOO: did we get here - 1");
 
-
-    // let aa = String::from("abba");
-    // // let mut aa = String::from("abba");
-    // {
-    //     let bb = &aa;
-    // }
-    // let cc = aa;
-    // // let cc = &mut aa;
-    // // println!("{}", aa);
+    siv.load_theme_file("assets/style.toml").unwrap();
 
     // https://github.com/gyscos/Cursive/issues/179
     let mut_content = TextContent::new(
@@ -76,6 +54,21 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
             // .map(|&x| x.append("\n"))
             // .collect::<String>()
     );
+    let sel_tags_1: Vec<&str> = user_config.tag_names();
+    let sel_tags_2: Vec<String> = user_config.tag_names()
+        .into_iter()
+        .map(|x| String::from(x))
+        .collect();
+    // let sel_tags_1: Vec<String> = user_config.tag_names()
+        // .into_iter()
+        // .map(|x| String::from(x))
+        // .collect();
+    // let sel_tags_2: Vec<String> = sel_tags_1.clone();
+    let sel_tags = sel_tags_1.into_iter().zip(sel_tags_2.into_iter());
+        // .collect::<Vec<String>>();
+    // let sel_tags = user_config.tag_names().iter()
+    //         .zip(*user_config.tag_names().collect::<String>());
+
     // NOTE: We want to make these "upfront" otherwise we woulc clone on every callback - prob not a big deal actually
     // If we make borrows here then we cant do borrow_muts later which is what we need
     let mut_con = Rc::new(RefCell::new(mut_content));
@@ -117,13 +110,17 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
         .on_submit_mut(edit_cb)
         .with_id("tag")
         .fixed_width(20);
-    let t_view  = TextView::new_with_content(
-        m3_con.borrow()
-        // Rc::clone(&mut_con)
-            .deref()
-            .clone())
-        .with_id("tag_list");
-
+    // let t_view  = TextView::new_with_content(
+    //     m3_con.borrow()
+    //     // Rc::clone(&mut_con)
+    //         .deref()
+    //         .clone())
+    //     .with_id("tag_list");
+    // let mut sel_view = SelectView::new()
+    //     .with_all(
+    //         sel_tags
+    //     )
+    //     .with_id("tag_list");
 
     siv.add_layer(
         LinearLayout::vertical()
@@ -150,8 +147,16 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
                         show_next_screen(s, &name.clone().deref(), &mut b1);
                     }).with_id("dialog"),
             )
+            // .child(
+            //     t_view
+            // )
             .child(
-                t_view
+                // sel_view
+                SelectView::new()
+                    .with_all(
+                        sel_tags
+                    )
+                    .with_id("tag_list")
             )
     );
 
@@ -167,6 +172,16 @@ fn save_tags_and_quit(s: &mut Cursive, tags: &RMut) {
     let mut user_config = GitGlobalConfig::new();
     trace!("save_tags_and_quit");
     debug!("wtf???");
+    let mut t_list: Vec<String> = Vec::new();
+    s.call_on_id("tag_list",
+        |tl: &mut SelectView| {
+            error!("tag count is {}", tl.len());
+            let count = tl.len();
+            for i in 0..count  {
+                t_list.push(tl.get_item(i).unwrap().0.to_string())
+            }
+        }
+    );
     let tag_list: String = tags
         .borrow()
         .deref()
@@ -179,11 +194,7 @@ fn save_tags_and_quit(s: &mut Cursive, tags: &RMut) {
             view.set_content(po.to_string());
         }
     ).expect("final unwrap...");
-    let tag_list_list: Vec<String> = tag_list
-        .lines()
-        .skip(1)
-        .map(|s| s.to_string())
-        .collect();
+    let tag_list_list = t_list;
     debug!("About to print tags");
     debug!("tags are: {:?}", &tag_list_list);
     // user_config.add_tags(
@@ -202,15 +213,20 @@ fn show_next_screen(s: &mut Cursive, name: &str, c: &mut TextContent) {
     if name.is_empty() {
         s.add_layer(Dialog::info("Please enter a name!"));
     } else {
-        c.append("\n");
-        c.append(name);
+        // c.append("\n");
+        // c.append(name);
+        trace!("show_next_screen 2");
+        s.call_on_id("tag_list",
+            |view: &mut SelectView|
+                view.add_item_str(name)
+        ).expect("failure");
         s.call_on_id("tag",
             |view: &mut EditView|
                 {
                     view.set_content("")
                     // view.set_cursor(0)
                 }).expect("failure");
-        // s.focus_id("tag").unwrap();
+        // // s.focus_id("tag").unwrap();
         s.focus(&Selector::Id("tag")).expect("thing");
     }
 }
