@@ -132,7 +132,7 @@ impl GitGlobalConfig {
         // a
     }
 
-    pub fn add_tags(&mut self, tags: Vec<String>) -> () {
+    pub fn append_tags(&mut self, tags: Vec<String>) -> () {
     // pub fn add_tags(&self, tags: Vec<String>) -> Vec<RepoTag> {
     // pub fn add_tags(&self, tags: &mut Vec<String>) ->() {
         let new_repos = &mut tags
@@ -151,6 +151,14 @@ impl GitGlobalConfig {
                 a.name.as_str()
                     .eq_ignore_ascii_case(b.name.as_str())
             );
+    }
+
+    pub fn replace_tags(&mut self, tags: Vec<String>) -> () {
+        let new_tags = tags
+            .into_iter()
+            .map(|t| t.into())
+            .collect();
+        self.tags = new_tags;
     }
 
     fn tags(&self) -> &Vec<RepoTag> {

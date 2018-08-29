@@ -57,6 +57,7 @@ extern crate lazy_static;
 #[macro_use]
 extern crate log;
 
+extern crate take_mut;
 
 mod cli;
 mod core;

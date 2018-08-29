@@ -27,6 +27,8 @@ use core::{GitGlobalConfig, RepoTag, GitGlobalResult, get_repos};
 
 use mut_static::MutStatic;
 
+use take_mut;
+
 type RMut = Rc<RefCell<TextContent>>;
 
 // mk_cursive = cursive::default;
@@ -44,7 +46,8 @@ lazy_static! {
 
 
 pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
-    let mut user_config = GitGlobalConfig::new();
+// pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult<'a>> {
+    let user_config = GitGlobalConfig::new();
 
     trace!("go");
 
@@ -54,11 +57,17 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     let tags = Vec::<&str>::new();
     debug!("ADD TAGS -  GOOOO: did we get here - 1");
 
-    // static mut tagBag: Vec<&str> = vec![];
-    // NOTE: No real idea why this works but nothing works without it
-    // - see https://stackoverflow.com/a/28521985/935470
-    let _seen_cell = RefCell::new(tags);
 
+    // let aa = String::from("abba");
+    // // let mut aa = String::from("abba");
+    // {
+    //     let bb = &aa;
+    // }
+    // let cc = aa;
+    // // let cc = &mut aa;
+    // // println!("{}", aa);
+
+    // https://github.com/gyscos/Cursive/issues/179
     let mut_content = TextContent::new(
         user_config.tag_names()
             .join("\n")
@@ -67,20 +76,54 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
             // .map(|&x| x.append("\n"))
             // .collect::<String>()
     );
+    // NOTE: We want to make these "upfront" otherwise we woulc clone on every callback - prob not a big deal actually
+    // If we make borrows here then we cant do borrow_muts later which is what we need
     let mut_con = Rc::new(RefCell::new(mut_content));
-    let m2_con = &mut_con.clone();
+    // let immut_con = Rc::clone(&mut_con).borrow()
+    let m2_con = Rc::clone(&mut_con);
+    // let m2_con = &mut_con.clone();
     let m3_con = Rc::clone(&mut_con);
     let m4_con = Rc::clone(&mut_con);
 
     debug!("ADD TAGS: did we get here - 3");
 
+    // Need to wrap this to make it usable in the static closures/callbacks
+    // Need to keep a list of new tags as i have to display both pre-existing tags and new ones so i need to store these separately
+    // let new_tags: Vec<&str>;
+    // let new_tags: &mut Vec<String> = &mut vec!();
+    // let new_tags: &mut Vec<&str>;
+    let mut new_tags: Vec<String> = Vec::new();
+    // let fake_tags = &new_tags;
+
+    // let edit_cb = move |s: &mut Cursive, name: &str| {
     let edit_cb = move |s: &mut Cursive, name: &str| {
         debug!("edit_cb was called...");
-
-        let nut_con = m3_con.clone();
-        let mut b1 = nut_con.borrow_mut();
+        // let nut_con = m3_con.clone();
+        let mut b1 = m2_con.borrow_mut();
+        // &new_tags.push(String::from(name));
+        take_mut::take(&mut new_tags, |mut new_tags| {
+            new_tags.push(String::from(name));
+            // new_tags.push("Hola");
+            // new_tags.push(&name.clone());
+            new_tags
+        });
+        // show_next_screen(s, &name.clone().deref(), &mut nut_con.borrow_mut());
+        // show_next_screen(s, &name.clone().deref(), m3_con.clone().borrow_mut());
         show_next_screen(s, &name.clone().deref(), &mut b1);
     };
+
+    let e_view = EditView::new()
+        // .on_submit(show_popup)
+        .on_submit_mut(edit_cb)
+        .with_id("tag")
+        .fixed_width(20);
+    let t_view  = TextView::new_with_content(
+        m3_con.borrow()
+        // Rc::clone(&mut_con)
+            .deref()
+            .clone())
+        .with_id("tag_list");
+
 
     siv.add_layer(
         LinearLayout::vertical()
@@ -89,11 +132,7 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
                     .title("Add a Tag...")
                     .padding((1, 1, 1, 0))
                     .content(
-                        EditView::new()
-                            // .on_submit(show_popup)
-                            .on_submit(edit_cb)
-                            .with_id("tag")
-                            .fixed_width(20),
+                        e_view
                     )
                     .button("q", move |s: &mut Cursive| {
                         debug!("q was called...");
@@ -105,51 +144,41 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
                             "tag",
                             |view: &mut EditView| view.get_content(),
                         ).unwrap();
-
                         debug!("OK was called...");
-
-                        let mut my_vec = STAT_TAG.write().unwrap();
-                        my_vec.push("name");
-                        let mut _my_tc = STAT_TC.write().unwrap();
                         let nut_con = mut_con.clone();
                         let mut b1 = nut_con.borrow_mut();
                         show_next_screen(s, &name.clone().deref(), &mut b1);
                     }).with_id("dialog"),
             )
             .child(
-                TextView::new_with_content(
-                    m2_con.borrow()
-                        .deref()
-                        .clone()
-                ).with_id("tag_list")
+                t_view
             )
     );
 
     siv.run();
     debug!("ADD TAGS: called - 33");
+
+    // println!("new tags is {:?}", &fake_tags);
     Ok(GitGlobalResult::new(&vec![]))
 }
 
 fn save_tags_and_quit(s: &mut Cursive, tags: &RMut) {
 // fn save_tags_and_quit(s: &mut Cursive, user_config: &mut GitGlobalConfig, tags: &RMut) {
     let mut user_config = GitGlobalConfig::new();
-
     trace!("save_tags_and_quit");
     debug!("wtf???");
-
     let tag_list: String = tags
         .borrow()
         .deref()
         .get_content()
         .source()
         .to_string();
-
     s.call_on_id("tag",
-        |view: &mut EditView|
-            {
-                let po = &tag_list.clone();
-                view.set_content(po.to_string());
-            }).expect("final unwrap...");
+        |view: &mut EditView| {
+            let po = &tag_list.clone();
+            view.set_content(po.to_string());
+        }
+    ).expect("final unwrap...");
     let tag_list_list: Vec<String> = tag_list
         .lines()
         .skip(1)
@@ -157,7 +186,10 @@ fn save_tags_and_quit(s: &mut Cursive, tags: &RMut) {
         .collect();
     debug!("About to print tags");
     debug!("tags are: {:?}", &tag_list_list);
-    user_config.add_tags(
+    // user_config.add_tags(
+    //     tag_list_list
+    // );
+    user_config.replace_tags(
         tag_list_list
     );
     user_config.write_tags();
@@ -182,21 +214,3 @@ fn show_next_screen(s: &mut Cursive, name: &str, c: &mut TextContent) {
         s.focus(&Selector::Id("tag")).expect("thing");
     }
 }
-
-
-fn show_popup(s: &mut Cursive, name: &str) {
-    trace!("show_popup");
-    if name.is_empty() {
-        s.add_layer(Dialog::info("Please enter a name!"));
-    } else {
-        // c.set_content(name);
-        let _content = format!("Hello {}!", name);
-        s.call_on_id("tag",
-            |view: &mut EditView|
-                {
-                    view.set_content("")
-                    // view.set_cursor(0)
-                }).expect("show content");
-    }
-}
-
