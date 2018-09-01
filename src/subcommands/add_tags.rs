@@ -34,15 +34,11 @@ type RMut = Rc<RefCell<TextContent>>;
 
 // pub fn delete_tag(siv: &mut Cursive, sel: &mut SelectView) {
 pub fn delete_tag(sel: &mut SelectView) -> Option<EventResult> {
-    // let id = sel.selected_id().unwrap_or(-1);
-    // let id = sel.selected_id().unwrap();
     // match Some(id) {
     match sel.selected_id() {
         Some(id) => {
         // if let Some(id) = sel.selected_id() {
             let tag: String = sel.get_item(id).unwrap().1.clone();
-            // sel.add_item(id.to_string(), String::from("Delete this?"));
-            // None
             let cb: Callback = Callback::from_fn(
                 move |siv: &mut Cursive| {
                     siv.add_layer(Dialog::around(
@@ -51,16 +47,12 @@ pub fn delete_tag(sel: &mut SelectView) -> Option<EventResult> {
                                 s.pop_layer();
                             })
                             .button("Yes", move |s| {
-                                // let ii = id.clone();
-                                // let ii = sel.selected_id().unwrap();
                                 s.call_on_id("tag_list", |v: &mut SelectView| {
                                     v.remove_item(id);
                                 });
                                 s.pop_layer();
                             }));
             });
-            // delete_tag(&mut siv, &mut s1.get_mut());
-            // None
             Some(EventResult::Consumed(Some(cb)))
         },
         None => {
@@ -70,19 +62,6 @@ pub fn delete_tag(sel: &mut SelectView) -> Option<EventResult> {
 
 }
 
-// pub fn delete_tag_mut(mut sel: SelectView) {
-//     let rcm = Rc::new(&sel);
-//     let id = rcm.clone().selected_id().unwrap();
-//     // if let Some(id) = sel.selected_id() {
-//         let tag = rcm.clone().get_item(id);
-//         Rc::get_mut(&mut rcm.clone())
-//             .unwrap()
-//             .add_item(id.to_string(), String::from("Delete this?"));
-//         // siv.add_layer(Dialog::around(
-//         //     TextView::new(format!("Delete tag: {}", tag.1)))
-//         //         .button("Ok", |s| s.quit()));
-//     // }
-// }
 
 pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
 // pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult<'a>> {
