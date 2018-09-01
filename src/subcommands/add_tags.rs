@@ -6,7 +6,7 @@ extern crate cursive;
 
 use self::cursive::Cursive;
 use self::cursive::align::HAlign;
-use self::cursive::event::EventResult;
+use self::cursive::event::{Callback, Event, EventResult, Key};
 use self::cursive::{
     traits::*,
     view::Selector
@@ -16,6 +16,7 @@ use self::cursive::views::{
     EditView,
     LinearLayout,
     ListView,
+    MenuPopup,
     OnEventView,
     SelectView,
     TextContent,
@@ -31,6 +32,36 @@ type RMut = Rc<RefCell<TextContent>>;
 // mk_cursive = cursive::default;
 // let mk_cursive = cursive::ncurses;
 
+// pub fn delete_tag(siv: &mut Cursive, sel: &mut SelectView) {
+// pub fn delete_tag(sel: &mut SelectView) {
+//     // let id = sel.selected_id();
+//     if let Some(id) = sel.selected_id() {
+//         let tag: String = sel.get_item(id).unwrap().1.clone();
+//         // sel.add_item(id.to_string(), String::from("Delete this?"));
+//         return |siv: &mut Cursive| {
+//             siv.add_layer(Dialog::around(
+//                 TextView::new(format!("Delete tag: {}", tag.1)))
+//                     .button("Ok", |s| s.quit()));
+//         }
+//         // siv.add_layer(Dialog::around(
+//         //     TextView::new(format!("Delete tag: {}", tag.1)))
+//         //         .button("Ok", |s| s.quit()));
+//     }
+// }
+
+// pub fn delete_tag_mut(mut sel: SelectView) {
+//     let rcm = Rc::new(&sel);
+//     let id = rcm.clone().selected_id().unwrap();
+//     // if let Some(id) = sel.selected_id() {
+//         let tag = rcm.clone().get_item(id);
+//         Rc::get_mut(&mut rcm.clone())
+//             .unwrap()
+//             .add_item(id.to_string(), String::from("Delete this?"));
+//         // siv.add_layer(Dialog::around(
+//         //     TextView::new(format!("Delete tag: {}", tag.1)))
+//         //         .button("Ok", |s| s.quit()));
+//     // }
+// }
 
 pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
 // pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult<'a>> {
@@ -145,18 +176,53 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
                         let nut_con = mut_con.clone();
                         let mut b1 = nut_con.borrow_mut();
                         show_next_screen(s, &name.clone().deref(), &mut b1);
-                    }).with_id("dialog"),
+                    }).with_id("dialog")
             )
             // .child(
             //     t_view
             // )
             .child(
                 // sel_view
-                SelectView::new()
-                    .with_all(
-                        sel_tags
-                    )
-                    .with_id("tag_list")
+                OnEventView::new(
+                    SelectView::new()
+                        .with_all(
+                            sel_tags
+                        )
+                        .with_id("tag_list")
+                )
+                // .on_event(Event::Key::Del).has_callback()
+                // .on_event_inner('p', |mut s1| {
+                .on_event_inner(Event::Key(Key::Backspace), |s1| {
+                    // s.pop_layer();
+                    // s1.get_inner().add_item("bolo", "yolo")
+                    // s1.get_mut().add_item("bolo", "yolo".to_string());
+                    // s1.get_mut().select_up(1);
+
+
+                    // delete_tag(&mut s1.get_mut())
+                    let sel = s1.get_mut();
+                    if let Some(id) = sel.selected_id() {
+                        let tag: String = sel.get_item(id).unwrap().1.clone();
+                        // sel.add_item(id.to_string(), String::from("Delete this?"));
+                        // None
+                        let cb: Callback = Callback::from_fn(
+                            move |siv: &mut Cursive| {
+                                siv.add_layer(Dialog::around(
+                                    TextView::new(format!("Delete tag: {}", tag)))
+                                        .button("Ok", |s| {
+                                            s.pop_layer();
+                                        }));
+                        });
+                        // delete_tag(&mut siv, &mut s1.get_mut());
+                        // None
+                        Some(EventResult::Consumed(Some(cb)))
+                    }
+                    else {
+                        None
+                    }
+                })
+                // .on_event(Event::Key::Del)::with_cb(
+                // )
             )
     );
 
@@ -213,8 +279,6 @@ fn show_next_screen(s: &mut Cursive, name: &str, c: &mut TextContent) {
     if name.is_empty() {
         s.add_layer(Dialog::info("Please enter a name!"));
     } else {
-        // c.append("\n");
-        // c.append(name);
         trace!("show_next_screen 2");
         s.call_on_id("tag_list",
             |view: &mut SelectView|
