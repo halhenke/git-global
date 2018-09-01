@@ -33,21 +33,42 @@ type RMut = Rc<RefCell<TextContent>>;
 // let mk_cursive = cursive::ncurses;
 
 // pub fn delete_tag(siv: &mut Cursive, sel: &mut SelectView) {
-// pub fn delete_tag(sel: &mut SelectView) {
-//     // let id = sel.selected_id();
-//     if let Some(id) = sel.selected_id() {
-//         let tag: String = sel.get_item(id).unwrap().1.clone();
-//         // sel.add_item(id.to_string(), String::from("Delete this?"));
-//         return |siv: &mut Cursive| {
-//             siv.add_layer(Dialog::around(
-//                 TextView::new(format!("Delete tag: {}", tag.1)))
-//                     .button("Ok", |s| s.quit()));
-//         }
-//         // siv.add_layer(Dialog::around(
-//         //     TextView::new(format!("Delete tag: {}", tag.1)))
-//         //         .button("Ok", |s| s.quit()));
-//     }
-// }
+pub fn delete_tag(sel: &mut SelectView) -> Option<EventResult> {
+    // let id = sel.selected_id().unwrap_or(-1);
+    // let id = sel.selected_id().unwrap();
+    // match Some(id) {
+    match sel.selected_id() {
+        Some(id) => {
+        // if let Some(id) = sel.selected_id() {
+            let tag: String = sel.get_item(id).unwrap().1.clone();
+            // sel.add_item(id.to_string(), String::from("Delete this?"));
+            // None
+            let cb: Callback = Callback::from_fn(
+                move |siv: &mut Cursive| {
+                    siv.add_layer(Dialog::around(
+                        TextView::new(format!("Delete tag: {}?", tag)))
+                            .button("No", |s| {
+                                s.pop_layer();
+                            })
+                            .button("Yes", move |s| {
+                                // let ii = id.clone();
+                                // let ii = sel.selected_id().unwrap();
+                                s.call_on_id("tag_list", |v: &mut SelectView| {
+                                    v.remove_item(id);
+                                });
+                                s.pop_layer();
+                            }));
+            });
+            // delete_tag(&mut siv, &mut s1.get_mut());
+            // None
+            Some(EventResult::Consumed(Some(cb)))
+        },
+        None => {
+            None
+        }
+    }
+
+}
 
 // pub fn delete_tag_mut(mut sel: SelectView) {
 //     let rcm = Rc::new(&sel);
@@ -199,27 +220,8 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
                     // s1.get_mut().select_up(1);
 
 
-                    // delete_tag(&mut s1.get_mut())
-                    let sel = s1.get_mut();
-                    if let Some(id) = sel.selected_id() {
-                        let tag: String = sel.get_item(id).unwrap().1.clone();
-                        // sel.add_item(id.to_string(), String::from("Delete this?"));
-                        // None
-                        let cb: Callback = Callback::from_fn(
-                            move |siv: &mut Cursive| {
-                                siv.add_layer(Dialog::around(
-                                    TextView::new(format!("Delete tag: {}", tag)))
-                                        .button("Ok", |s| {
-                                            s.pop_layer();
-                                        }));
-                        });
-                        // delete_tag(&mut siv, &mut s1.get_mut());
-                        // None
-                        Some(EventResult::Consumed(Some(cb)))
-                    }
-                    else {
-                        None
-                    }
+                    delete_tag(&mut s1.get_mut())
+                    // let sel = s1.get_mut();
                 })
                 // .on_event(Event::Key::Del)::with_cb(
                 // )
