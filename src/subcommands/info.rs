@@ -68,7 +68,8 @@ pub fn get_results(raw_arg: bool) -> Result<GitGlobalResult> {
         result.add_message(reader);
         // result.add_message(config.cache_file.to_str().unwrap().to_string());
     } else {
-        result.add_message(format!("For contents of cache file pass \"raw\" flag"));
+        result.add_message(format!("For contents of cache file pass \"{}\" flag i.e.", "raw".blue()));
+        result.add_message(format!("{}", ">>> git-global info raw".green().underline()));
     }
     Ok(result)
 }
