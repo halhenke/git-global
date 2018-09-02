@@ -37,6 +37,8 @@ fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
             .about("lists all tags on your machine [the default]"))
         .subcommand(SubCommand::with_name("add-tags")
             .about("add tags on your machine [the default]"))
+        .subcommand(SubCommand::with_name("tag-projects")
+            .about("edit the association between tags and projects"))
         .subcommand(SubCommand::with_name("tag")
             .about("tag a single git repo")
                 .arg(Arg::with_name("tag_arg")
@@ -99,6 +101,7 @@ pub fn run_from_command_line() -> i32 {
                 .collect();
             subcommands::tag::get_results(tag)
         },
+        Some("tag-projects") => subcommands::tag_projects::go(),
         Some("status") => subcommands::status::get_results(),
         Some(cmd) => Err(GitGlobalError::BadSubcommand(cmd.to_string())),
         None => subcommands::status::get_results(),

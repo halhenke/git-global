@@ -3,6 +3,7 @@ pub mod info;
 pub mod list;
 pub mod list_tags;
 pub mod add_tags;
+pub mod tag_projects;
 pub mod scan;
 pub mod status;
 pub mod filter;
