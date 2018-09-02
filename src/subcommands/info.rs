@@ -2,14 +2,22 @@
 
 use chrono::Duration;
 
+use std::fs::{File};
+use std::io::{Read, Write};
+
 use std::path::PathBuf;
 use std::time::SystemTime;
+
+extern crate clap;
+use clap::ArgMatches;
+
+use colored::*;
 
 use core::{GitGlobalConfig, GitGlobalResult, get_repos};
 use core::errors::Result;
 
 /// Returns the age of a file in terms of days, hours, minutes, and seconds.
-fn get_age(filename: PathBuf) -> Option<String> {
+fn get_age(filename: &PathBuf) -> Option<String> {
     filename.metadata().ok()
         .and_then(|metadata| metadata.modified().ok())
         .and_then(|mtime| SystemTime::now().duration_since(mtime).ok())
@@ -25,7 +33,7 @@ fn get_age(filename: PathBuf) -> Option<String> {
 }
 
 /// Gathers metadata about the git-global installation.
-pub fn get_results() -> Result<GitGlobalResult> {
+pub fn get_results(raw_arg: bool) -> Result<GitGlobalResult> {
     let repos = get_repos();
     let mut result = GitGlobalResult::new(&repos);
     let config = GitGlobalConfig::new();
@@ -40,12 +48,27 @@ pub fn get_results() -> Result<GitGlobalResult> {
     result.add_message(format!("Number of repos: {}", repos.len()));
     result.add_message(format!("Base directory: {}", config.basedir));
     result.add_message(format!("Cache file: {}", config.cache_file.to_str().unwrap()));
-    if let Some(age) = get_age(config.cache_file) {
+    if let Some(age) = get_age(&config.cache_file) {
         result.add_message(format!("Cache file age: {}", age));
     }
     result.add_message(format!("Ignored patterns:"));
     for pat in config.ignored_patterns.iter() {
         result.add_message(format!("  {}", pat));
+    }
+    if raw_arg {
+        let mut f = File::open(config.cache_file)
+            .expect("No cache file found.");
+        // let mut reader: Vec<u8> = Vec::new();
+        // let reader = &mut Vec::new();
+        let mut reader = String::new();
+        f.read_to_string(&mut reader)
+            .expect("Couldnt read ");
+        result.add_message(format!("Contents of cache file: "));
+        // result.add_message(reader.to_string());
+        result.add_message(reader);
+        // result.add_message(config.cache_file.to_str().unwrap().to_string());
+    } else {
+        result.add_message(format!("For contents of cache file pass \"raw\" flag"));
     }
     Ok(result)
 }

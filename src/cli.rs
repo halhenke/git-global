@@ -19,7 +19,10 @@ fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
             .long("json")
             .help("Output results in JSON."))
         .subcommand(SubCommand::with_name("info")
-            .about("show meta-information about git-global"))
+            .about("show meta-information about git-global")
+                .arg(Arg::with_name("raw")
+                .required(false)
+                .takes_value(false)))
         .subcommand(SubCommand::with_name("bullshit")
             .about("Just mucking around with stuff"))
         .subcommand(SubCommand::with_name("clean")
@@ -62,7 +65,14 @@ pub fn run_from_command_line() -> i32 {
     let use_json = matches.is_present("json");
     let results = match matches.subcommand_name() {
         Some("bullshit") => subcommands::bullshit::get_results(),
-        Some("info") => subcommands::info::get_results(),
+        Some("info") => {
+            let raw_info = matches
+                .subcommand_matches("info").unwrap()
+                .is_present("raw");
+                // .value_of("raw");
+                // .expect("raw panic");
+            subcommands::info::get_results(raw_info)
+        },
         Some("list") => subcommands::list::get_results(),
         Some("list-tags") => subcommands::list_tags::get_results(),
         Some("add-tags") => subcommands::add_tags::go(),
