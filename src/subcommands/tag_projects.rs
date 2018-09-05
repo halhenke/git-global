@@ -1,7 +1,8 @@
 use std::cell::{RefCell, RefMut};
 use std::rc::Rc;
 use std::ops::{Deref, DerefMut};
-
+use std::iter::Zip;
+use std;
 extern crate cursive;
 
 use self::cursive::Cursive;
@@ -11,23 +12,43 @@ use self::cursive::{
     traits::*,
     view::Selector
     };
-use self::cursive::views::{
-    Dialog,
-    EditView,
-    LinearLayout,
-    ListView,
-    MenuPopup,
-    OnEventView,
-    SelectView,
-    TextContent,
-    TextView
-};
+use self::cursive::{
+    view::{
+        View,
+        ViewWrapper,
+    },
+    views::{
+        BoxView,
+        Dialog,
+        EditView,
+        IdView,
+        LinearLayout,
+        ListView,
+        MenuPopup,
+        OnEventView,
+        ScrollView,
+        SelectView,
+        TextContent,
+        TextView,
+        }};
 use core::errors::Result as WeirdResult;
 use core::{GitGlobalConfig, RepoTag, GitGlobalResult, get_repos};
 use mut_static::MutStatic;
 use take_mut;
 
 type RMut = Rc<RefCell<TextContent>>;
+
+// #[derive(Debug)]
+// IdView
+use std::fmt;
+// impl fmt::Debug for IdView<V> {
+// // impl Debug<V> for IdView<V>
+//     // where V: View {
+// // impl fmt::Debug for IdView<V> {
+//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+//         write!(f, "IdView");
+//     }
+// }
 
 // mk_cursive = cursive::default;
 // let mk_cursive = cursive::ncurses;
@@ -64,76 +85,49 @@ pub fn delete_tag(sel: &mut SelectView) -> Option<EventResult> {
 
 
 pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
-// pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult<'a>> {
     let user_config = GitGlobalConfig::new();
 
     trace!("go");
 
-    debug!("ADD TAGS -  GOOOO: did we get here - 0");
     let mut siv = Cursive::default();
-    debug!("ADD TAGS -  GOOOO: did we get here - 1");
-    debug!("ADD TAGS -  GOOOO: did we get here - 1");
-
     siv.load_theme_file("assets/style.toml").unwrap();
 
     // https://github.com/gyscos/Cursive/issues/179
     let mut_content = TextContent::new(
         user_config.tag_names()
             .join("\n")
-            // .for_each(|&x| String::from(x).push_str("\n"))
-            // .map(|&x| String::from(x).push_str("\n"))
-            // .map(|&x| x.append("\n"))
-            // .collect::<String>()
     );
     let sel_tags_1: Vec<&str> = user_config.tag_names();
     let sel_tags_2: Vec<String> = user_config.tag_names()
         .into_iter()
         .map(|x| String::from(x))
         .collect();
-    // let sel_tags_1: Vec<String> = user_config.tag_names()
-        // .into_iter()
-        // .map(|x| String::from(x))
-        // .collect();
-    // let sel_tags_2: Vec<String> = sel_tags_1.clone();
     let sel_tags = sel_tags_1.into_iter().zip(sel_tags_2.into_iter());
-        // .collect::<Vec<String>>();
-    // let sel_tags = user_config.tag_names().iter()
-    //         .zip(*user_config.tag_names().collect::<String>());
 
-    // NOTE: We want to make these "upfront" otherwise we woulc clone on every callback - prob not a big deal actually
-    // If we make borrows here then we cant do borrow_muts later which is what we need
-    let mut_con = Rc::new(RefCell::new(mut_content));
-    // let immut_con = Rc::clone(&mut_con).borrow()
-    let m2_con = Rc::clone(&mut_con);
-    // let m2_con = &mut_con.clone();
-    let m3_con = Rc::clone(&mut_con);
-    let m4_con = Rc::clone(&mut_con);
+    type sel_tag_list<'a> = std::iter::Zip<std::vec::IntoIter<&'a str>, std::vec::IntoIter<String>>;
+
+    fn selectify(tags_1: Vec<&str>) -> sel_tag_list {
+        let tags_2: Vec<String> = tags_1
+            .clone()
+            .into_iter()
+            .map(|x| String::from(x))
+            .collect();
+        return tags_1
+            .into_iter()
+            .zip(tags_2.into_iter())
+    }
 
     debug!("ADD TAGS: did we get here - 3");
-
-    // Need to wrap this to make it usable in the static closures/callbacks
-    // Need to keep a list of new tags as i have to display both pre-existing tags and new ones so i need to store these separately
-    // let new_tags: Vec<&str>;
-    // let new_tags: &mut Vec<String> = &mut vec!();
-    // let new_tags: &mut Vec<&str>;
     let mut new_tags: Vec<String> = Vec::new();
-    // let fake_tags = &new_tags;
-
-    // let edit_cb = move |s: &mut Cursive, name: &str| {
     let edit_cb = move |s: &mut Cursive, name: &str| {
         debug!("edit_cb was called...");
         // let nut_con = m3_con.clone();
-        let mut b1 = m2_con.borrow_mut();
+        // let mut b1 = m2_con.borrow_mut();
         // &new_tags.push(String::from(name));
         take_mut::take(&mut new_tags, |mut new_tags| {
             new_tags.push(String::from(name));
-            // new_tags.push("Hola");
-            // new_tags.push(&name.clone());
             new_tags
         });
-        // show_next_screen(s, &name.clone().deref(), &mut nut_con.borrow_mut());
-        // show_next_screen(s, &name.clone().deref(), m3_con.clone().borrow_mut());
-        show_next_screen(s, &name.clone().deref(), &mut b1);
     };
 
     let e_view = EditView::new()
@@ -141,54 +135,52 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
         .on_submit_mut(edit_cb)
         .with_id("tag")
         .fixed_width(20);
-    // let t_view  = TextView::new_with_content(
-    //     m3_con.borrow()
-    //     // Rc::clone(&mut_con)
-    //         .deref()
-    //         .clone())
-    //     .with_id("tag_list");
-    // let mut sel_view = SelectView::new()
-    //     .with_all(
-    //         sel_tags
-    //     )
-    //     .with_id("tag_list");
+    let repo_selector = SelectView::new()
+        .with_all(selectify(
+            user_config.get_cached_repos()
+                .iter()
+                .map(|r| r.path.as_str())
+                // .map(|p| p.rsplit("/"))
+                .map(|p|
+                    *p.rsplit("/")
+                        .collect::<Vec<&str>>()
+                        .first()
+                        .unwrap()
+                )
+                // .flatten()
+                .take(5)
+                .collect()
+        ))
+        .min_width(20)
+        .with_id("repo-field");
+    let tags_displayer: IdView<BoxView<SelectView>> = SelectView::new()
+        .with_all(selectify(
+            vec!("hoo", "lah", "laa")
+        ))
+        .min_width(20)
+        .with_id("tag-display");
+    let tags_pool: IdView<SelectView> = SelectView::new()
+    // let tags_pool: IdView<ScrollView<SelectView>> = SelectView::new()
+            .with_all(selectify(
+            user_config.tags
+                .iter()
+                .map(|r| r.name.as_str())
+                .collect()
+        ))
+        // .scrollable()
+        .with_id("tag-pool");
 
     siv.add_layer(
         LinearLayout::vertical()
             .child(
-                Dialog::new()
-                    .title("Add a Tag...")
-                    .padding((1, 1, 1, 0))
-                    .content(
-                        e_view
-                    )
-                    .button("q", move |s: &mut Cursive| {
-                        debug!("q was called...");
-                        save_tags_and_quit(s, &m4_con);
-                        // save_tags_and_quit(s, &mut user_config, &m4_con);
-                    })
-                    .button("Ok", move |s: &mut Cursive| {
-                        let name = s.call_on_id(
-                            "tag",
-                            |view: &mut EditView| view.get_content(),
-                        ).unwrap();
-                        debug!("OK was called...");
-                        let nut_con = mut_con.clone();
-                        let mut b1 = nut_con.borrow_mut();
-                        show_next_screen(s, &name.clone().deref(), &mut b1);
-                    }).with_id("dialog")
+                LinearLayout::horizontal()
+                    .child(repo_selector)
+                    .child(tags_displayer)
             )
-            // .child(
-            //     t_view
-            // )
             .child(
                 // sel_view
                 OnEventView::new(
-                    SelectView::new()
-                        .with_all(
-                            sel_tags
-                        )
-                        .with_id("tag_list")
+                    tags_pool
                 )
                 // .on_event(Event::Key::Del).has_callback()
                 // .on_event_inner('p', |mut s1| {
@@ -200,8 +192,16 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
 
 
                     delete_tag(&mut s1.get_mut())
+                        // .into_inner().ok().unwrap()
+                        // .into_inner().expect())
+                    // delete_tag(&mut s1.into_inner().unwrap().into_inner().expect())
+                    // delete_tag(&mut s1.get_mut())
                     // let sel = s1.get_mut();
                 })
+                // NOTE: Due to fucking annoying design this has to come
+                // after/outside `OnEventView` - otherwise we never get to unwrap
+                // properly
+                .scrollable()
                 // .on_event(Event::Key::Del)::with_cb(
                 // )
             )
