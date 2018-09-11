@@ -14,6 +14,7 @@ readme = "README.md"
 
 keywords = ["git"]
 categories = ["command-line-utilities", "development-tools"]
+build = "build.rs"
 
 [[bin]]
 name = "git-global-hal"
@@ -57,3 +58,7 @@ default-features = false  # don't want SSH/HTTPS/Curl
 
 [dev-dependencies]
 tempdir = "0.3"
+
+[build-dependencies]
+clap = "2.32.0"
+# json = "0.11"
