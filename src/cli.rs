@@ -1,8 +1,8 @@
 //! The command line interface for git-global.
 
 use std::io::{Write, stderr};
-use clap::{Arg, App, SubCommand};
-
+use clap::{Arg, App, Shell, SubCommand};
+use std::io;
 
 use core::GitGlobalResult;
 // use core::GitGlobalResult;
@@ -10,11 +10,14 @@ use core::GitGlobalError;
 use subcommands;
 
 /// Returns the definitive clap::App instance for git-global.
-fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
+pub fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
     App::new("git-global")
         .version(crate_version!())
         .author("Eric Petersen <eric@ericpetersen.io>")
         .about("git subcommand for working with all git repos on a machine")
+        .arg(Arg::with_name("generate-zsh-completions")
+            .long("zsh")
+            .help("generate zsh completions for this command"))
         .arg(Arg::with_name("json")
             .long("json")
             .help("Output results in JSON."))
@@ -65,6 +68,12 @@ pub fn run_from_command_line() -> i32 {
     let clap_app = get_clap_app();
     let matches = clap_app.get_matches();
     let use_json = matches.is_present("json");
+
+    if matches.is_present("generate-zsh-completions") {
+        get_clap_app().gen_completions_to("git-global-hal", Shell::Zsh, &mut io::stdout());
+        return 0;
+    }
+
     let results = match matches.subcommand_name() {
         Some("bullshit") => subcommands::bullshit::get_results(),
         Some("info") => {
