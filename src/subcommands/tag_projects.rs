@@ -26,6 +26,7 @@ use self::cursive::{
         ListView,
         MenuPopup,
         OnEventView,
+        Panel,
         ScrollView,
         SelectView,
         TextContent,
@@ -174,39 +175,31 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
         LinearLayout::vertical()
             .child(
                 LinearLayout::horizontal()
-                    .child(repo_selector)
-                    .child(tags_displayer)
+                    .child(Panel::new(repo_selector))
+                    .child(Panel::new(tags_displayer))
             )
             .child(
                 // sel_view
-                OnEventView::new(
-                    tags_pool
+                Panel::new(
+
+                    OnEventView::new(
+                        tags_pool
+                    )
+                    .on_event_inner(Event::Key(Key::Backspace), |s1| {
+                        delete_tag(&mut s1.get_mut())
+                    })
+                    // NOTE: Due to fucking annoying design this has to come
+                    // after/outside `OnEventView` - otherwise we never get to unwrap
+                    // properly
+                    .scrollable()
+                    // .on_event(Event::Key::Del)::with_cb(
+                    // )
                 )
-                // .on_event(Event::Key::Del).has_callback()
-                // .on_event_inner('p', |mut s1| {
-                .on_event_inner(Event::Key(Key::Backspace), |s1| {
-                    // s.pop_layer();
-                    // s1.get_inner().add_item("bolo", "yolo")
-                    // s1.get_mut().add_item("bolo", "yolo".to_string());
-                    // s1.get_mut().select_up(1);
-
-
-                    delete_tag(&mut s1.get_mut())
-                        // .into_inner().ok().unwrap()
-                        // .into_inner().expect())
-                    // delete_tag(&mut s1.into_inner().unwrap().into_inner().expect())
-                    // delete_tag(&mut s1.get_mut())
-                    // let sel = s1.get_mut();
-                })
-                // NOTE: Due to fucking annoying design this has to come
-                // after/outside `OnEventView` - otherwise we never get to unwrap
-                // properly
-                .scrollable()
-                // .on_event(Event::Key::Del)::with_cb(
-                // )
             )
     );
-
+    siv.add_global_callback('q', |s1| {
+        s1.quit()
+    });
     siv.run();
     debug!("ADD TAGS: called - 33");
 
