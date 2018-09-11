@@ -1,3 +1,6 @@
+[env]
+APP_NAME = "git-global-hal"
+
 [tasks.build-git-global-hal]
 command = "cargo"
 args = ["build"]
@@ -6,10 +9,11 @@ args = ["build"]
 description = "install git-global-hal globally"
 workspace = false
 command = "cargo"
-args = ["install", "--force", "--bin", "git-global-hal"]
+args = ["install", "--force", "--bin", "${APP_NAME}"]
 
 
 [tasks.build-shell-completions]
 description = "Output zsh completion info via `clap` and store it in /usr/local/share/zsh/site-functions"
-command = "git-global-hal"
-args = ["--zsh", ">", "/usr/local/share/zsh/site-functions/_git-global-hal"]
+script = [
+	"${APP_NAME} --zsh > /usr/local/share/zsh/site-functions/_${APP_NAME}"
+]
