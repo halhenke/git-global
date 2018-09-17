@@ -17,13 +17,18 @@ use self::cursive::{
         View,
         ViewWrapper,
     },
+    menu::{
+        MenuTree,
+    },
     views::{
         BoxView,
         Dialog,
         EditView,
         IdView,
+        Layer,
         LinearLayout,
         ListView,
+        Menubar,
         MenuPopup,
         OnEventView,
         Panel,
@@ -39,20 +44,7 @@ use take_mut;
 
 type RMut = Rc<RefCell<TextContent>>;
 
-// #[derive(Debug)]
-// IdView
 use std::fmt;
-// impl fmt::Debug for IdView<V> {
-// // impl Debug<V> for IdView<V>
-//     // where V: View {
-// // impl fmt::Debug for IdView<V> {
-//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-//         write!(f, "IdView");
-//     }
-// }
-
-// mk_cursive = cursive::default;
-// let mk_cursive = cursive::ncurses;
 
 // pub fn delete_tag(siv: &mut Cursive, sel: &mut SelectView) {
 pub fn delete_tag(sel: &mut SelectView) -> Option<EventResult> {
@@ -84,6 +76,13 @@ pub fn delete_tag(sel: &mut SelectView) -> Option<EventResult> {
 
 }
 
+pub fn repo_2_name<'a>(s: &'a str) -> &'a str {
+// pub fn repo_2_name<'a>(s: &'a str) -> &'a str {
+    s.rsplit("/")
+        .collect::<Vec<&str>>()
+        .first()
+        .unwrap()
+}
 
 pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     let user_config = GitGlobalConfig::new();
@@ -141,25 +140,32 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
             user_config.get_cached_repos()
                 .iter()
                 .map(|r| r.path.as_str())
-                // .map(|p| p.rsplit("/"))
-                .map(|p|
-                    *p.rsplit("/")
-                        .collect::<Vec<&str>>()
-                        .first()
-                        .unwrap()
-                )
+                .map(|p| repo_2_name(p))
+                // .map(|p| *p.rsplit("/")
+                //     .collect::<Vec<&str>>()
+                //     .first()
+                //     .unwrap()
+                // )
                 // .flatten()
                 .take(5)
                 .collect()
         ))
+        .on_submit(|s, r: &str| {
+            s.focus_id("tag-display").expect("...")
+        })
         .min_width(20)
         .with_id("repo-field");
-    let tags_displayer: IdView<BoxView<SelectView>> = SelectView::new()
-        .with_all(selectify(
-            vec!("hoo", "lah", "laa")
-        ))
-        .min_width(20)
-        .with_id("tag-display");
+    // let tags_displayer: IdView<BoxView<SelectView>> = OnEventView()
+    let tags_displayer  = OnEventView::new(
+        SelectView::new()
+            .with_all(selectify(
+                vec!("hoo", "lah", "laa")
+            ))
+            .min_width(20)
+            .with_id("tag-display")
+    ).on_event(Event::Key(Key::Esc), |s|
+        s.focus_id("repo-field").expect("...")
+    );
     let tags_pool: IdView<SelectView> = SelectView::new()
     // let tags_pool: IdView<ScrollView<SelectView>> = SelectView::new()
             .with_all(selectify(
@@ -178,6 +184,14 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
                     .child(Panel::new(repo_selector))
                     .child(Panel::new(tags_displayer))
             )
+            // .child(
+            //     Layer::new(
+            //         Menubar::new()
+            //         .subtree("Repo", MenuTree::new()
+            //             .leaf("First Thing", |_| {})
+            //         )
+            //     )
+            // )
             .child(
                 // sel_view
                 Panel::new(
