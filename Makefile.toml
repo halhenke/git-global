@@ -1,11 +1,11 @@
 [env]
 APP_NAME = "git-global-hal"
 
-[tasks.build-git-global-hal]
+[tasks.build]
 command = "cargo"
 args = ["build"]
 
-[tasks.install-git-global-hal]
+[tasks.install-bin]
 description = "install git-global-hal globally"
 workspace = false
 command = "cargo"
