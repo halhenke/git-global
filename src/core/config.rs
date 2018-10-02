@@ -10,7 +10,10 @@ use git2;
 extern crate dirs;
 extern crate serde_json;
 
-use core::repo::{Repo, RepoTag};
+use core::{
+    repo::{Repo, RepoTag},
+    result::{GitGlobalResult}
+    };
 
 
 const APP: AppInfo = AppInfo { name: "git-global", author: "peap" };
@@ -312,6 +315,10 @@ impl GitGlobalConfig {
             repos = _repos.to_vec();
         }
         repos
+    }
+
+    pub fn get_cached_results(&self) -> GitGlobalResult {
+        GitGlobalResult::new(&self.get_cached_repos())
     }
 }
 
