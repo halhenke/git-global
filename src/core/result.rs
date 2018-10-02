@@ -91,4 +91,14 @@ impl GitGlobalResult {
         }
         println!("{:#}", json);
     }
+
+    /**
+        When we need to get all the tags from the current tags
+     */
+    pub fn all_tags(&self) -> Vec<&RepoTag> {
+        self.repos.iter()
+            .map(|r| &r.tags)
+            .flatten()
+            .collect::<Vec<&RepoTag>>()
+    }
 }
