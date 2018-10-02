@@ -38,13 +38,34 @@ use self::cursive::{
         TextView,
         }};
 use core::errors::Result as WeirdResult;
-use core::{GitGlobalConfig, RepoTag, GitGlobalResult, get_repos};
+use core::{GitGlobalConfig, Repo, RepoTag, GitGlobalResult, get_repos};
 use mut_static::MutStatic;
 use take_mut;
 
 type RMut = Rc<RefCell<TextContent>>;
 
 use std::fmt;
+
+struct TagStatus<'a> {
+    repos: Vec<Repo>,
+    currentRepo: &'a Repo,
+    currentTags: Vec<RepoTag>,
+}
+
+impl<'a> TagStatus<'a> {
+    pub fn new(repos: Vec<Repo>, repo: &'a Repo, tags: Vec<RepoTag>) -> TagStatus<'a> {
+        return TagStatus {
+            repos: repos,
+            currentRepo: repo,
+            currentTags: tags,
+        }
+    }
+
+    pub fn select_repo(&mut self, repo: &'a Repo) -> &'a TagStatus {
+        self.currentRepo = repo;
+        self
+    }
+}
 
 // pub fn delete_tag(siv: &mut Cursive, sel: &mut SelectView) {
 pub fn delete_tag(sel: &mut SelectView) -> Option<EventResult> {
@@ -77,7 +98,6 @@ pub fn delete_tag(sel: &mut SelectView) -> Option<EventResult> {
 }
 
 pub fn repo_2_name<'a>(s: &'a str) -> &'a str {
-// pub fn repo_2_name<'a>(s: &'a str) -> &'a str {
     s.rsplit("/")
         .collect::<Vec<&str>>()
         .first()
@@ -86,6 +106,8 @@ pub fn repo_2_name<'a>(s: &'a str) -> &'a str {
 
 pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     let user_config = GitGlobalConfig::new();
+    let results = user_config.get_cached_results();
+    let all_tags: Vec<&RepoTag> = results.all_tags();
 
     trace!("go");
 
@@ -97,16 +119,19 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
         user_config.tag_names()
             .join("\n")
     );
-    let sel_tags_1: Vec<&str> = user_config.tag_names();
-    let sel_tags_2: Vec<String> = user_config.tag_names()
-        .into_iter()
-        .map(|x| String::from(x))
-        .collect();
-    let sel_tags = sel_tags_1.into_iter().zip(sel_tags_2.into_iter());
+    // let sel_tags_1: Vec<&str> = user_config.tag_names();
+    // let sel_tags_2: Vec<String> = user_config.tag_names()
+    //     .into_iter()
+    //     .map(|x| String::from(x))
+    //     .collect();
+    // let sel_tags = sel_tags_1
+    //     .into_iter()
+    //     .zip(sel_tags_2.into_iter());
 
-    type sel_tag_list<'a> = std::iter::Zip<std::vec::IntoIter<&'a str>, std::vec::IntoIter<String>>;
+    type SelTagList<'a> = std::iter::Zip<std::vec::IntoIter<&'a str>, std::vec::IntoIter<String>>;
 
-    fn selectify(tags_1: Vec<&str>) -> sel_tag_list {
+    /// Turn a Vector of tags into a Zip suitable for display in a SelectList
+    fn selectify(tags_1: Vec<&str>) -> SelTagList {
         let tags_2: Vec<String> = tags_1
             .clone()
             .into_iter()
@@ -121,15 +146,14 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     let mut new_tags: Vec<String> = Vec::new();
     let edit_cb = move |s: &mut Cursive, name: &str| {
         debug!("edit_cb was called...");
-        // let nut_con = m3_con.clone();
-        // let mut b1 = m2_con.borrow_mut();
-        // &new_tags.push(String::from(name));
         take_mut::take(&mut new_tags, |mut new_tags| {
             new_tags.push(String::from(name));
             new_tags
         });
     };
 
+
+    /// VIEWS
     let e_view = EditView::new()
         // .on_submit(show_popup)
         .on_submit_mut(edit_cb)
@@ -141,12 +165,6 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
                 .iter()
                 .map(|r| r.path.as_str())
                 .map(|p| repo_2_name(p))
-                // .map(|p| *p.rsplit("/")
-                //     .collect::<Vec<&str>>()
-                //     .first()
-                //     .unwrap()
-                // )
-                // .flatten()
                 .take(5)
                 .collect()
         ))
@@ -177,6 +195,7 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
         // .scrollable()
         .with_id("tag-pool");
 
+    /// Main Window
     siv.add_layer(
         LinearLayout::vertical()
             .child(
@@ -221,6 +240,7 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     Ok(GitGlobalResult::new(&vec![]))
 }
 
+/// Final behaviour
 fn save_tags_and_quit(s: &mut Cursive, tags: &RMut) {
 // fn save_tags_and_quit(s: &mut Cursive, user_config: &mut GitGlobalConfig, tags: &RMut) {
     let mut user_config = GitGlobalConfig::new();
