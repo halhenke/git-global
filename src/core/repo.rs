@@ -56,6 +56,13 @@ impl fmt::Display for RepoTag {
     }
 }
 
+// impl fmt::Display for Vec<RepoTag> {
+//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+//         // write!(f, "RepoTag: {}", self.name)
+//         // unimplemented!()
+//     }
+// }
+
 /// RepoTag is basically a wrapper around a string
 impl From<String> for RepoTag {
     fn from(name: String) -> RepoTag {
@@ -63,4 +70,30 @@ impl From<String> for RepoTag {
             name
         }
     }
+}
+
+impl From<RepoTag> for String {
+    fn from(repo: RepoTag) -> String {
+        repo.name
+    }
+}
+
+// impl From<Vec<RepoTag>> for Vec<String> {
+//     fn (reps) {
+//         reps.iter()
+//             .map(|x| x.name)
+//             .collect()
+//     }
+// }
+// impl Into<Vec<String>> for Vec<RepoTag> {
+//     fn (reps) {
+
+//     }
+// }
+
+pub fn does_this_work(reps: Vec<RepoTag>) -> Vec<String> {
+    // return reps.into();
+    reps.into_iter()
+        .map(|x| x.into()) //make use of from implementation...
+        .collect()
 }
