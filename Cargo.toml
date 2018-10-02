@@ -43,12 +43,12 @@ pipeline = "0.5.0"
 rustfix = "0.4.2"
 dirs = "1.0.3"
 pretty_env_logger = "0.2.4"
-log = "0.4.4"
+log = "0.4.5"
 take_mut = "0.2.2"
 
 
 [dependencies.cursive]
-version = "0.9.0"
+version = "0.9.1"
 default-features = false
 features = ["termion-backend"]
 
