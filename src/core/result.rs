@@ -8,7 +8,7 @@ use core::repo::{Repo, RepoTag};
 #[derive(Serialize, Deserialize, Debug)]
 pub struct GitGlobalResult {
     messages: Vec<String>,
-    repos: Vec<Repo>,
+    pub repos: Vec<Repo>,
     repo_messages: HashMap<Repo, Vec<String>>,
     flag_pad_repo_output: bool,
 }

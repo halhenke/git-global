@@ -60,9 +60,9 @@ extern crate log;
 extern crate take_mut;
 
 mod cli;
-mod core;
+pub mod core;
 
-mod subcommands;  // Using `pub mod` so we see the docs.
+pub mod subcommands;  // Using `pub mod` so we see the docs.
 #[macro_use]
 pub mod macros;
 
