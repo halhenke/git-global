@@ -46,14 +46,21 @@ type RMut = Rc<RefCell<TextContent>>;
 
 use std::fmt;
 
-struct TagStatus<'a> {
-    repos: &'a Vec<Repo>,
-    currentRepo: &'a Repo,
-    currentTags: &'a Vec<RepoTag>,
+struct TagStatus {
+// struct TagStatus<'a> {
+    // repos: &'a Vec<Repo>,
+    repos: Vec<Repo>,
+    currentRepo: Repo,
+    // currentRepo: &'a Repo,
+    currentTags: Vec<RepoTag>,
+    // currentTags: &'a Vec<RepoTag>,
 }
 
-impl<'a> TagStatus<'a> {
-    pub fn new(repos: &'a Vec<Repo>, repo: &'a Repo, tags: &'a Vec<RepoTag>) -> TagStatus<'a> {
+impl TagStatus {
+// impl<'a> TagStatus<'a> {
+    pub fn new(repos: Vec<Repo>, repo: Repo, tags: Vec<RepoTag>) -> TagStatus {
+    // pub fn new(repos: Vec<Repo>, repo: usize, tags: usize) -> TagStatus<'a> {
+    // pub fn new(repos: &'a Vec<Repo>, repo: &'a Repo, tags: &'a Vec<RepoTag>) -> TagStatus<'a> {
         return TagStatus {
             /// Current repos
             repos: repos,
@@ -65,9 +72,12 @@ impl<'a> TagStatus<'a> {
         }
     }
 
-    pub fn select_repo(&mut self, repo: &'a Repo) -> &'a TagStatus {
-        self.currentRepo = repo;
-        self.currentTags = &repo.tags;
+    pub fn select_repo(&mut self, repo: Repo) -> &mut TagStatus {
+    // pub fn select_repo(&mut self, repo: Repo) -> &'a TagStatus {
+    // pub fn select_repo(&mut self, repo: &'a Repo) -> &'a TagStatus {
+        // let t = &(&repo).tags;
+        self.currentRepo = repo.clone();
+        self.currentTags = repo.tags;
         self
     }
 }
@@ -112,8 +122,20 @@ pub fn repo_2_name<'a>(s: &'a str) -> &'a str {
 pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     let user_config = GitGlobalConfig::new();
     let results = user_config.get_cached_results();
-    let all_tags: Vec<&RepoTag> = results.all_tags();
-    let status = TagStatus::new(&results.repos, &results.repos[0], &results.repos[0].tags);
+    // let result_ref = Rc::new(results);
+    // let all_tags: Vec<&RepoTag> = results.all_tags();
+    // let rr_1 = Rc::clone(&result_ref).deref();
+    let rr = results.repos.clone();
+    let rrr = results.repos[0].clone();
+    let rt = results.repos[0].clone().tags;
+    let rs = results.repos.clone();
+
+    let status = TagStatus::new(results.repos,
+        rrr, rt);
+    // let status = TagStatus::new(&rr_1.repos,
+    //     &Rc::clone(&result_ref).deref().repos[0], &Rc::clone(&result_ref).deref().repos[0].tags);
+    // let status = TagStatus::new(&Rc::clone(&result_ref).deref().repos,
+    //     &Rc::clone(&result_ref).deref().repos[0], &Rc::clone(&result_ref).deref().repos[0].tags);
     let mut_stat = Rc::new(RefCell::new(status));
     let stat_1 = Rc::clone(&mut_stat);
 
@@ -152,7 +174,8 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
             .zip(tags_2.into_iter())
     }
 
-    fn selectify_repos<'a>(repos: &'a Vec<Repo>) -> Vec<(String, &Repo)> {
+    fn selectify_repos<'a>(repos: Vec<Repo>) -> Vec<(String, Repo)> {
+    // fn selectify_repos<'a>(repos: &'a Vec<Repo>) -> Vec<(String, &Repo)> {
         repos.into_iter()
             .map(|r| (r.name().to_string(), r) )
             .collect()
@@ -197,7 +220,8 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     let repo_selector = SelectView::new()
         .with_all(selectify_repos(
         // .with_all(selectify_repo(
-            stat_1.deref().borrow().deref().repos
+            rs
+            // &stat_1.deref().borrow().deref().repos
             // Rc::clone(&mut_stat).deref().borrow().deref().repos
             // &results.repos
             // &vec!()
