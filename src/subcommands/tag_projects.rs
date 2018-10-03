@@ -47,22 +47,27 @@ type RMut = Rc<RefCell<TextContent>>;
 use std::fmt;
 
 struct TagStatus<'a> {
-    repos: Vec<Repo>,
+    repos: &'a Vec<Repo>,
     currentRepo: &'a Repo,
-    currentTags: Vec<RepoTag>,
+    currentTags: &'a Vec<RepoTag>,
 }
 
 impl<'a> TagStatus<'a> {
-    pub fn new(repos: Vec<Repo>, repo: &'a Repo, tags: Vec<RepoTag>) -> TagStatus<'a> {
+    pub fn new(repos: &'a Vec<Repo>, repo: &'a Repo, tags: &'a Vec<RepoTag>) -> TagStatus<'a> {
         return TagStatus {
+            /// Current repos
             repos: repos,
+            /// Currently selected repo
             currentRepo: repo,
+            /// List of all tags (gettable from repos)
+            /// ...or list of all tags for this repo?
             currentTags: tags,
         }
     }
 
     pub fn select_repo(&mut self, repo: &'a Repo) -> &'a TagStatus {
         self.currentRepo = repo;
+        self.currentTags = &repo.tags;
         self
     }
 }
@@ -108,6 +113,9 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     let user_config = GitGlobalConfig::new();
     let results = user_config.get_cached_results();
     let all_tags: Vec<&RepoTag> = results.all_tags();
+    let status = TagStatus::new(&results.repos, &results.repos[0], &results.repos[0].tags);
+    let mut_stat = Rc::new(RefCell::new(status));
+    let stat_1 = Rc::clone(&mut_stat);
 
     trace!("go");
 
@@ -130,6 +138,8 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
 
     type SelTagList<'a> = std::iter::Zip<std::vec::IntoIter<&'a str>, std::vec::IntoIter<String>>;
 
+    type SelRepoList<'a> = std::iter::Zip<std::vec::IntoIter<&'a str>, std::vec::IntoIter<Repo>>;
+
     /// Turn a Vector of tags into a Zip suitable for display in a SelectList
     fn selectify(tags_1: Vec<&str>) -> SelTagList {
         let tags_2: Vec<String> = tags_1
@@ -141,6 +151,31 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
             .into_iter()
             .zip(tags_2.into_iter())
     }
+
+    fn selectify_repos<'a>(repos: &'a Vec<Repo>) -> Vec<(String, &Repo)> {
+        repos.into_iter()
+            .map(|r| (r.name().to_string(), r) )
+            .collect()
+    }
+
+    // /// Turn a Vector of Repos into a Zip suitable for display in a SelectList
+    // fn selectify_repo<'a>(repos: &'a Vec<Repo>) -> std::iter::Zip<Vec<String>,Vec<String>> {
+    // // fn selectify_repo<'a>(repos: &'a Vec<Repo>) -> std::iter::Zip<&str, Repo> {
+    // // fn selectify_repo<'a>(repos: &'a Vec<Repo>) -> SelRepoList<'a> {
+    //     let names: Vec<String> = repos
+    //     // let names: Vec<&str> = repos
+    //         .into_iter()
+    //         .map(|x| x.name().to_string())
+    //         .collect();
+    //     names
+    //         .into_iter()
+    //         .zip(names)
+    //         // .iter()
+    //         // .into_iter()
+    //         // .zip(repos.into_iter())
+    //         // .zip(*repos.into_iter())
+    //         // .zip(vec!().into_iter())
+    // }
 
     debug!("ADD TAGS: did we get here - 3");
     let mut new_tags: Vec<String> = Vec::new();
@@ -160,15 +195,28 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
         .with_id("tag")
         .fixed_width(20);
     let repo_selector = SelectView::new()
-        .with_all(selectify(
-            user_config.get_cached_repos()
-                .iter()
-                .map(|r| r.path.as_str())
-                .map(|p| repo_2_name(p))
-                .take(5)
-                .collect()
+        .with_all(selectify_repos(
+        // .with_all(selectify_repo(
+            stat_1.deref().borrow().deref().repos
+            // Rc::clone(&mut_stat).deref().borrow().deref().repos
+            // &results.repos
+            // &vec!()
         ))
-        .on_submit(|s, r: &str| {
+        // .with_all(selectify(
+        //     user_config.get_cached_repos()
+        //         .iter()
+        //         .map(|r| r.path.as_str())
+        //         .map(|p| repo_2_name(p))
+        //         .take(5)
+        //         .collect()
+        // ))
+        // .on_select(|s: &mut Cursive, ss| {
+        //     Rc::clone(&mut_stat)
+        //         .borrow_mut()
+        //         .currentRepo = ss;
+        // })
+        // .on_submit(|s, r| {
+        .on_submit(|s: &mut Cursive, r: &Repo| {
             s.focus_id("tag-display").expect("...")
         })
         .min_width(20)
@@ -214,7 +262,6 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
             .child(
                 // sel_view
                 Panel::new(
-
                     OnEventView::new(
                         tags_pool
                     )
