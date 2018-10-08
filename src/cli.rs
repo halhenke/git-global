@@ -110,8 +110,8 @@ pub fn run_from_command_line() -> i32 {
                 .collect();
             subcommands::tag::get_results(tag)
         },
-        // Some("tag-projects") => subcommands::tag_projects::go(),
-        Some("tag-projects") => subcommands::tag_projects_two::go(),
+        Some("tag-projects") => subcommands::tag_projects::go(),
+        // Some("tag-projects") => subcommands::tag_projects_two::go(),
         Some("status") => subcommands::status::get_results(),
         Some(cmd) => Err(GitGlobalError::BadSubcommand(cmd.to_string())),
         None => subcommands::status::get_results(),

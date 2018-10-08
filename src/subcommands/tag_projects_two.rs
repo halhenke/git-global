@@ -226,14 +226,15 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
         //     .map(|r| String::from(r.name()) )
         //     .collect();
         let names = vec!("a", "b");
-        let temp :Zip<String, &'a Repo> = repos
-            .deref()
-            .borrow()
-            .deref()
-            .into_iter()
-            // .zip(String::from("names").iter());
-            .zip(names.into_iter());
-        return temp;
+        // let temp :Zip<String, &'a Repo> = repos
+        //     .deref()
+        //     .borrow()
+        //     .deref()
+        //     .into_iter()
+        //     // .zip(String::from("names").iter());
+        //     .zip(names.into_iter());
+        // return temp;
+        unimplemented!();
             // .collect()
     }
 
@@ -255,37 +256,37 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
         .with_id("tag")
         .fixed_width(20);
     // let repo_selector: SelectView<RcRepo> = SelectView::new();
-    let repo_selector = SelectView::new()
-        .with_all(selectify_repos(
-            // rs
-            // &rrrrr.deref().repos
-            rc11.clone()
-            // Rc::clone(&rc1)
-        ))
-        // .with_all(selectify(
-        //     user_config.get_cached_repos()
-        //         .iter()
-        //         .map(|r| r.path.as_str())
-        //         .map(|p| repo_2_name(p))
-        //         .take(5)
-        //         .collect()
+    let repo_selector: SelectView<String> = SelectView::new();
+        // .with_all(selectify_repos(
+        //     // rs
+        //     // &rrrrr.deref().repos
+        //     rc11.clone()
+        //     // Rc::clone(&rc1)
         // ))
-        .on_select(move |s: &mut Cursive, ss| {
-            // Rc::clone(&mut_stat)
-            stat_1;
-                // .deref()
-                // .get_mut()
-                // .borrow_mut()
-                // .get_mut()
-                // .currentRepo = ss;
-                // .currentRepo = ss.clone();
-        })
-        // .on_submit(|s, r| {
-        .on_submit(|s: &mut Cursive, r: &Repo| {
-            s.focus_id("tag-display").expect("...")
-        })
-        .min_width(20)
-        .with_id("repo-field");
+        // // .with_all(selectify(
+        // //     user_config.get_cached_repos()
+        // //         .iter()
+        // //         .map(|r| r.path.as_str())
+        // //         .map(|p| repo_2_name(p))
+        // //         .take(5)
+        // //         .collect()
+        // // ))
+        // .on_select(move |s: &mut Cursive, ss| {
+        //     // Rc::clone(&mut_stat)
+        //     stat_1;
+        //         // .deref()
+        //         // .get_mut()
+        //         // .borrow_mut()
+        //         // .get_mut()
+        //         // .currentRepo = ss;
+        //         // .currentRepo = ss.clone();
+        // })
+        // // .on_submit(|s, r| {
+        // .on_submit(|s: &mut Cursive, r: &Repo| {
+        //     s.focus_id("tag-display").expect("...")
+        // })
+        // .min_width(20)
+        // .with_id("repo-field");
     // let tags_displayer: IdView<BoxView<SelectView>> = OnEventView()
     let tags_displayer  = OnEventView::new(
         SelectView::new()
