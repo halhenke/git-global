@@ -244,8 +244,8 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
 
 
     // /// Turn a Vector of Repos into a Zip suitable for display in a SelectList
-    fn selectify_repos(repos: Vec<Repo>) -> Vec<(String, Repo)> {
-    // fn selectify_repos<'a>(repos: &'a Vec<Repo>) -> Vec<(String, &'a Repo)> {
+    // fn selectify_repos(repos: Vec<Repo>) -> Vec<(String, Repo)> {
+    fn selectify_repos<'a>(repos: &'a Vec<Repo>) -> Vec<(String, &'a Repo)> {
     // fn selectify_repos<'a>(repos: &'a Vec<Repo>) -> Vec<(String, &Repo)> {
     // fn selectify_repos<'a>(repos: RcVecRepo<'a>) -> Vec<(String, &Repo)> {
     // fn selectify_repos(repos: RcVecRepo) -> Vec<(String, RcRepo)> {
@@ -283,8 +283,8 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     let repo_selector = SelectView::new()
         // .with_all(selectify_repos(
         .with_all(selectify_repos(
-            stat_two.repos.to_vec()
-            // stat_two.repos
+            // stat_two.repos.to_vec()
+            stat_two.repos
             // rs
             // &rrrrr.deref().repos
             // results.repos.clone() &&
