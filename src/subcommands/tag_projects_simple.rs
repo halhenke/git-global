@@ -4,6 +4,9 @@ use std::ops::{Deref, DerefMut};
 use std::iter::Zip;
 use std::any::Any;
 use std;
+use std::borrow::{
+    Borrow,
+    BorrowMut};
 extern crate cursive;
 
 use self::cursive::Cursive;
@@ -42,7 +45,7 @@ use core::errors::Result as WeirdResult;
 use core::{GitGlobalConfig, Repo, RepoTag, GitGlobalResult, get_repos};
 use mut_static::MutStatic;
 use take_mut;
-
+use std::cell::Ref;
 type RMut = Rc<RefCell<TextContent>>;
 
 use std::fmt;
@@ -118,6 +121,15 @@ impl TagStatus {
     }
 }
 
+// pub fn repo_2_name(s: String) -> String {
+// // pub fn repo_2_name<'a>(s: String) -> &'a str {
+//     s.rsplit("/")
+//         .map(|x| String::from(x))
+//         .collect::<Vec<String>>()
+//         .first()
+//         .unwrap()
+//         .to_string()
+// }
 pub fn repo_2_name<'a>(s: &'a str) -> &'a str {
     s.rsplit("/")
         .collect::<Vec<&str>>()
@@ -186,6 +198,8 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
 
     type SelRepoList<'a> = std::iter::Zip<std::vec::IntoIter<&'a str>, std::vec::IntoIter<Repo>>;
 
+    type SelRepoList2 = std::iter::Zip<String, Repo>;
+
     /// Turn a Vector of tags into a Zip suitable for display in a SelectList
     fn selectify(tags_1: Vec<&str>) -> SelTagList {
         let tags_2: Vec<String> = tags_1
@@ -198,17 +212,106 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
             .zip(tags_2.into_iter())
     }
 
-    // /// Turn a Vector of Repos into a Zip suitable for display in a SelectList
-    // // fn selectify_repos<'a>(repos: Vec<Repo>) -> Vec<(String, Repo)> {
-    // // fn selectify_repos<'a>(repos: &'a Vec<Repo>) -> Vec<(String, &Repo)> {
-    // // fn selectify_repos<'a>(repos: RcVecRepo<'a>) -> Vec<(String, &Repo)> {
-    // fn selectify_repos<'a>(repos: RcVecRepo) -> Vec<(String, &'a Repo)> {
+    pub use std::vec::IntoIter;
+
+    // type SelRepIter = Zip<IntoIter<String>, IntoIter<RcRepo>>;
+    type SelRepIter<'a> = &'a Vec<(String, RcRepo)>;
+    // type SelRepIter = Vec<(String, RcRepo)>;
+    // type SelRepIter<'a> = Vec<(String, &'a RcRepo)>;
+
+    fn selectify_repos(repos: RcVecRepo)
+    // fn selectify_repos<'a>(repos: RcVecRepo) -> SelRepIter<'a>
+    // fn selectify_repos(repos: RcVecRepo) -> SelRepIter
+    // fn selectify_repos<'a, TT>(repos: RcVecRepo) -> TT
+    //     where TT: IntoIterator<Item = (String, RcRepo)>,
+        // where   TT: IntoIterator,
+        //         TT::Item: <(String, RcRepo)>
+        // where       TT: IntoIterator<Item = (String, RcRepo)>,
+        // where       TT: std::iter::FromIterator<(String, &'a Repo)>
+    {
+        let nan = Rc::into_raw(repos);
+        // let names = nan
+        //     // .borrow_mut()
+        //     // .into_inner()
+        //     .replace_with(
+        //         "pop"
+        //     );
+            // .into_iter()
+            // .map(|x| (String::from(repo_2_name(&x.path)), Rc::new(RefCell::new(x))));         // .clone()
+            // .into_raw()
+            // .into_inner();
+        // let names: Vec<String> = repos
+        //     // .clone()
+        //     // .deref()
+        //     // .borrow()
+        //     .into_inner()
+        //     .into_iter()
+        //     .map(|x| String::from(repo_2_name(&x.path)))
+        //     // .map(|x| String::from(x))
+        //     .collect();
+        // let tags_t: Vec<RcRepo> = repos.
+        //     clone()
+        //     .into_inner()
+        //     .into_iter()
+        //     .map(|x| Rc::new(RefCell::new(x)))
+        //     .collect();
+        // let reffs = repos.deref();
+        // let sames: SelRepIter =
+        //     // Ref::map(reffs, reffs)
+        // // reffs
+        //     // .borrow()
+        //     &repos
+        //     .into_inner()
+        //     .into_iter()
+        //     .map(|x| (String::from(repo_2_name(&x.path)), Rc::new(RefCell::new(x))))
+        //     // .map(|ref mut x| (String::from(repo_2_name(&x.path)), Rc::new(RefCell::new(x))))
+        //     // .iter()
+        //     // .map(|x| (String::from(repo_2_name(&x.path)), Rc::new(RefCell::new(x))))
+        //     .collect();
+        // let tags_t = repos
+        //     .deref()
+        //     .borrow()
+        //     .into_iter()
+        //     .map(|r| Rc::new(RefCell::new(r)));
+        // let tags_3: IntoIter<RcRepo> = Ref::map(tags_t, |x| { x.into_iter() });
+        // return names.into_iter().zip(tags_t);
+        // return sames;
+        // return names
+        //     .into_iter()
+        //     .zip(
+        //         repos.
+        //             deref()
+        //             .borrow()
+        //             // .into_iter()
+        //     )
+        // return repos
+        //     .deref()
+        //     .borrow()
+        //     .into_iter()
+        //     .zip(names.into_iter())
+
+    }
+
+    // // /// Turn a Vector of Repos into a Zip suitable for display in a SelectList
+    // // // fn selectify_repos<'a>(repos: Vec<Repo>) -> Vec<(String, Repo)> {
+    // // // fn selectify_repos<'a>(repos: &'a Vec<Repo>) -> Vec<(String, &Repo)> {
+    // // // fn selectify_repos<'a>(repos: RcVecRepo<'a>) -> Vec<(String, &Repo)> {
+    // // fn selectify_repos(repos: RcVecRepo) -> Vec<(String, RcRepo)> {
+    // // fn selectify_repos<'a>(repos: RcVecRepo) -> SelRepoList2 {
+    // fn selectify_repos<'a, TT>(repos: RcVecRepo) -> TT
+    //     // where   TT: IntoIterator,
+    //     //         TT::Item: (String, RcRepo)
+    //     // where       TT: IntoIterator<Item = (String, RcRepo)>,
+    //     where       TT: std::iter::FromIterator<(String, &'a Repo)>
+    // {
     //     repos.deref()
     //         // .as_ptr()
-    //         .borrow()
+    //         // .borrow()
     //         .deref()
+    //         .borrow_mut()
     //         // .repos
-    //         .into_iter()
+    //         // .into_iter()
+    //         .iter()
     //         .map(|r| (r.name().to_string(), r) )
     //         .collect()
     // }
