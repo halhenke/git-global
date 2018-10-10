@@ -7,6 +7,7 @@ pub mod add_tags;
 // pub mod tag_projects_two;
 // pub mod tag_projects_three;
 pub mod tag_projects_simple;
+pub mod tag_projects_lazy;
 pub mod scan;
 pub mod status;
 pub mod filter;
