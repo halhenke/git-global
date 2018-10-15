@@ -1,5 +1,6 @@
 use std::cell::{RefCell, RefMut};
-use std::rc::Rc;
+use std::sync::{Arc, Mutex};
+use std::rc::{Rc};
 use std::ops::{Deref, DerefMut};
 use std::iter::Zip;
 use std::any::Any;
@@ -53,6 +54,7 @@ use std::fmt;
 
 struct TagStatusSimple<'a> {
     repos: &'a Vec<Repo>,
+    // currentRepo: usize,
     currentRepo: &'a Repo,
     currentTags: &'a Vec<RepoTag>,
 }
@@ -61,6 +63,7 @@ impl<'a> TagStatusSimple<'a> {
 // // impl TagStatus {
 // //     pub fn new(repos: Vec<Repo>, repo: Repo, tags: Vec<RepoTag>) -> TagStatus {
 // // impl<'a> TagStatus<'a> {
+    // pub fn new(repos: &'a Vec<Repo>, repo: usize, tags: &'a Vec<RepoTag>) -> TagStatusSimple<'a> {
     pub fn new(repos: &'a Vec<Repo>, repo: &'a Repo, tags: &'a Vec<RepoTag>) -> TagStatusSimple<'a> {
         return TagStatusSimple {
             repos: repos,
@@ -69,26 +72,7 @@ impl<'a> TagStatusSimple<'a> {
         }
     }
 }
-// struct TagStatus {
-//     repos: RcVecRepo,
-//     currentRepo: RcVecRepo,
-//     currentTags: RcVecRepo,
-// }
-struct TagStatus {
-    repos: RcVecRepo,
-    currentRepo: RcRepo,
-    currentTags: RcVecRepoTag,
-}
-// struct TagStatus<'a> {
-//     repos: RcVecRepo<'a>,
-//     currentRepo: RcRepo<'a>,
-//     currentTags: RcVecRepoTag<'a>,
-// }
-// struct TagStatus<'a> {
-//     repos: &'a Vec<Repo>,
-//     currentRepo: &'a Repo,
-//     currentTags: &'a Vec<RepoTag>,
-// }
+
 
 type RcResult = Rc<GitGlobalResult>;
 type RcRcResult = Rc<RefCell<GitGlobalResult>>;
@@ -102,55 +86,40 @@ type RcVecRepo = Rc<RefCell<Vec<Repo>>>;
 // type RcVecRepo<'a> = Rc<RefCell<&'a Vec<Repo>>>;
 
 
-// impl<'a> TagStatus<'a> {
-//     pub fn new(repos: RcVecRepo<'a>, repo: RcRepo<'a>, tags: RcVecRepoTag<'a>) -> TagStatus<'a> {
-impl TagStatus {
-//     pub fn new(repos: RcVecRepo, repo: RcRepo, tags: RcVecRepoTag) -> TagStatus {
-// // impl TagStatus {
-// //     pub fn new(repos: Vec<Repo>, repo: Repo, tags: Vec<RepoTag>) -> TagStatus {
-// // impl<'a> TagStatus<'a> {
-// //     pub fn new(repos: &'a Vec<Repo>, repo: &'a Repo, tags: &'a Vec<RepoTag>) -> TagStatus<'a> {
-//         return TagStatus {
-//             /// Current repos
-//             repos: repos,
-//             /// Currently selected repo
-//             currentRepo: repo,
-//             /// List of all tags (gettable from repos)
-//             /// ...or list of all tags for this repo?
-//             currentTags: tags,
-//         }
-//     }
-
-    pub fn new_from_rc(repos: RcVecRepo, repo: RcRepo, tags: RcVecRepoTag) -> TagStatus {
-    // pub fn new_from_rc(repos: RcVecRepo, repos2: RcVecRepo, repos3: RcVecRepo) -> TagStatus {
-        TagStatus {
-            repos: repos,
-            currentRepo: repo,
-            currentTags: tags,
-            // currentRepo: Rc::new(RefMut::map(repo.borrow_mut(), |x| &mut x[0])),
-            // repos: Rc::new(RefCell::new(repos)),
-            // // currentRepo: Rc::new(RefMut::map(repo.borrow_mut(), |x| &mut x[0])),
-            // currentRepo: Rc::new(RefCell::new(repos)),
-            // currentTags: Rc::new(RefCell::new(tags)),
-        }
-    }
-}
-
 lazy_static! {
+    // static ref HASHMAP: HashMap<u32, &'static str> = {
+    //     let mut m = HashMap::new();
+    //     m.insert(0, "foo");
+    //     m.insert(1, "bar");
+    //     m.insert(2, "baz");
+    //     m
+    // };
+    // let repos = GitGlobalConfig::new().get_cached_repos;
     static ref RESULTS: Vec<Repo> =
         GitGlobalConfig::new().get_cached_repos();
-    // static ref TAGS: TagStatus
+
+    static ref stat_two: TagStatusSimple<'static> = TagStatusSimple::new(
+        // &rep_star.read().unwrap(),
+        // rep_star.read().unwrap()[0],
+        // &rep_star.read().unwrap()[0].tags);
+        &RESULTS,
+        // *CURRENT_REPO,
+        &RESULTS[0],
+        &RESULTS[0].tags);
+        // &CURRENT_TAGS);
+
+    // static ref CURRENT_REPO: u16 = 0;
+    // static ref CURRENT_REPO: &'static Repo = repos[0];
+    // static ref CURRENT_REPO: &'static Repo = &RESULTS[0];
+    // static ref CURRENT_REPO: Arc<Mutex<&'static Repo>> = Arc::new(Mutex::new(&RESULTS[0]));
+    // static ref CURRENT_REPO: &'static Repo = GitGlobalConfig::new().get_cached_repos().get(0).unwrap();
+    // static ref CURRENT_TAGS: &'static Vec<RepoTag> = &RESULTS[0].tags;
+    // static ref RESULTS: MutStatic<Vec<Repo>> =
+    //     MutStatic::from(
+    //         GitGlobalConfig::new().get_cached_repos()
+    //     );
 }
 
-// pub fn repo_2_name(s: String) -> String {
-// // pub fn repo_2_name<'a>(s: String) -> &'a str {
-//     s.rsplit("/")
-//         .map(|x| String::from(x))
-//         .collect::<Vec<String>>()
-//         .first()
-//         .unwrap()
-//         .to_string()
-// }
 pub fn repo_2_name<'a>(s: &'a str) -> &'a str {
     s.rsplit("/")
         .collect::<Vec<&str>>()
@@ -175,17 +144,6 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     let user_config = Box::new(&uc);
     // let user_config: Box<Any> = Box::new(GitGlobalConfig::new());
     let uRepos: Box<&GitGlobalConfig> = user_config.clone();
-    // let uRepos: GitGlobalConfig = *(&user_config).downcast::<GitGlobalConfig>().expect("yo");
-    // let uRepos: Vec<Repo> = user_config.downcast::<GitGlobalConfig>().get_cached_resuts();
-    let results1 = Rc::new(RefCell::new(user_config.get_cached_results().repos));
-    let results2 = Rc::new(RefCell::new(user_config.get_cached_results().repos.remove(0)));
-    let results3 = Rc::new(RefCell::new(user_config.get_cached_results().repos.remove(0).tags));
-    // let rr1 = &results.clone();
-    // let rr2 = &results.clone();
-    // let rr3 = results.clone();
-    // let rc1 = Rc::new(RefCell::new(rr1.borrow().repos));
-    // let rc2 = Rc::new(RefCell::new(rr2.borrow().repos[0]));
-    // let rc3 = Rc::new(RefCell::new(rr3.borrow().repos[0].tags));
     let rep_star = &RESULTS;
 
     // let rc1 = results.clone();
@@ -195,17 +153,24 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     // let rc2 = Rc::new(RefCell::new(&results.repos[0]));
     // let rc3 = Rc::new(RefCell::new(&results.repos[0].tags));
 
-    let status = TagStatus::new_from_rc(
-        results1,
-        results2,
-        results3);
+    // let status = TagStatus::new_from_rc(
+    //     results1,
+    //     results2,
+    //     results3);
 
-    let stat_two = TagStatusSimple::new(
-        rep_star,
-        &rep_star[0],
-        &rep_star[0].tags);
+    // let mut stat_two = TagStatusSimple::new(
+    //     // &rep_star.read().unwrap(),
+    //     // rep_star.read().unwrap()[0],
+    //     // &rep_star.read().unwrap()[0].tags);
+    //     rep_star,
+    //     // *CURRENT_REPO,
+    //     0,
+    //     &CURRENT_TAGS);
+    //     // rep_star,
+    //     // &rep_star[0],
+    //     // &rep_star[0].tags);
 
-    let sss = stat_two.repos.to_vec();
+    // let sss = stat_two.repos.to_vec();
 
     // let mut_stat = Rc::new(RefCell::new(&status));
     // let stat_1 = Rc::clone(&mut_stat);
@@ -244,25 +209,8 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
 
 
     // /// Turn a Vector of Repos into a Zip suitable for display in a SelectList
-    // fn selectify_repos(repos: Vec<Repo>) -> Vec<(String, Repo)> {
-    fn selectify_repos<'a>(repos: &'a Vec<Repo>) -> Vec<(String, &'a Repo)> {
-    // fn selectify_repos<'a>(repos: &'a Vec<Repo>) -> Vec<(String, &Repo)> {
-    // fn selectify_repos<'a>(repos: RcVecRepo<'a>) -> Vec<(String, &Repo)> {
-    // fn selectify_repos(repos: RcVecRepo) -> Vec<(String, RcRepo)> {
-    // fn selectify_repos<'a>(repos: RcVecRepo) -> SelRepoList2 {
-    // fn selectify_repos<'a, TT>(repos: RcVecRepo) -> TT
-        // where   TT: IntoIterator,
-        //         TT::Item: (String, RcRepo)
-        // where       TT: IntoIterator<Item = (String, RcRepo)>,
-        // where       TT: std::iter::FromIterator<(String, &'a Repo)>
-    // {
-        // repos.deref()
-            // .as_ptr()
-            // .borrow()
-            // .deref()
-            // .borrow_mut()
-            // .repos
-            // .into_iter()
+    fn selectify_repos(repos: Vec<Repo>) -> Vec<(String, Repo)> {
+    // fn selectify_repos<'a>(repos: &'a Vec<Repo>) -> Vec<(String, &'a Repo)> {
             repos
             .into_iter()
             .map(|r| (r.name().to_string(), r) )
@@ -283,13 +231,7 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     let repo_selector = SelectView::new()
         // .with_all(selectify_repos(
         .with_all(selectify_repos(
-            // stat_two.repos.to_vec()
-            stat_two.repos
-            // rs
-            // &rrrrr.deref().repos
-            // results.repos.clone() &&
-            // rc11.clone()
-            // Rc::clone(&rc1)
+            stat_two.repos.clone()
         ))
         // .with_all(selectify(
         //     user_config.get_cached_repos()
@@ -302,6 +244,29 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
         .on_select(move |s: &mut Cursive, ss| {
             // Rc::clone(&mut_stat)
             // results.repos;
+            let sss = &stat_two
+                .repos
+                .iter()
+                // .position(
+                .find(
+                    |& x| x == ss
+            ).unwrap();
+
+            unsafe {
+                // CURRENT_REPO = sss;
+                stat_two.currentRepo = *sss;
+            }
+            // stat_two.currentRepo = ss;
+            // stat_two.currentRepo = *sss;
+            // CURRENT_REPO = sss;
+            // let mut tmp = CURRENT_REPO
+            //     .borrow()
+            //     .get_mut()
+            //     .unwrap();
+            // *tmp = ss;
+            // if let Some(foo) = tmp {
+            //     foo = ss;
+            // }
             // stat_1;
                 // .deref()
                 // .get_mut()

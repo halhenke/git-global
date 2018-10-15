@@ -179,7 +179,7 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
         results2,
         results3);
 
-    // let mut_stat = Rc::new(RefCell::new(&status));
+    let mut_stat = Rc::new(RefCell::new(&status));
     // let stat_1 = Rc::clone(&mut_stat);
     // let stat_2 = Rc::clone(&mut_stat);
 
@@ -220,76 +220,6 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     // type SelRepIter<'a> = Vec<(String, &'a RcRepo)>;
 
     fn selectify_repos(repos: RcVecRepo) -> Vec<(String, Repo)> {
-    // fn selectify_repos(repos: RcVecRepo) -> Vec<(String, RcRepo)> {
-    // fn selectify_repos<'a>(repos: RcVecRepo) -> SelRepIter<'a>
-    // fn selectify_repos(repos: RcVecRepo) -> SelRepIter
-    // fn selectify_repos<'a, TT>(repos: RcVecRepo) -> TT
-    //     where TT: IntoIterator<Item = (String, RcRepo)>,
-        // where   TT: IntoIterator,
-        //         TT::Item: <(String, RcRepo)>
-        // where       TT: IntoIterator<Item = (String, RcRepo)>,
-        // where       TT: std::iter::FromIterator<(String, &'a Repo)>
-    // {
-        // let nan = Rc::into_raw(repos);
-        // let names = nan
-        //     // .borrow_mut()
-        //     // .into_inner()
-        //     .replace_with(
-        //         "pop"
-        //     );
-            // .into_iter()
-            // .map(|x| (String::from(repo_2_name(&x.path)), Rc::new(RefCell::new(x))));         // .clone()
-            // .into_raw()
-            // .into_inner();
-        // let names: Vec<String> = repos
-        //     // .clone()
-        //     // .deref()
-        //     // .borrow()
-        //     .into_inner()
-        //     .into_iter()
-        //     .map(|x| String::from(repo_2_name(&x.path)))
-        //     // .map(|x| String::from(x))
-        //     .collect();
-        // let tags_t: Vec<RcRepo> = repos.
-        //     clone()
-        //     .into_inner()
-        //     .into_iter()
-        //     .map(|x| Rc::new(RefCell::new(x)))
-        //     .collect();
-        // let reffs = repos.deref();
-        // let sames: SelRepIter =
-        //     // Ref::map(reffs, reffs)
-        // // reffs
-        //     // .borrow()
-        //     &repos
-        //     .into_inner()
-        //     .into_iter()
-        //     .map(|x| (String::from(repo_2_name(&x.path)), Rc::new(RefCell::new(x))))
-        //     // .map(|ref mut x| (String::from(repo_2_name(&x.path)), Rc::new(RefCell::new(x))))
-        //     // .iter()
-        //     // .map(|x| (String::from(repo_2_name(&x.path)), Rc::new(RefCell::new(x))))
-        //     .collect();
-        // let tags_t = repos
-        //     .deref()
-        //     .borrow()
-        //     .into_iter()
-        //     .map(|r| Rc::new(RefCell::new(r)));
-        // let tags_3: IntoIter<RcRepo> = Ref::map(tags_t, |x| { x.into_iter() });
-        // return names.into_iter().zip(tags_t);
-        // return sames;
-        // return names
-        //     .into_iter()
-        //     .zip(
-        //         repos.
-        //             deref()
-        //             .borrow()
-        //             // .into_iter()
-        //     )
-        // return repos
-        //     .deref()
-        //     .borrow()
-        //     .into_iter()
-        //     .zip(names.into_iter())
         return repos
             .deref()
             .borrow_mut()
@@ -337,7 +267,12 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     // let repo_selector: SelectView<RcRepo> = SelectView::new();
     let repo_selector = SelectView::new()
         .with_all(selectify_repos(
-            status.repos
+            mut_stat
+                // .clone()
+                // .deref()
+                // .into_inner()
+                .borrow()
+                .repos
             // rs
             // &rrrrr.deref().repos
             // results.repos.clone() &&
@@ -355,12 +290,12 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
         .on_select(move |s: &mut Cursive, ss| {
             // Rc::clone(&mut_stat)
             // results.repos;
-            let s = status.currentRepo
-                .deref()
-                .borrow_mut()
-                .deref()
-                .borrow_mut();
-            s = ss.borrow_mut();
+            // let s = status.currentRepo
+            //     .deref()
+            //     .borrow_mut()
+            //     .deref()
+            //     .borrow_mut();
+            // s = ss.borrow_mut();
             // stat_1;
                 // .deref()
                 // .get_mut()
