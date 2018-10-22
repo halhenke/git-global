@@ -8,6 +8,7 @@ use std::borrow::{
     Borrow,
     BorrowMut};
 extern crate cursive;
+use itertools::{rciter};
 
 use self::cursive::Cursive;
 use self::cursive::align::HAlign;
@@ -16,17 +17,9 @@ use self::cursive::{
     traits::*,
     view::Selector
     };
+use std::iter::FromIterator;
 use self::cursive::{
-    view::{
-        View,
-        ViewWrapper,
-    },
-    menu::{
-        MenuTree,
-    },
     views::{
-        BoxView,
-        Dialog,
         EditView,
         IdView,
         Layer,
@@ -50,31 +43,6 @@ type RMut = Rc<RefCell<TextContent>>;
 
 use std::fmt;
 
-// struct TagStatus {
-//     repos: Vec<Repo>,
-//     currentRepo: Repo,
-//     currentTags: Vec<RepoTag>,
-// struct TagStatus {
-//     repos: RcVecRepo,
-//     currentRepo: RcVecRepo,
-//     currentTags: RcVecRepo,
-// }
-struct TagStatus {
-    repos: RcVecRepo,
-    currentRepo: RcRepo,
-    currentTags: RcVecRepoTag,
-}
-// struct TagStatus<'a> {
-//     repos: RcVecRepo<'a>,
-//     currentRepo: RcRepo<'a>,
-//     currentTags: RcVecRepoTag<'a>,
-// }
-// struct TagStatus<'a> {
-//     repos: &'a Vec<Repo>,
-//     currentRepo: &'a Repo,
-//     currentTags: &'a Vec<RepoTag>,
-// }
-
 type RcResult = Rc<GitGlobalResult>;
 type RcRcResult = Rc<RefCell<GitGlobalResult>>;
 type RcRepo = Rc<RefCell<Repo>>;
@@ -86,50 +54,22 @@ type RcVecRepo = Rc<RefCell<Vec<Repo>>>;
 // type RcVecRepoTag<'a> = Rc<RefCell<&'a Vec<RepoTag>>>;
 // type RcVecRepo<'a> = Rc<RefCell<&'a Vec<Repo>>>;
 
+struct TagStatus {
+    repos: RcVecRepo,
+    currentRepo: RcRepo,
+    currentTags: RcVecRepoTag,
+}
 
-// impl<'a> TagStatus<'a> {
-//     pub fn new(repos: RcVecRepo<'a>, repo: RcRepo<'a>, tags: RcVecRepoTag<'a>) -> TagStatus<'a> {
 impl TagStatus {
-//     pub fn new(repos: RcVecRepo, repo: RcRepo, tags: RcVecRepoTag) -> TagStatus {
-// // impl TagStatus {
-// //     pub fn new(repos: Vec<Repo>, repo: Repo, tags: Vec<RepoTag>) -> TagStatus {
-// // impl<'a> TagStatus<'a> {
-// //     pub fn new(repos: &'a Vec<Repo>, repo: &'a Repo, tags: &'a Vec<RepoTag>) -> TagStatus<'a> {
-//         return TagStatus {
-//             /// Current repos
-//             repos: repos,
-//             /// Currently selected repo
-//             currentRepo: repo,
-//             /// List of all tags (gettable from repos)
-//             /// ...or list of all tags for this repo?
-//             currentTags: tags,
-//         }
-//     }
-
     pub fn new_from_rc(repos: RcVecRepo, repo: RcRepo, tags: RcVecRepoTag) -> TagStatus {
-    // pub fn new_from_rc(repos: RcVecRepo, repos2: RcVecRepo, repos3: RcVecRepo) -> TagStatus {
         TagStatus {
             repos: repos,
             currentRepo: repo,
             currentTags: tags,
-            // currentRepo: Rc::new(RefMut::map(repo.borrow_mut(), |x| &mut x[0])),
-            // repos: Rc::new(RefCell::new(repos)),
-            // // currentRepo: Rc::new(RefMut::map(repo.borrow_mut(), |x| &mut x[0])),
-            // currentRepo: Rc::new(RefCell::new(repos)),
-            // currentTags: Rc::new(RefCell::new(tags)),
         }
     }
 }
 
-// pub fn repo_2_name(s: String) -> String {
-// // pub fn repo_2_name<'a>(s: String) -> &'a str {
-//     s.rsplit("/")
-//         .map(|x| String::from(x))
-//         .collect::<Vec<String>>()
-//         .first()
-//         .unwrap()
-//         .to_string()
-// }
 pub fn repo_2_name<'a>(s: &'a str) -> &'a str {
     s.rsplit("/")
         .collect::<Vec<&str>>()
@@ -137,29 +77,63 @@ pub fn repo_2_name<'a>(s: &'a str) -> &'a str {
         .unwrap()
 }
 
-// note
-// - We cant pass a reference to closure
-// - We need to wrap in an Rc....
-//  - We need to clone the Rc
-//  - We cant use references when we clone the Rc
-//      - this seems impossible
-// - Want to get several references to the same thing
-//      - this may be why its impossible
-// - repos, repos[0], repos.tags
-//  - Cant all own these without an RC
-
-pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
+pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     // note a pointer
     let uc = GitGlobalConfig::new();
-    let user_config = Box::new(&uc);
-    // let user_config: Box<Any> = Box::new(GitGlobalConfig::new());
-    let uRepos: Box<&GitGlobalConfig> = user_config.clone();
+    // let user_config = Box::new(&uc);
+    // let uRepos: Box<&GitGlobalConfig> = user_config.clone();
+
+    let reps = uc.get_cached_repos();
+    let results = uc.get_cached_results();
+    let result_tags: Vec<RepoTag> = results.all_tags()
+        // .iter()
+        .clone()
+        .into_iter()
+        .cloned()
+        .map(|rt| rt.clone())
+        .collect();
+
+    // NOTE: unsafe
+    // let cur: [Repo] = reps.borrow();
+    let cur = reps.as_ptr();
+
+    let rct = reps.clone();
+    let repoNames = &rct
+        .iter()
+        .map(|x| x.path.clone())
+        .zip(rct.iter());
+
+    let rreps = Rc::new(RefCell::new(reps));
+    let ttags = Rc::new(RefCell::new(result_tags));
+
+    // let sleps = rreps.clone();
+
+    // static mut current: &Repo = || {
+    //     rreps.into_inner()[0]
+    // };
+    // let current = &rreps.deref().borrow_mut()[0] as *mut Repo;
+    // let curr: Rc<&Repo> = Rc::new(
+    //     &rreps
+    //         .clone()
+    //         .deref()
+    //         // .borrow()
+    //         // .iter()
+    //         // .nth(0)
+    //         // .unwrap()
+    //         // .borrow()[0]
+    //         .get_mut()[0]
+    //         // .into_inner()[0]
+    //     // rreps.borrow::<Ref<Repo>>()[0]
+    // );
+
+
+
     // let uRepos: GitGlobalConfig = *(&user_config).downcast::<GitGlobalConfig>().expect("yo");
     // let uRepos: Vec<Repo> = user_config.downcast::<GitGlobalConfig>().get_cached_resuts();
-    let results1 = Rc::new(RefCell::new(user_config.get_cached_results().repos));
-    let results2 = Rc::new(RefCell::new(user_config.get_cached_results().repos.remove(0)));
-    let results3 = Rc::new(RefCell::new(user_config.get_cached_results().repos.remove(0).tags));
-    // let rr1 = &results.clone();
+    // let results1 = Rc::new(RefCell::new(user_config.get_cached_results().repos));
+    // let results2 = Rc::new(RefCell::new(user_config.get_cached_results().repos.remove(0)));
+    // let results3 = Rc::new(RefCell::new(user_config.get_cached_results().repos.remove(0).tags));
+    // // let rr1 = &results.clone();
     // let rr2 = &results.clone();
     // let rr3 = results.clone();
     // let rc1 = Rc::new(RefCell::new(rr1.borrow().repos));
@@ -174,12 +148,13 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     // let rc2 = Rc::new(RefCell::new(&results.repos[0]));
     // let rc3 = Rc::new(RefCell::new(&results.repos[0].tags));
 
-    let status = TagStatus::new_from_rc(
-        results1,
-        results2,
-        results3);
+    // let status = TagStatus::new_from_rc(
+    //     results1,
+    //     results2,
+    //     results3
+    // );
 
-    let mut_stat = Rc::new(RefCell::new(&status));
+    // let mut_stat = Rc::new(RefCell::new(&status));
     // let stat_1 = Rc::clone(&mut_stat);
     // let stat_2 = Rc::clone(&mut_stat);
 
@@ -190,27 +165,49 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
 
     // https://github.com/gyscos/Cursive/issues/179
     let mut_content = TextContent::new(
-        user_config.tag_names()
+        vec!("aaaa", "bbbb")
+        // user_config.tag_names()
             .join("\n")
     );
 
-    type SelTagList<'a> = std::iter::Zip<std::vec::IntoIter<&'a str>, std::vec::IntoIter<String>>;
 
     type SelRepoList<'a> = std::iter::Zip<std::vec::IntoIter<&'a str>, std::vec::IntoIter<Repo>>;
 
     type SelRepoList2 = std::iter::Zip<String, Repo>;
 
-    /// Turn a Vector of tags into a Zip suitable for display in a SelectList
-    fn selectify(tags_1: Vec<&str>) -> SelTagList {
-        let tags_2: Vec<String> = tags_1
-            .clone()
-            .into_iter()
-            .map(|x| String::from(x))
-            .collect();
-        return tags_1
-            .into_iter()
-            .zip(tags_2.into_iter())
-    }
+    type SelTagList<'a> = std::iter::Zip<
+        // Vec<&'a str>,
+        // Vec<String>
+        // std::iter::Map<&'a str>,
+        std::vec::IntoIter<&'a str>,
+        std::vec::IntoIter<String>
+        // std::slice::Iter<&'a, &str>,
+        // std::vec::IntoIter<&'a str>,
+        // itertools::RcIter<std::vec::IntoIter<String>>
+    >;
+
+fn selectify<'a>(tags_1: &'a Vec<String>) -> SelTagList<'a> {
+// fn selectify(tags_1: Vec<String>) -> () {
+    // let tags_2: std::vec::IntoIter<& str> = tags_1
+    // let tt: Vec<String> = tags_1.clone();
+    // let tags_2: Vec<String> = tags_1.clone();
+    let tags_2: Vec<&'a str> = tags_1
+    // tags_2 = tags_1
+    // let ttt: Vec<&'a str> = tags_2
+        // .clone()
+        .iter()
+        // .cloned()
+        .map(AsRef::as_ref)
+        .collect();
+        // .collect::<Vec<&str>>();
+    let tmp_last: Vec<&str> = vec!("a", "b");
+    return tags_2
+        .into_iter()
+        .zip(
+            tags_1.to_vec()
+        )
+}
+
 
     pub use std::vec::IntoIter;
 
@@ -267,12 +264,13 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     // let repo_selector: SelectView<RcRepo> = SelectView::new();
     let repo_selector = SelectView::new()
         .with_all(selectify_repos(
-            mut_stat
+            rreps.clone()
+            // mut_stat
                 // .clone()
                 // .deref()
                 // .into_inner()
-                .borrow()
-                .repos
+                // .borrow()
+                // .repos
             // rs
             // &rrrrr.deref().repos
             // results.repos.clone() &&
@@ -296,6 +294,11 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
             //     .deref()
             //     .borrow_mut();
             // s = ss.borrow_mut();
+            let tmp = RefCell::new(cur);
+            *tmp.borrow_mut() = ss;
+            // unsafe {
+            //     cur = ss;
+            // }
             // stat_1;
                 // .deref()
                 // .get_mut()
@@ -314,7 +317,10 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     let tags_displayer  = OnEventView::new(
         SelectView::new()
             .with_all(selectify(
-                vec!("hoo", "lah", "laa")
+                &vec!("hoo", "lah", "laa")
+                    .into_iter()
+                    .map(String::from)
+                    .collect()
             ))
             .min_width(20)
             .with_id("tag-display")
@@ -324,10 +330,50 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     let tags_pool: IdView<SelectView> = SelectView::new()
     // let tags_pool: IdView<ScrollView<SelectView>> = SelectView::new()
             .with_all(selectify(
-            user_config.tags
-                .iter()
-                .map(|r| r.name.as_str())
-                .collect()
+                // vec!("more", "stuff")
+                {
+                    // let sss: Rc<RefCell<Vec<RepoTag>>> = ttags.to_owned();
+                    let sss: RefMut<Vec<RepoTag>> =
+                        ttags
+                        // .clone()
+                        .deref()
+                        // .to_owned()
+                        // .into_inner();
+                        .borrow_mut();
+                        // .cloned();
+                    &sss
+                        .iter()
+                        .cloned()
+                        .map(|r| r.name.clone())
+                        .collect()
+                    // assert!(ttags, ttags.clone())
+                    // let sss: Vec<RepoTag> =
+                    // // let sss: Borrow<Ref<Vec<RepoTag>>> =
+                    //     // ttags
+                    //     ttags
+                    //     .into_inner();
+
+                    // let salmon: Vec<RepoTag> =
+                    // // let salmon: Vec<String> =
+                    //     // Vec::from_iter(
+                    //         // ttags.clone()
+                    //     // Rc::clone(
+                    //         ttags.to_owned()
+                    //         // .borrow()
+                    //         // .deref()
+                    //         .into_inner()
+                    //         .iter()
+                    //         // .into_iter()
+                    //         .cloned()
+                    //         // .map(|x| x.name)
+                    //     // );
+                    //         .collect();
+                        // vec!("car")
+                }
+            // user_config.tags
+            //     .iter()
+            //     .map(|r| r.name.as_str())
+            //     .collect()
         ))
         // .scrollable()
         .with_id("tag-pool");
@@ -367,66 +413,3 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     // println!("new tags is {:?}", &fake_tags);
     Ok(GitGlobalResult::new(&vec![]))
 }
-
-// /// Final behaviour
-// fn save_tags_and_quit(s: &mut Cursive, tags: &RMut) {
-// // fn save_tags_and_quit(s: &mut Cursive, user_config: &mut GitGlobalConfig, tags: &RMut) {
-//     let mut user_config = GitGlobalConfig::new();
-//     trace!("save_tags_and_quit");
-//     debug!("wtf???");
-//     let mut t_list: Vec<String> = Vec::new();
-//     s.call_on_id("tag_list",
-//         |tl: &mut SelectView| {
-//             error!("tag count is {}", tl.len());
-//             let count = tl.len();
-//             for i in 0..count  {
-//                 t_list.push(tl.get_item(i).unwrap().0.to_string())
-//             }
-//         }
-//     );
-//     let tag_list: String = tags
-//         .borrow()
-//         .deref()
-//         .get_content()
-//         .source()
-//         .to_string();
-//     s.call_on_id("tag",
-//         |view: &mut EditView| {
-//             let po = &tag_list.clone();
-//             view.set_content(po.to_string());
-//         }
-//     ).expect("final unwrap...");
-//     let tag_list_list = t_list;
-//     debug!("About to print tags");
-//     debug!("tags are: {:?}", &tag_list_list);
-//     // user_config.add_tags(
-//     //     tag_list_list
-//     // );
-//     user_config.replace_tags(
-//         tag_list_list
-//     );
-//     user_config.write_tags();
-//     s.cb_sink()
-//         .send(Box::new(|siv: &mut Cursive| siv.quit()));
-// }
-
-// fn show_next_screen(s: &mut Cursive, name: &str, c: &mut TextContent) {
-//     trace!("show_next_screen");
-//     if name.is_empty() {
-//         s.add_layer(Dialog::info("Please enter a name!"));
-//     } else {
-//         trace!("show_next_screen 2");
-//         s.call_on_id("tag_list",
-//             |view: &mut SelectView|
-//                 view.add_item_str(name)
-//         ).expect("failure");
-//         s.call_on_id("tag",
-//             |view: &mut EditView|
-//                 {
-//                     view.set_content("")
-//                     // view.set_cursor(0)
-//                 }).expect("failure");
-//         // // s.focus_id("tag").unwrap();
-//         s.focus(&Selector::Id("tag")).expect("thing");
-//     }
-// }
