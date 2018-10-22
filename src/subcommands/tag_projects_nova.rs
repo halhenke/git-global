@@ -112,6 +112,8 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
 
     let rreps = Rc::new(RefCell::new(reps));
     let ttags = Rc::new(RefCell::new(result_tags));
+    // NOTE: This is just until we have some actually tagged repos
+    let config_tags = Rc::new(RefCell::new(uc.tags));
 
     // let sleps = rreps.clone();
 
@@ -339,7 +341,8 @@ fn selectify<'a>(tags_1: &'a Vec<String>) -> SelTagList<'a> {
                 {
                     // let sss: Rc<RefCell<Vec<RepoTag>>> = ttags.to_owned();
                     let sss: RefMut<Vec<RepoTag>> =
-                        ttags
+                        config_tags
+                        // ttags
                         // .clone()
                         .deref()
                         // .to_owned()
@@ -414,6 +417,12 @@ fn selectify<'a>(tags_1: &'a Vec<String>) -> SelTagList<'a> {
     });
     siv.run();
     debug!("ADD TAGS: called - 33");
+
+    debug!("Current Repo Tags {:?}", unsafe {
+                    &(*cur)
+                });
+    // debug!("Current Total Tags {:?}", uc.get_cached_results().all_tags());
+    // debug!("Current Total Tags {:?}", ttags.deref().borrow());
 
     // println!("new tags is {:?}", &fake_tags);
     Ok(GitGlobalResult::new(&vec![]))
