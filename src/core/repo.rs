@@ -1,6 +1,7 @@
 use std::fmt;
 use git2;
 use std::path::Path;
+use std::iter::FromIterator;
 
 /// A git repository, represented by the full path to its base directory.
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Hash, Clone)]
@@ -88,6 +89,16 @@ impl From<RepoTag> for String {
         repo.name
     }
 }
+
+// impl FromIterator<RepoTag> for Vec<RepoTag> {
+//     fn from_iter<I: IntoIterator<Item=RepoTag>>(iter: I) -> Vec<RepoTag> {
+//         let v = Vec::new();
+//         for i in iter {
+//             v.push(i)
+//         }
+//         v
+//     }
+// }
 
 // impl From<Vec<RepoTag>> for Vec<String> {
 //     fn (reps) {
