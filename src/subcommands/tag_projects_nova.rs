@@ -83,15 +83,22 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     // let user_config = Box::new(&uc);
     // let uRepos: Box<&GitGlobalConfig> = user_config.clone();
 
-    let reps = uc.get_cached_repos();
+    let reps: Vec<Repo> = uc.get_cached_repos()
+        .into_iter()
+        .take(5)
+        .collect();
     let results = uc.get_cached_results();
     let result_tags: Vec<RepoTag> = results.all_tags()
-        // .iter()
-        .clone()
         .into_iter()
         .cloned()
-        .map(|rt| rt.clone())
+        // .map(|&x| x)
+        // .map(AsRef::asref)
         .collect();
+        // .clone()
+        // .into_iter()
+        // .cloned()
+        // .map(|rt| rt.clone())
+        // .collect();
 
     // NOTE: unsafe
     // let cur: [Repo] = reps.borrow();
@@ -187,20 +194,10 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     >;
 
 fn selectify<'a>(tags_1: &'a Vec<String>) -> SelTagList<'a> {
-// fn selectify(tags_1: Vec<String>) -> () {
-    // let tags_2: std::vec::IntoIter<& str> = tags_1
-    // let tt: Vec<String> = tags_1.clone();
-    // let tags_2: Vec<String> = tags_1.clone();
     let tags_2: Vec<&'a str> = tags_1
-    // tags_2 = tags_1
-    // let ttt: Vec<&'a str> = tags_2
-        // .clone()
         .iter()
-        // .cloned()
         .map(AsRef::as_ref)
         .collect();
-        // .collect::<Vec<&str>>();
-    let tmp_last: Vec<&str> = vec!("a", "b");
     return tags_2
         .into_iter()
         .zip(
@@ -317,10 +314,18 @@ fn selectify<'a>(tags_1: &'a Vec<String>) -> SelTagList<'a> {
     let tags_displayer  = OnEventView::new(
         SelectView::new()
             .with_all(selectify(
-                &vec!("hoo", "lah", "laa")
-                    .into_iter()
-                    .map(String::from)
-                    .collect()
+                // &vec!("hoo", "lah", "laa")
+                unsafe {
+                    &(*cur)
+                        // .as_ref()
+                        .tags
+                        .clone()
+                        .into_iter()
+                        // .map(String::from)
+                        .map(|x| x.name)
+                        .collect::<Vec<String>>()
+
+                }
             ))
             .min_width(20)
             .with_id("tag-display")
