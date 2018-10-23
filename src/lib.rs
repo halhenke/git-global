@@ -45,6 +45,8 @@ extern crate walkdir;
 extern crate tui;
 extern crate git2;
 extern crate itertools;
+#[macro_use]
+extern crate pipeline;
 extern crate mut_static;
 extern crate colored;
 #[macro_use]

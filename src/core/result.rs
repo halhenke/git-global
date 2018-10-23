@@ -96,7 +96,18 @@ impl GitGlobalResult {
         When we need to get all the tags from the current tags
      */
     pub fn all_tags(&self) -> Vec<&RepoTag> {
-        self.repos.iter()
+        // self.repos
+        //     .iter()
+        //     .map(|r| &r.tags)
+        //     .for_each(|p| {
+        //         println!("{:?}", p);
+        //     });
+        self.repos
+            // .into_iter()
+            // .map(|r| r.tags.as_ref())
+            // .flatten()
+            // .collect::<Vec<&RepoTag>>()
+            .iter()
             .map(|r| &r.tags)
             .flatten()
             .collect::<Vec<&RepoTag>>()
