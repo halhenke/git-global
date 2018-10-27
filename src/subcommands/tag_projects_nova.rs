@@ -310,8 +310,10 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
                 // pos = ss_real;
                 let mut sss_real = ss_real as *const Repo as *mut Repo;
                 // let mut ptr_cpy = &mut cur as *mut *mut Repo;
+                let mut ptr_cpy_two = cur as *mut Repo;
 
-                (&rcur2).replace(sss_real);
+                // (&rcur2).replace(sss_real);
+                ptr_cpy_two = sss_real;
 
                 // *ptr_cpy = sss_real;
                 // ptr_cpy = &mut sss_real;
@@ -408,82 +410,47 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
                 &ct
             ))
             .on_select(move |s: &mut Cursive, ss| {
-                // Rc::clone(&mut_stat)
-                // results.repos;
-                // let fo = &rreps.clone();
-
-                // let fffff: Ref<Vec<Repo>> = fo_c
-                //     .deref()
-                //     .borrow();
-                // // let fffff: &Repo = fo_c
-                // let found  = fffff
-                // //     // .get_mut()
-                //     .iter()
-                //     .find(|x| x.path.eq(ss))
-                //     .unwrap();
-
                 unsafe {
-                    // (cur)
-                    //     // .as_ref()
-                    //     .as_mut()
-                    //     .unwrap()
-                    let old_tags = &(*cur)
-                        .tags
-                        .clone();
-                    let tmp1 = rcur1
-                        // .borrow_mut()
-                        .deref();
-                    let tmp2 = tmp1
-                        // .borrow_mut()
-                        .deref()
-                        .borrow_mut();
-
-                    // (rcur
-                    //     .deref()
-                    //     .borrow_mut()
-                    //     )
-                    RefMut::map(tmp2, |x| {
-                        (**x).tags
+                    let mut ptr_cpy_two = cur as *mut Repo;
+                    // (&rcur2).replace(sss_real);
+                    // ptr_cpy_two = sss_real;
+                    (*ptr_cpy_two).
+                        tags
                         .push(RepoTag::new(ss));
-                        return x;
-                    });
 
-                    // &(*cur)
-                    //     .tags
-                    //     // .tags.write(848)
-                    //     // .tags = old_tags
-                    //         // .push(RepoTag::new(ss));
+                    // let tmp1 = rcur1
+                    //     // .borrow_mut()
+                    //     .deref();
+                    // let tmp2 = tmp1
+                    //     // .borrow_mut()
+                    //     .deref()
+                    //     .borrow_mut();
+                    // RefMut::map(tmp2, |x| {
+                    //     (**x).tags
                     //     .push(RepoTag::new(ss));
-                    let file = OpenOptions::new()
-                        .append(true)
-                        .create(true)
-                        .open("tmp_out")
-                        .unwrap()
-                        .write_fmt(
-                            unsafe {
-                            format_args!(
-                            "tag is {}, SELECT TAGS are {:?}\n", ss,
-                                &(*cur)
-                                    .tags
-                                // (cur)
-                                //     // .as_ref()
-                                //     .as_mut()
-                                //     .unwrap()
-                                    // .tags
-                                    // .into_iter()
-                                    // .map(|x| x.name)
-                                    // .join(" ")
-                                // })
-                            )
-                        });
+                    //     return x;
+                    // });
+
+                    // // &(*cur)
+                    // //     .tags
+                    // //     // .tags.write(848)
+                    // //     // .tags = old_tags
+                    // //         // .push(RepoTag::new(ss));
+                    // //     .push(RepoTag::new(ss));
+                    // let file = OpenOptions::new()
+                    //     .append(true)
+                    //     .create(true)
+                    //     .open("tmp_out")
+                    //     .unwrap()
+                    //     .write_fmt(
+                    //         unsafe {
+                    //         format_args!(
+                    //         "tag is {}, SELECT TAGS are {:?}\n", ss,
+                    //             &(*cur)
+                    //                 .tags
+                    //         )
+                    //     });
                 }
-                // stat_1;
-                    // .deref()
-                    // .get_mut()
-                    // .borrow_mut()
-                    // .get_mut()
-                    // .currentRepo = ss;
-                    // .currentRepo = ss.clone();
             })
 
             // .with_all(selectify_strings(
