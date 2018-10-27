@@ -108,6 +108,10 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     // NOTE: unsafe
     // let cur: [Repo] = reps.borrow();
     let mut cur = reps.as_mut_ptr();
+    let mut cur2 = reps.as_mut_ptr();
+    let mut rcur = Rc::new(RefCell::new(cur2));
+    // let pos: usize = 0;
+    // let posptr = &pos as *mut usize;
     // let mut cur_ptr = reps.as_mut_ptr();
 
     let rct = reps.clone();
@@ -277,6 +281,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
         .fixed_width(20);
     // let repo_selector: SelectView<RcRepo> = SelectView::new();
     let rreps_1 = rreps.clone();
+    let mut rcur2 = rcur.clone();
     let repo_selector = SelectView::new()
         .with_all(selectify_repos(
             rreps.clone()
@@ -295,21 +300,56 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
                 .borrow();
             let ss_real = rcin
                 .iter()
+                // .position(|x| x.path == ss.path)
                 .find(|x| x.path == ss.path)
                 .unwrap();
+                // .as_mut_ptr();
+            // let ss_ptr = rcin[ss_real].as_mut_ptr();
 
             unsafe {
-                // let tmp = RefCell::new(cur);
-                let sss = ss as *const Repo as *mut Repo;
-                let sss_real = ss_real as *const Repo as *mut Repo;
-                // let sss = &mut (*ss) as *mut Repo;
-                // tmp.replace(sss);
-                let ptr_cpy = cur as *mut *mut Repo;
-                // let ptr_cpy = *mut cur_ptr;
-                *ptr_cpy = sss;
+                // pos = ss_real;
+                let mut sss_real = ss_real as *const Repo as *mut Repo;
+                // let mut ptr_cpy = &mut cur as *mut *mut Repo;
+
+                (&rcur2).replace(sss_real);
+
                 // *ptr_cpy = sss_real;
-                // tmp.borrow_mut() = ss;
+                // ptr_cpy = &mut sss_real;
+                // cur = sss_real;
+                let rcinptr = rcin.as_ptr();
+                let file = OpenOptions::new()
+                    .append(true)
+                    .create(true)
+                    .open("tmp_out")
+                    .unwrap()
+                    .write_fmt(
+                        unsafe {
+                        format_args!(
+                        "repo is {:?},\n, cur is {:?},\n ptr_cpy is {:?},\n *ptr_cpy is {:?},\n rcin first is {:?}, \n sss_real is {:?},\n cur val is {:?}\n",
+                        ss_real,
+                        cur,
+                        0, 0,
+                        // ptr_cpy,
+                        // *ptr_cpy,
+                        rcinptr,
+                        sss_real,
+                        &(*cur)
+                        )
+                    });
             }
+
+            // unsafe {
+            //     // let tmp = RefCell::new(cur);
+            //     let sss = ss as *const Repo as *mut Repo;
+            //     let sss_real = ss_real as *const Repo as *mut Repo;
+            //     // let sss = &mut (*ss) as *mut Repo;
+            //     // tmp.replace(sss);
+            //     let ptr_cpy = cur as *mut *mut Repo;
+            //     // let ptr_cpy = *mut cur_ptr;
+            //     *ptr_cpy = sss;
+            //     // *ptr_cpy = sss_real;
+            //     // tmp.borrow_mut() = ss;
+            // }
 
             // unsafe {
             //     // let x: i32 = 0;
@@ -359,6 +399,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     );
     let ct = selectify_rc_tags(&config_tags.clone());
     // let fo_c = rreps.clone();
+    let mut rcur1 = rcur.clone();
     let tags_pool: IdView<SelectView> = SelectView::new()
             // .with_all(selectify_rc_tags(
             //     &config_tags.clone()
@@ -389,13 +430,30 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
                     let old_tags = &(*cur)
                         .tags
                         .clone();
+                    let tmp1 = rcur1
+                        // .borrow_mut()
+                        .deref();
+                    let tmp2 = tmp1
+                        // .borrow_mut()
+                        .deref()
+                        .borrow_mut();
 
-                    &(*cur)
-                        .tags
-                        // .tags.write(848)
-                        // .tags = old_tags
-                            // .push(RepoTag::new(ss));
+                    // (rcur
+                    //     .deref()
+                    //     .borrow_mut()
+                    //     )
+                    RefMut::map(tmp2, |x| {
+                        (**x).tags
                         .push(RepoTag::new(ss));
+                        return x;
+                    });
+
+                    // &(*cur)
+                    //     .tags
+                    //     // .tags.write(848)
+                    //     // .tags = old_tags
+                    //         // .push(RepoTag::new(ss));
+                    //     .push(RepoTag::new(ss));
                     let file = OpenOptions::new()
                         .append(true)
                         .create(true)
