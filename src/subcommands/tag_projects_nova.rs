@@ -110,7 +110,25 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     // let cur: [Repo] = reps.borrow();
     let mut cur = reps.as_mut_ptr();
     let mut cur2 = reps.as_mut_ptr();
+    let mut cur3 = reps.as_mut_ptr();
     let mut rcur = Rc::new(RefCell::new(cur2));
+
+    let strs = vec!(
+        format!("--------------------------------------------"),
+        format!("INITIALS"),
+        format!("cur:                 {:?}", (cur)),
+        format!("reps:                {:?}", (reps.as_mut_ptr())),
+        format!("cur3:                {:?}", (cur3)),
+        format!("------------------------------------------\n"),
+    );
+    let strs_join: String = strs.as_slice().join("\n");
+    let file = OpenOptions::new()
+        .append(true)
+        .create(true)
+        .open("tmp_out")
+        .unwrap()
+        .write_all(strs_join.as_ref());
+
     // let pos: usize = 0;
     // let posptr = &pos as *mut usize;
     // let mut cur_ptr = reps.as_mut_ptr();
@@ -316,6 +334,9 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
                 let mut ptr_cpy_three = &mut ptr_cpy_two as *mut *mut Repo;
                 let mut ptr_cpy_four = &cur as *const *mut Repo as *mut *mut Repo;
 
+                let fake3 = &cur3 as *const *mut Repo as *mut *mut Repo;
+                (*fake3) = (*fake3).add(1);
+
                 // (&rcur2).replace(sss_real);
                 // (*ptr_cpy_three).add(2);
                 // *ptr_cpy_four.add(2);
@@ -327,15 +348,16 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
                 // cur = sss_real;
                 let strs = vec!(
                     format!("sss_real:                  {:?}", (sss_real)),
-                    format!("*sss_real:                  {:?}", (*sss_real)),
-                    format!("cur:                  {:?}", (cur)),
-                    format!("*cur:                  {:?}", (*cur)),
-                    format!("ptr_cpy_two:          {:?}", (ptr_cpy_two)),
-                    format!("*ptr_cpy_two:         {:?}", (*ptr_cpy_two)),
-                    format!("ptr_cpy_three:          {:?}", (ptr_cpy_three)),
-                    format!("*ptr_cpy_three:         {:?}", (*ptr_cpy_three)),
-                    format!("ptr_cpy_four:          {:?}", (ptr_cpy_four)),
-                    format!("*ptr_cpy_four:         {:?}", (*ptr_cpy_four)),
+                    format!("*sss_real:                 {:?}", (*sss_real)),
+                    format!("cur:                       {:?}", (cur)),
+                    format!("*cur:                      {:?}", (*cur)),
+                    format!("ptr_cpy_two:               {:?}", (ptr_cpy_two)),
+                    format!("*ptr_cpy_two:              {:?}", (*ptr_cpy_two)),
+                    format!("ptr_cpy_three:             {:?}", (ptr_cpy_three)),
+                    format!("*ptr_cpy_three:            {:?}", (*ptr_cpy_three)),
+                    format!("ptr_cpy_four:              {:?}", (ptr_cpy_four)),
+                    format!("*ptr_cpy_four:             {:?}", (*ptr_cpy_four)),
+                    format!("fake3:                     {:?}", (fake3)),
                     format!("\n")
                 );
                 let strs_join: String = strs.as_slice().join("\n");
@@ -441,6 +463,9 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
                     // (*ptr_cpy_two).
                     //     tags
                     //     .push(RepoTag::new(ss));
+                    let fake3 = &cur3 as *const *mut Repo as *mut *mut Repo;
+                    // (*fake3) = (*fake3).add(1);
+
                     (*cur)
                         .tags
                         .push(RepoTag::new(ss));
@@ -464,19 +489,24 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
                     // //     // .tags = old_tags
                     // //         // .push(RepoTag::new(ss));
                     // //     .push(RepoTag::new(ss));
-                    // let file = OpenOptions::new()
-                    //     .append(true)
-                    //     .create(true)
-                    //     .open("tmp_out")
-                    //     .unwrap()
-                    //     .write_fmt(
-                    //         unsafe {
-                    //         format_args!(
-                    //         "tag is {}, SELECT TAGS are {:?}\n", ss,
-                    //             &(*cur)
-                    //                 .tags
-                    //         )
-                    //     });
+                    let strs = vec!(
+                        format!("--------------------------------------------"),
+                        format!("ADDING A TAG"),
+                        format!("ss:                  {:?}", (ss)),
+                        format!("cur:                 {:?}", (cur)),
+                        format!("*cur:                {:?}", (*cur)),
+                        format!("cur3:                {:?}", (cur3)),
+                        format!("fake3:               {:?}", (fake3)),
+                        format!("*fake3:              {:?}", (*fake3)),
+                        format!("------------------------------------------\n"),
+                    );
+                    let strs_join: String = strs.as_slice().join("\n");
+                    let file = OpenOptions::new()
+                        .append(true)
+                        .create(true)
+                        .open("tmp_out")
+                        .unwrap()
+                        .write_all(strs_join.as_ref());
                 }
             })
 
@@ -549,7 +579,23 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
         debug!("original ref: {:?}", unsafe {
             &(*repsreps)
         });
-            // RefCell::into_inner(rreps.clone().get_mut()));
+        let strs = vec!(
+            format!("--------------------------------------------"),
+            format!("FINALS"),
+            format!("cur:                 {:?}", (cur)),
+            format!("reps:                {:?}", (more_reps.as_ptr())),
+            format!("cur3:                {:?}", (cur3)),
+            format!("------------------------------------------\n"),
+        );
+        let strs_join: String = strs.as_slice().join("\n");
+        let file = OpenOptions::new()
+            .append(true)
+            .create(true)
+            .open("tmp_out")
+            .unwrap()
+            .write_all(strs_join.as_ref());
+
+        // RefCell::into_inner(rreps.clone().get_mut()));
         // debug!("REPOS ARE: {:?}", rreps.clone().borrow_mut().into_inner());
         // GitGlobalConfig::new().cache_repos(&rreps.deref().borrow());
 
@@ -569,46 +615,3 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     // println!("new tags is {:?}", &fake_tags);
     Ok(GitGlobalResult::new(&vec![]))
 }
-
-
-// // /// Final behaviour
-// // fn save_tags_and_quit(s: &mut Cursive, tags: &RMut) {
-// fn save_tags_and_quit(s: &mut Cursive, user_config: &mut GitGlobalConfig, tags: &RMut) {
-//     let mut user_config = GitGlobalConfig::new();
-//     trace!("save_tags_and_quit");
-//     debug!("wtf???");
-//     let mut t_list: Vec<String> = Vec::new();
-//     s.call_on_id("tag_list",
-//         |tl: &mut SelectView| {
-//             error!("tag count is {}", tl.len());
-//             let count = tl.len();
-//             for i in 0..count  {
-//                 t_list.push(tl.get_item(i).unwrap().0.to_string())
-//             }
-//         }
-//     );
-//     let tag_list: String = tags
-//         .borrow()
-//         .deref()
-//         .get_content()
-//         .source()
-//         .to_string();
-//     s.call_on_id("tag",
-//         |view: &mut EditView| {
-//             let po = &tag_list.clone();
-//             view.set_content(po.to_string());
-//         }
-//     ).expect("final unwrap...");
-//     let tag_list_list = t_list;
-//     debug!("About to print tags");
-//     debug!("tags are: {:?}", &tag_list_list);
-//     // user_config.add_tags(
-//     //     tag_list_list
-//     // );
-//     user_config.replace_tags(
-//         tag_list_list
-//     );
-//     user_config.write_tags();
-//     s.cb_sink()
-//         .send(Box::new(|siv: &mut Cursive| siv.quit()));
-// }
