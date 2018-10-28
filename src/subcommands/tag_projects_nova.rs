@@ -109,6 +109,8 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     // NOTE: unsafe
     // let cur: [Repo] = reps.borrow();
     let mut cur = reps.as_mut_ptr();
+    let c3po = &cur as *const *mut Repo;
+    // let c3po = &cur as *const *mut Repo as *mut *mut Repo;
     let mut cur2 = reps.as_mut_ptr();
     let mut cur3 = reps.as_mut_ptr();
     let mut rcur = Rc::new(RefCell::new(cur2));
@@ -116,9 +118,11 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     let strs = vec!(
         format!("--------------------------------------------"),
         format!("INITIALS"),
+        format!("&cur:                {:?}", (&cur as *const *mut Repo)),
         format!("cur:                 {:?}", (cur)),
         format!("reps:                {:?}", (reps.as_mut_ptr())),
         format!("cur3:                {:?}", (cur3)),
+        format!("c3po:                {:?}", (c3po)),
         format!("------------------------------------------\n"),
     );
     let strs_join: String = strs.as_slice().join("\n");
@@ -334,14 +338,19 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
                 let mut ptr_cpy_three = &mut ptr_cpy_two as *mut *mut Repo;
                 let mut ptr_cpy_four = &cur as *const *mut Repo as *mut *mut Repo;
 
-                let fake3 = &cur3 as *const *mut Repo as *mut *mut Repo;
-                (*fake3) = (*fake3).add(1);
+                // let fake3 = &cur3 as *const *mut Repo as *mut *mut Repo;
+                // (*fake3) = (*fake3).add(1);
 
                 // (&rcur2).replace(sss_real);
                 // (*ptr_cpy_three).add(2);
                 // *ptr_cpy_four.add(2);
-                (*ptr_cpy_four) = sss_real;
                 // ptr_cpy_two = sss_real;
+                // (*ptr_cpy_four) = sss_real;
+                // (*c3po) = sss_real;
+                let c3p4 = c3po as *mut *mut Repo;
+                (*c3p4) = sss_real;
+
+                // (*c3po) = sss_real;
 
                 // *ptr_cpy = sss_real;
                 // ptr_cpy = &mut sss_real;
@@ -349,6 +358,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
                 let strs = vec!(
                     format!("sss_real:                  {:?}", (sss_real)),
                     format!("*sss_real:                 {:?}", (*sss_real)),
+                    format!("&cur:                      {:?}", (&cur as *const *mut Repo)),
                     format!("cur:                       {:?}", (cur)),
                     format!("*cur:                      {:?}", (*cur)),
                     format!("ptr_cpy_two:               {:?}", (ptr_cpy_two)),
@@ -357,7 +367,11 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
                     format!("*ptr_cpy_three:            {:?}", (*ptr_cpy_three)),
                     format!("ptr_cpy_four:              {:?}", (ptr_cpy_four)),
                     format!("*ptr_cpy_four:             {:?}", (*ptr_cpy_four)),
-                    format!("fake3:                     {:?}", (fake3)),
+                    format!("c3po:                      {:?}", (c3po)),
+                    format!("*c3po:                     {:?}", (*c3po)),
+                    // format!("c3p4*:                     {:?}", (c3p4)),
+                    // format!("*c3p4:                     {:?}", (*c3p4)),
+                    // format!("fake3:                     {:?}", (fake3)),
                     format!("\n")
                 );
                 let strs_join: String = strs.as_slice().join("\n");
@@ -463,10 +477,11 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
                     // (*ptr_cpy_two).
                     //     tags
                     //     .push(RepoTag::new(ss));
-                    let fake3 = &cur3 as *const *mut Repo as *mut *mut Repo;
+                    // let fake3 = &cur3 as *const *mut Repo as *mut *mut Repo;
                     // (*fake3) = (*fake3).add(1);
 
-                    (*cur)
+                    (**c3po)
+                    // (*cur)
                         .tags
                         .push(RepoTag::new(ss));
 
@@ -493,11 +508,12 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
                         format!("--------------------------------------------"),
                         format!("ADDING A TAG"),
                         format!("ss:                  {:?}", (ss)),
+                        format!("&cur:                {:?}", (&cur as *const *mut Repo)),
                         format!("cur:                 {:?}", (cur)),
                         format!("*cur:                {:?}", (*cur)),
                         format!("cur3:                {:?}", (cur3)),
-                        format!("fake3:               {:?}", (fake3)),
-                        format!("*fake3:              {:?}", (*fake3)),
+                        format!("c3po:                {:?}", (c3po)),
+                        format!("*c3po:               {:?}", (*c3po)),
                         format!("------------------------------------------\n"),
                     );
                     let strs_join: String = strs.as_slice().join("\n");
@@ -583,6 +599,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
             format!("--------------------------------------------"),
             format!("FINALS"),
             format!("cur:                 {:?}", (cur)),
+            format!("&cur:                {:?}", (&cur as *const *mut Repo)),
             format!("reps:                {:?}", (more_reps.as_ptr())),
             format!("cur3:                {:?}", (cur3)),
             format!("------------------------------------------\n"),
