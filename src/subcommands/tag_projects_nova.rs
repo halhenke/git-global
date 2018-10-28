@@ -92,6 +92,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
         .into_iter()
         .take(5)
         .collect();
+    let repsreps = &reps as *const Vec<Repo>;
     let results = uc.get_cached_results();
     let result_tags: Vec<RepoTag> = results.all_tags()
         .into_iter()
@@ -309,34 +310,56 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
             unsafe {
                 // pos = ss_real;
                 let mut sss_real = ss_real as *const Repo as *mut Repo;
+                let mut sss_real_two = ss_real as *const Repo as *mut Repo;
                 // let mut ptr_cpy = &mut cur as *mut *mut Repo;
                 let mut ptr_cpy_two = cur as *mut Repo;
+                let mut ptr_cpy_three = &mut ptr_cpy_two as *mut *mut Repo;
+                let mut ptr_cpy_four = &cur as *const *mut Repo as *mut *mut Repo;
 
                 // (&rcur2).replace(sss_real);
-                ptr_cpy_two = sss_real;
+                // (*ptr_cpy_three).add(2);
+                // *ptr_cpy_four.add(2);
+                (*ptr_cpy_four) = sss_real;
+                // ptr_cpy_two = sss_real;
 
                 // *ptr_cpy = sss_real;
                 // ptr_cpy = &mut sss_real;
                 // cur = sss_real;
+                let strs = vec!(
+                    format!("sss_real:                  {:?}", (sss_real)),
+                    format!("*sss_real:                  {:?}", (*sss_real)),
+                    format!("cur:                  {:?}", (cur)),
+                    format!("*cur:                  {:?}", (*cur)),
+                    format!("ptr_cpy_two:          {:?}", (ptr_cpy_two)),
+                    format!("*ptr_cpy_two:         {:?}", (*ptr_cpy_two)),
+                    format!("ptr_cpy_three:          {:?}", (ptr_cpy_three)),
+                    format!("*ptr_cpy_three:         {:?}", (*ptr_cpy_three)),
+                    format!("ptr_cpy_four:          {:?}", (ptr_cpy_four)),
+                    format!("*ptr_cpy_four:         {:?}", (*ptr_cpy_four)),
+                    format!("\n")
+                );
+                let strs_join: String = strs.as_slice().join("\n");
                 let rcinptr = rcin.as_ptr();
                 let file = OpenOptions::new()
                     .append(true)
                     .create(true)
                     .open("tmp_out")
                     .unwrap()
-                    .write_fmt(
+                    .write_all(
+                    // .write_fmt(
                         unsafe {
-                        format_args!(
-                        "repo is {:?},\n, cur is {:?},\n ptr_cpy is {:?},\n *ptr_cpy is {:?},\n rcin first is {:?}, \n sss_real is {:?},\n cur val is {:?}\n",
-                        ss_real,
-                        cur,
-                        0, 0,
-                        // ptr_cpy,
-                        // *ptr_cpy,
-                        rcinptr,
-                        sss_real,
-                        &(*cur)
-                        )
+                            strs_join.as_ref()
+                        // format_args!(
+                        // "repo is {:?},\n, cur is {:?},\n ptr_cpy is {:?},\n *ptr_cpy is {:?},\n rcin first is {:?}, \n sss_real is {:?},\n cur val is {:?}\n",
+                        // ss_real,
+                        // cur,
+                        // 0, 0,
+                        // // ptr_cpy,
+                        // // *ptr_cpy,
+                        // rcinptr,
+                        // sss_real,
+                        // &(*cur)
+                        // )
                     });
             }
 
@@ -411,11 +434,15 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
             ))
             .on_select(move |s: &mut Cursive, ss| {
                 unsafe {
-                    let mut ptr_cpy_two = cur as *mut Repo;
                     // (&rcur2).replace(sss_real);
                     // ptr_cpy_two = sss_real;
-                    (*ptr_cpy_two).
-                        tags
+
+                    // let mut ptr_cpy_two = cur as *mut Repo;
+                    // (*ptr_cpy_two).
+                    //     tags
+                    //     .push(RepoTag::new(ss));
+                    (*cur)
+                        .tags
                         .push(RepoTag::new(ss));
 
                     // let tmp1 = rcur1
@@ -514,10 +541,14 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
                     }, unsafe {
                         &(*cur).tags
                     });
-        debug!("REPOS ARE: {:?}",
+        debug!("REPOS PPPPPP: {:?}",
             unsafe {
                 &*(more_reps.as_ptr())
             });
+        debug!("cur is {:?}, orig ref ptr is {:?}", cur, repsreps);
+        debug!("original ref: {:?}", unsafe {
+            &(*repsreps)
+        });
             // RefCell::into_inner(rreps.clone().get_mut()));
         // debug!("REPOS ARE: {:?}", rreps.clone().borrow_mut().into_inner());
         // GitGlobalConfig::new().cache_repos(&rreps.deref().borrow());
