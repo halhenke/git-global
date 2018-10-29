@@ -38,6 +38,7 @@ use self::cursive::{
         SelectView,
         TextContent,
         TextView,
+        ViewRef
         }};
 use core::errors::Result as WeirdResult;
 use core::{GitGlobalConfig, Repo, RepoTag, GitGlobalResult, get_repos};
@@ -350,6 +351,8 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
                 let c3p4 = c3po as *mut *mut Repo;
                 (*c3p4) = sss_real;
 
+                updated_display_tags(s, &(**c3po));
+
                 // (*c3po) = sss_real;
 
                 // *ptr_cpy = sss_real;
@@ -432,6 +435,8 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
         })
         // .on_submit(|s, r| {
         .on_submit(|s: &mut Cursive, r: &Repo| {
+            // Lets focus on these tags for now
+            // s.focus_id("tag-pool").expect("...")
             s.focus_id("tag-display").expect("...")
         })
         .min_width(20)
@@ -440,21 +445,27 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     let tags_displayer  = OnEventView::new(
         SelectView::new()
             .with_all(selectify_strings(
-                // &vec!("hoo", "lah", "laa")
-                unsafe {
-                    &(*cur)
-                        // .as_ref()
-                        .tags
-                        .clone()
-                        .into_iter()
-                        // .map(String::from)
-                        .map(|x| x.name)
-                        .collect::<Vec<String>>()
+                &vec!("hoo", "lah", "laa")
+                    // .iter()
+                    .into_iter()
+                    // .map(AsRef::as_ref)
+                    .map(String::from)
+                    .collect()
+                // unsafe {
+                //     // &(*cur)
+                //     &(**c3po)
+                //         // .as_ref()
+                //         .tags
+                //         .clone()
+                //         .into_iter()
+                //         // .map(String::from)
+                //         .map(|x| x.name)
+                //         .collect::<Vec<String>>()
 
-                }
+                // }
             ))
-            .min_width(20)
             .with_id("tag-display")
+            .min_width(20)
     ).on_event(Event::Key(Key::Esc), |s|
         s.focus_id("repo-field").expect("...")
     );
@@ -468,7 +479,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
             .with_all(selectify_strings(
                 &ct
             ))
-            .on_select(move |s: &mut Cursive, ss| {
+            .on_submit(move |s: &mut Cursive, ss| {
                 unsafe {
                     // (&rcur2).replace(sss_real);
                     // ptr_cpy_two = sss_real;
@@ -484,6 +495,9 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
                     // (*cur)
                         .tags
                         .push(RepoTag::new(ss));
+
+                    updated_display_tags(s, &(**c3po));
+
 
                     // let tmp1 = rcur1
                     //     // .borrow_mut()
@@ -630,5 +644,45 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     // debug!("Current Total Tags {:?}", ttags.deref().borrow());
 
     // println!("new tags is {:?}", &fake_tags);
+    fn updated_display_tags(siv: &mut Cursive, r: &Repo) {
+        // siv.call_on_id("tag-pool", |v: &mut SelectView| {
+        let found = siv.call_on_id("tag-display", |v: &mut SelectView| {
+            // &siv.focus_id("tag-display");
+            // v.select_down(1);
+            v.clear();
+            // v.add_all_str(
+            //     vec!(
+            //         "pp",
+            //         "oo"
+            //     )
+            // );
+            v.add_all(selectify_strings(
+                    unsafe {
+                        // &(*cur)
+                        &r
+                            // .as_ref()
+                            .tags
+                            .clone()
+                            .into_iter()
+                            // .map(String::from)
+                            .map(|x| x.name)
+                            .collect::<Vec<String>>()
+                    }
+            ));
+        });
+        // let found: Option<ViewRef<SelectView>> = siv.find_id("tag-display");
+        // if let Some(foo) = found {
+        //     // found.
+        //     siv.call_on_id("tag-pool", |v: &mut SelectView| {
+        //         v.select_down(1);
+        //     });
+        // } else {
+        //     siv.call_on_id("tag-pool", |v: &mut SelectView| {
+        //         v.clear();
+        //     });
+        // }
+    }
+
     Ok(GitGlobalResult::new(&vec![]))
 }
+
