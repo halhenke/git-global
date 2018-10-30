@@ -41,6 +41,15 @@ impl Repo {
     pub fn tag(&mut self, tag: &str) -> () {
         self.tags.push(RepoTag::new(tag));
     }
+
+    pub fn untag(&mut self, tag: &str) -> () {
+        let id_match = self.tags
+            .iter()
+            .position(|x| x.name == tag);
+        if let Some(id) = id_match {
+            self.tags.remove(id);
+        }
+    }
 }
 
 impl fmt::Display for Repo {

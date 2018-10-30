@@ -436,8 +436,8 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
         // .on_submit(|s, r| {
         .on_submit(|s: &mut Cursive, r: &Repo| {
             // Lets focus on these tags for now
-            // s.focus_id("tag-pool").expect("...")
-            s.focus_id("tag-display").expect("...")
+            s.focus_id("tag-pool").expect("...")
+            // s.focus_id("tag-display").expect("...")
         })
         .min_width(20)
         .with_id("repo-field");
@@ -468,7 +468,19 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
             .min_width(20)
     ).on_event(Event::Key(Key::Esc), |s|
         s.focus_id("repo-field").expect("...")
-    );
+    ).on_event(Event::Key(Key::Backspace), move |s| {
+        let mut this: ViewRef<SelectView> = s.find_id("tag-display").unwrap();
+        // this.clear();
+        if let Some(id) = this.selected_id() {
+            let name = this.selection().unwrap();
+            let cb = this.remove_item(id);
+            cb(s);
+            unsafe {
+                &(**c3po)
+                    .untag(&name);
+            }
+        }
+    });
     let ct = selectify_rc_tags(&config_tags.clone());
     // let fo_c = rreps.clone();
     let mut rcur1 = rcur.clone();
@@ -580,10 +592,17 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
                 Panel::new(
                     OnEventView::new(
                         tags_pool
+                        //     .on_event(Event::Key(Key::Escape), |s1| {
+                        // })
                     )
-                    // .on_event_inner(Event::Key(Key::Backspace), |s1| {
-                    //     delete_tag(&mut s1.get_mut())
-                    // })
+                    .on_event_inner(Event::Key(Key::Esc), |s1| {
+                        let cb = Callback::from_fn(
+                            |siv: &mut Cursive| {
+                                siv.focus_id("repo-field");
+                            }
+                        );
+                        return Some(EventResult::Consumed(Some(cb)));
+                    })
                     // NOTE: Due to fucking annoying design this has to come
                     // after/outside `OnEventView` - otherwise we never get to unwrap
                     // properly
