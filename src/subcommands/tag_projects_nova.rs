@@ -91,7 +91,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
 
     let mut reps: Vec<Repo> = uc.get_cached_repos()
         .into_iter()
-        .take(5)
+        // .take(5)
         .collect();
     let repsreps = &reps as *const Vec<Repo>;
     let results = uc.get_cached_results();
@@ -433,33 +433,36 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
             s.focus_id("tag-pool").expect("...")
             // s.focus_id("tag-display").expect("...")
         })
+        .scrollable()
         .min_width(20)
+        .max_height(10)
         .with_id("repo-field");
     // let tags_displayer: IdView<BoxView<SelectView>> = OnEventView()
     let tags_displayer  = OnEventView::new(
         SelectView::new()
             .with_all(selectify_strings(
-                &vec!("hoo", "lah", "laa")
-                    // .iter()
-                    .into_iter()
-                    // .map(AsRef::as_ref)
-                    .map(String::from)
-                    .collect()
-                // unsafe {
-                //     // &(*cur)
-                //     &(**c3po)
-                //         // .as_ref()
-                //         .tags
-                //         .clone()
-                //         .into_iter()
-                //         // .map(String::from)
-                //         .map(|x| x.name)
-                //         .collect::<Vec<String>>()
-
-                // }
+                // &vec!("hoo", "lah", "laa")
+                //     // .iter()
+                //     .into_iter()
+                //     // .map(AsRef::as_ref)
+                //     .map(String::from)
+                //     .collect()
+                unsafe {
+                    // &(*cur)
+                    &(**c3po)
+                        // .as_ref()
+                        .tags
+                        .clone()
+                        .into_iter()
+                        // .map(String::from)
+                        .map(|x| x.name)
+                        .collect::<Vec<String>>()
+                }
             ))
             .with_id("tag-display")
             .min_width(20)
+            .max_height(10)
+
     ).on_event(Event::Key(Key::Esc), |s|
         s.focus_id("repo-field").expect("...")
     ).on_event(Event::Key(Key::Backspace), move |s| {
