@@ -126,13 +126,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
         format!("c3po:                {:?}", (c3po)),
         format!("------------------------------------------\n"),
     );
-    let strs_join: String = strs.as_slice().join("\n");
-    let file = OpenOptions::new()
-        .append(true)
-        .create(true)
-        .open("tmp_out")
-        .unwrap()
-        .write_all(strs_join.as_ref());
+    debug_write_file(strs, "tmp_out");
 
     // let pos: usize = 0;
     // let posptr = &pos as *mut usize;
@@ -542,13 +536,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
                         format!("*c3po:               {:?}", (*c3po)),
                         format!("------------------------------------------\n"),
                     );
-                    let strs_join: String = strs.as_slice().join("\n");
-                    let file = OpenOptions::new()
-                        .append(true)
-                        .create(true)
-                        .open("tmp_out")
-                        .unwrap()
-                        .write_all(strs_join.as_ref());
+                    debug_write_file(strs, "tmp_out");
                 }
             })
 
@@ -637,13 +625,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
             format!("cur3:                {:?}", (cur3)),
             format!("------------------------------------------\n"),
         );
-        let strs_join: String = strs.as_slice().join("\n");
-        let file = OpenOptions::new()
-            .append(true)
-            .create(true)
-            .open("tmp_out")
-            .unwrap()
-            .write_all(strs_join.as_ref());
+        debug_write_file(strs, "tmp_out");
 
         // RefCell::into_inner(rreps.clone().get_mut()));
         // debug!("REPOS ARE: {:?}", rreps.clone().borrow_mut().into_inner());
@@ -705,3 +687,13 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     Ok(GitGlobalResult::new(&vec![]))
 }
 
+
+fn debug_write_file(messages: Vec<String>, log_file: &str) {
+    let strs_join: String = messages.as_slice().join("\n");
+    let file = OpenOptions::new()
+        .append(true)
+        .create(true)
+        .open("tmp_out")
+        .unwrap()
+        .write_all(strs_join.as_ref());
+}
