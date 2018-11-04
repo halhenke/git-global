@@ -450,13 +450,13 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
                 unsafe {
                     // &(*cur)
                     &(**c3po)
-                        // .as_ref()
-                        .tags
-                        .clone()
-                        .into_iter()
-                        // .map(String::from)
-                        .map(|x| x.name)
-                        .collect::<Vec<String>>()
+                        .get_tags()
+                        // .tags
+                        // .clone()
+                        // .into_iter()
+                        // // .map(String::from)
+                        // .map(|x| x.name)
+                        // .collect::<Vec<String>>()
                 }
             ))
             .with_id("tag-display")

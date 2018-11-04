@@ -50,7 +50,37 @@ impl Repo {
             self.tags.remove(id);
         }
     }
+
+    pub fn get_tags(&self) -> Vec<String> {
+        return self
+            .tags
+            .clone()
+            .into_iter()
+            .map(|x| String::from(x))
+            .collect()
+    }
 }
+// type VecRep = Vec<Repo>;
+
+/// All tags from a Vec of repos
+pub fn all_tags<'a>(reps: &Vec<Repo>) -> Vec<RepoTag> {
+    let mut v: Vec<RepoTag> = Vec::new();
+    // reps.iter()
+    // .map(|x| &x.tags)
+    // .collect()
+    // let mut vi = v.ter();
+    for r in reps {
+        // (&vi).chain(r.tags.iter());
+        // &v.append(r.tags.iter())
+        let mut t: Vec<RepoTag> = r.tags.clone();
+        &v.append(&mut t);
+    }
+    // return v.iter().flatten().collect();
+    // return vi.collect();
+    return v;
+
+}
+
 
 impl fmt::Display for Repo {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
