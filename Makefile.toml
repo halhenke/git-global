@@ -3,7 +3,7 @@ APP_NAME = "git-global-hal"
 
 [tasks.build]
 command = "cargo"
-args = ["build"]
+args = ["build", "--release"]
 
 [tasks.install-bin]
 description = "install git-global-hal globally"
