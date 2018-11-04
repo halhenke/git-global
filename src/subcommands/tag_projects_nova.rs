@@ -14,6 +14,7 @@ use itertools::Itertools;
 use std::fs::{File, OpenOptions};
 use std::io::Write;
 
+use macros::rc_mut;
 
 use self::cursive::Cursive;
 use self::cursive::align::HAlign;
@@ -41,7 +42,15 @@ use self::cursive::{
         ViewRef
         }};
 use core::errors::Result as WeirdResult;
-use core::{GitGlobalConfig, Repo, RepoTag, GitGlobalResult, get_repos};
+use core::{
+    GitGlobalConfig,
+    GitGlobalResult,
+    Repo,
+    RepoTag,
+    all_tags,
+    save_repos_and_tags,
+    get_repos
+};
 use mut_static::MutStatic;
 use take_mut;
 use std::cell::Ref;
@@ -49,12 +58,12 @@ type RMut = Rc<RefCell<TextContent>>;
 
 use std::fmt;
 
-type RcResult = Rc<GitGlobalResult>;
-type RcRcResult = Rc<RefCell<GitGlobalResult>>;
-type RcRepo = Rc<RefCell<Repo>>;
-type RcRepoTag = Rc<RefCell<RepoTag>>;
+type RcResult =     Rc<GitGlobalResult>;
+type RcRcResult =   Rc<RefCell<GitGlobalResult>>;
+type RcRepo =       Rc<RefCell<Repo>>;
+type RcRepoTag =    Rc<RefCell<RepoTag>>;
 type RcVecRepoTag = Rc<RefCell<Vec<RepoTag>>>;
-type RcVecRepo = Rc<RefCell<Vec<Repo>>>;
+type RcVecRepo =    Rc<RefCell<Vec<Repo>>>;
 // type RcRepo<'a> = Rc<RefCell<&'a Repo>>;
 // type RcRepoTag<'a> = Rc<RefCell<&'a RepoTag>>;
 // type RcVecRepoTag<'a> = Rc<RefCell<&'a Vec<RepoTag>>>;
@@ -248,6 +257,10 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
                 // .clone()
                 .deref()
                 .borrow_mut()
+            return rc_borr!(rctags)
+            // return rctags
+            //     .deref()
+            //     .borrow_mut()
                 .iter()
                 // .cloned()
                 // .into_iter()

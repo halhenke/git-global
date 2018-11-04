@@ -59,6 +59,9 @@ extern crate serde_derive;
 extern crate lazy_static;
 #[macro_use]
 extern crate log;
+// Have to use macros before other stuff
+#[macro_use]
+pub mod macros;
 
 extern crate take_mut;
 
@@ -66,8 +69,6 @@ mod cli;
 pub mod core;
 
 pub mod subcommands;  // Using `pub mod` so we see the docs.
-#[macro_use]
-pub mod macros;
 
 pub use cli::run_from_command_line;
 
