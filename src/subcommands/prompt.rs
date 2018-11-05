@@ -4,9 +4,12 @@ use std::thread;
 use std::collections::HashMap;
 
 use tui::Terminal;
-use tui::backend::RawBackend;
+use tui::backend::TermionBackend;
 use tui::widgets::{Widget, Block, Borders, SelectableList};
-use tui::layout::{Group, Size, Direction};
+use tui::layout::{Layout, Direction,
+    Constraint::Percentage
+};
+// use tui::layout::{Group, Size, Direction};
 use tui::style::{Style, Color, Modifier};
 extern crate termion;
 use self::termion::event;
@@ -131,25 +134,29 @@ pub fn go() -> WeirdResult<GitGlobalResult> {
     Ok(GitGlobalResult::new(&vec![]))
 }
 
-fn init() -> Result<Terminal<RawBackend>, io::Error> {
-    let backend = RawBackend::new()?;
+fn init() -> Result<Terminal<TermionBackend<io::Stdout>>, io::Error> {
+    let stdout = io::stdout();
+    // let stdout = io::stdout().into_raw_mode()?;
+    let backend = TermionBackend::new(stdout);
     Terminal::new(backend)
 }
 
-// fn draw(t: &mut Terminal<RawBackend>) -> () {
-fn draw(t: &mut Terminal<RawBackend>, sel: & Selectable) -> Result<(), io::Error> {
+// fn draw(t: &mut Terminal<TermionBackend>) -> () {
+fn draw(term: &mut Terminal<TermionBackend<io::Stdout>>, sel: & Selectable) -> Result<(), io::Error> {
 
-    let size = t.size()?;
+    let size = term.size()?;
 
-    Group::default()
-        .direction(Direction::Vertical)
-        .margin(1)
-        .sizes(&[Size::Percent(10), Size::Percent(80), Size::Percent(10)])
-        .render(t, &size, |t, chunks| {
+    term.draw(|mut t| {
+        let chunks = Layout::default()
+            .direction(Direction::Vertical)
+            .margin(1)
+            .constraints([Percentage(10), Percentage(80), Percentage(10)].as_ref())
+            .split(size);
+            // .render(t, &size, |t, chunks| {
             Block::default()
                 .title("Block")
                 .borders(Borders::ALL)
-                .render(t, &chunks[0]);
+                .render(&mut t, chunks[0]);
             SelectableList::default()
                 .block(
                     Block::default()
@@ -157,16 +164,14 @@ fn draw(t: &mut Terminal<RawBackend>, sel: & Selectable) -> Result<(), io::Error
                         .borders(Borders::ALL)
                 )
                 .items(&sel.selections)
-                .select(sel.selected)
+                .select(Some(sel.selected))
                 .style(Style::default().fg(Color::White))
                 .highlight_style(Style::default().modifier(Modifier::Italic))
                 .highlight_symbol(">>")
-                .render(t, &chunks[1]);
+                .render(&mut t, chunks[1]);
             Block::default()
                 .title("Block 2")
                 .borders(Borders::ALL)
-                .render(t, &chunks[2]);
-        });
-
-    t.draw()
+                .render(&mut t, chunks[2]);
+    })
 }
