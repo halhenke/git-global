@@ -390,6 +390,10 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
                     // let fake3 = &cur3 as *const *mut Repo as *mut *mut Repo;
                     // (*fake3) = (*fake3).add(1);
 
+                    if (**c3po).has_tag(ss) {
+                        return;
+                    }
+
                     (**c3po)
                     // (*cur)
                         .tags

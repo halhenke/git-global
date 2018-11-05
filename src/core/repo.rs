@@ -42,6 +42,12 @@ impl Repo {
         self.tags.push(RepoTag::new(tag));
     }
 
+    pub fn has_tag(&mut self, tag: &str) -> bool {
+        self.tags
+            .iter()
+            .any(|t| t.name == tag)
+    }
+
     pub fn untag(&mut self, tag: &str) -> () {
         let id_match = self.tags
             .iter()
