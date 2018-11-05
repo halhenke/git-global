@@ -10,9 +10,17 @@ macro_rules! rc_borr {
         // use std::rc::Rc;
         // use std::ops::{Deref, DerefMut};
 
+        // equiv to:
+        // RefCell::borrow_mut(&$e)
         $e
             .deref()
             .borrow_mut()
+    };
+}
+#[macro_export]
+macro_rules! rcref {
+    ($e: ident) => {
+        Rc::new(RefCell::new($e))
     };
 }
 
