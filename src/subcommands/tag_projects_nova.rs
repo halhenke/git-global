@@ -21,10 +21,15 @@ use self::cursive::align::HAlign;
 use self::cursive::event::{Callback, Event, EventResult, Key};
 use self::cursive::{
     traits::*,
-    view::Selector
+    view::Selector,
+    Printer,
+    XY
     };
 use std::iter::FromIterator;
 use self::cursive::{
+    theme::{
+        ColorStyle
+    },
     views::{
         EditView,
         IdView,
@@ -110,11 +115,6 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
         // .map(|&x| x)
         // .map(AsRef::asref)
         .collect();
-        // .clone()
-        // .into_iter()
-        // .cloned()
-        // .map(|rt| rt.clone())
-        // .collect();
 
     // NOTE: unsafe
     // let cur: [Repo] = reps.borrow();
@@ -214,9 +214,9 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     // type SelRepIter<'a> = Vec<(String, &'a RcRepo)>;
 
     fn selectify_repos(repos: RcVecRepo) -> Vec<(String, Repo)> {
-        return repos
-            .deref()
-            .borrow_mut()
+        return RefCell::borrow_mut(&repos)
+            // .deref()
+            // .borrow_mut()
             .clone()
             .into_iter()
             .map(|r| (r.path.clone(), r))
@@ -281,6 +281,8 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
                 // ptr_cpy = &mut sss_real;
                 // cur = sss_real;
                 let strs = vec!(
+                    format!("--------------------------------------------"),
+                    format!("BEGIN"),
                     format!("sss_real:                  {:?}", (sss_real)),
                     format!("*sss_real:                 {:?}", (*sss_real)),
                     format!("&cur:                      {:?}", (&cur as *const *mut Repo)),
@@ -297,7 +299,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
                     // format!("c3p4*:                     {:?}", (c3p4)),
                     // format!("*c3p4:                     {:?}", (*c3p4)),
                     // format!("fake3:                     {:?}", (fake3)),
-                    format!("\n")
+                    format!("--------------------------------------------\n"),
                 );
                 let strs_join: String = strs.as_slice().join("\n");
                 let rcinptr = rcin.as_ptr();
@@ -367,6 +369,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
                     .untag(&name);
             }
         }
+        // toggle_bg(*this);
     });
     let ct = selectify_rc_tags(&config_tags.clone());
     // let fo_c = rreps.clone();
@@ -443,32 +446,40 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
                 )
             )
     );
-    let more_reps = rreps.clone();
+    // #[rock]
     siv.add_global_callback('q', move |s1| {
-        s1.quit();
-        debug!("Current Repo Name: {:?},  Tags {:?}", unsafe {
-                        &(*cur).path
-                    }, unsafe {
-                        &(*cur).tags
-                    });
-        debug!("REPOS PPPPPP: {:?}",
-            unsafe {
-                &*(more_reps.as_ptr())
-            });
-        debug!("cur is {:?}, orig ref ptr is {:?}", cur, repsreps);
-        debug!("original ref: {:?}", unsafe {
-            &(*repsreps)
-        });
-        let strs = vec!(
-            format!("--------------------------------------------"),
-            format!("FINALS"),
-            format!("cur:                 {:?}", (cur)),
-            format!("&cur:                {:?}", (&cur as *const *mut Repo)),
-            format!("reps:                {:?}", (more_reps.as_ptr())),
-            format!("cur3:                {:?}", (cur3)),
-            format!("------------------------------------------\n"),
-        );
-        debug_write_file(strs, "tmp_out");
+        // s1.quit();
+        trace!("agg1");
+        let more_reps = rreps.clone();
+        let more_tags = config_tags.clone();
+        // let more_tags = ttags.clone();
+        save_repos_and_quit(s1, more_reps, more_tags);
+        // save_repos_and_quit(s1, more_reps, more_tags, cur);
+        // save_repos_and_quit(s1, more_reps.clone(), ttags.clone(), repsreps);
+        trace!("agg2");
+        // debug!("Current Repo Name: {:?},  Tags {:?}", unsafe {
+        //                 &(*cur).path
+        //             }, unsafe {
+        //                 &(*cur).tags
+        //             });
+        // debug!("REPOS PPPPPP: {:?}",
+        //     unsafe {
+        //         &*(more_reps.as_ptr())
+        //     });
+        // debug!("cur is {:?}, orig ref ptr is {:?}", cur, repsreps);
+        // debug!("original ref: {:?}", unsafe {
+        //     &(*repsreps)
+        // });
+        // let strs = vec!(
+        //     format!("--------------------------------------------"),
+        //     format!("FINALS"),
+        //     format!("cur:                 {:?}", (cur)),
+        //     format!("&cur:                {:?}", (&cur as *const *mut Repo)),
+        //     format!("reps:                {:?}", (more_reps.as_ptr())),
+        //     format!("cur3:                {:?}", (cur3)),
+        //     format!("------------------------------------------\n"),
+        // );
+        // debug_write_file(strs, "tmp_out");
 
         // RefCell::into_inner(rreps.clone().get_mut()));
         // debug!("REPOS ARE: {:?}", rreps.clone().borrow_mut().into_inner());
@@ -527,6 +538,75 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
         // }
     }
 
+    // fn toggle_bg(sel: SelectView) {
+    //     let xy = XY {
+    //         x: 0,
+    //         y: 0,
+    //     };
+    //     let printer = Printer {
+    //         size: sel.required_size(xy)
+    //     };
+    //     sel.draw(printer.with_color(ColorStyle::primary, || {
+    //         printer.print()
+    //     }));
+    // }
+
+    /// Final behaviour - for some reason this only works inside this block
+    fn save_repos_and_quit(s: &mut Cursive, reps: RcVecRepo, tags: RcVecRepoTag) {
+    // fn save_repos_and_quit(s: &mut Cursive, reps: RcVecRepo, tags: RcVecRepoTag, repsmo: *const Vec<Repo>) {
+
+        trace!("srq1");
+        // let ireps = Rc::try_unwrap(reps).expect("we have the repos");
+        // let itags = Rc::try_unwrap(tags).expect("we have the tags");
+        trace!("srq2");
+
+        // let tmp = &ireps.clone();
+        trace!("srq3");
+        unsafe {
+            trace!("srq4");
+            // let check_tags: Vec<String> = all_tags(&(*repsmo))
+        // let check_tags = all_tags(&(**c4))
+            // let check_tags = all_tags(&tmp.borrow())
+            //     .iter()
+            //     .map(|x| format!("TTAA: {}", x.name))
+            //     .collect();
+            trace!("srq5");
+            let beg: Vec<String> = vec![
+                format!("--------------------------------------------"),
+                format!("QUITTING TIME"),
+            ];
+            trace!("srq6");
+            let end: Vec<String> = vec![
+                format!("--------------------------------------------"),
+            ];
+            trace!("srq7");
+            // let ttt = Itertools::kmerge(vec![
+            //             beg.into_iter(),
+            //             check_tags.into_iter(),
+            //             end.into_iter()
+            // ].into_iter()).collect();
+            trace!("srq8");
+            // debug_write_file(ttt, "tmp_out");
+            trace!("srq9");
+        // debug_write_file(check_tags, "tmp_out");
+        }
+        let irepst = RefCell::
+            borrow(&reps);
+        let ireps = irepst
+            .deref();
+        let itagst = RefCell::
+            borrow(&tags);
+            // borrow(&tags);
+        let itags = itagst
+            .deref();
+        // save_repos_and_tags(ireps.into_inner(), itags.into_inner());
+        save_repos_and_tags(ireps.clone(), itags.clone());
+
+        // s.quit();
+        s.cb_sink()
+            .send(Box::new(|siv: &mut Cursive| siv.quit()));
+    }
+
     Ok(GitGlobalResult::new(&vec![]))
 }
 
@@ -540,3 +620,6 @@ fn debug_write_file(messages: Vec<String>, log_file: &str) {
         .unwrap()
         .write_all(strs_join.as_ref());
 }
+
+
+
