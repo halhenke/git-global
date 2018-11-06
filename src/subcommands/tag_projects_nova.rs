@@ -69,11 +69,8 @@ type RcRepo =       Rc<RefCell<Repo>>;
 type RcRepoTag =    Rc<RefCell<RepoTag>>;
 type RcVecRepoTag = Rc<RefCell<Vec<RepoTag>>>;
 type RcVecRepo =    Rc<RefCell<Vec<Repo>>>;
-// type RcRepo<'a> = Rc<RefCell<&'a Repo>>;
-// type RcRepoTag<'a> = Rc<RefCell<&'a RepoTag>>;
-// type RcVecRepoTag<'a> = Rc<RefCell<&'a Vec<RepoTag>>>;
-// type RcVecRepo<'a> = Rc<RefCell<&'a Vec<Repo>>>;
 
+/// Not sure if I use this here
 struct TagStatus {
     repos: RcVecRepo,
     currentRepo: RcRepo,
@@ -400,7 +397,9 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
                         .push(RepoTag::new(ss));
 
                     updated_display_tags(s, &(**c3po));
-                    let strs = vec!(
+                    // let strs = vec!(
+                    debug_file!(
+                        "tmp_out",
                         format!("--------------------------------------------"),
                         format!("ADDING A TAG"),
                         format!("ss:                  {:?}", (ss)),
@@ -410,9 +409,10 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
                         format!("cur3:                {:?}", (cur3)),
                         format!("c3po:                {:?}", (c3po)),
                         format!("*c3po:               {:?}", (*c3po)),
-                        format!("------------------------------------------\n"),
+                        format!("------------------------------------------\n")
                     );
-                    debug_write_file(strs, "tmp_out");
+                    // );
+                    // debug_write_file(strs, "tmp_out");
                 }
             })
         .with_id("tag-pool");
@@ -559,7 +559,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     fn save_repos_and_quit(s: &mut Cursive, reps: RcVecRepo, tags: RcVecRepoTag) {
     // fn save_repos_and_quit(s: &mut Cursive, reps: RcVecRepo, tags: RcVecRepoTag, repsmo: *const Vec<Repo>) {
 
-        trace!("srq1");
+        trace!("srq1: {}", Rc::strong_count(&reps));
         // let ireps = Rc::try_unwrap(reps).expect("we have the repos");
         // let itags = Rc::try_unwrap(tags).expect("we have the tags");
         trace!("srq2");
