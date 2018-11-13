@@ -46,6 +46,9 @@ extern crate walkdir;
 extern crate tui;
 extern crate git2;
 extern crate itertools;
+extern crate config;
+extern crate dirs;
+extern crate serde_json;
 #[macro_use]
 extern crate pipeline;
 extern crate mut_static;

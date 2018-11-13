@@ -3,11 +3,22 @@
 use std::io::{Write, stderr};
 use clap::{Arg, App, Shell, SubCommand};
 use std::io;
+use dirs::{home_dir};
 
 use core::GitGlobalResult;
 // use core::GitGlobalResult;
 use core::GitGlobalError;
 use subcommands;
+
+use config::{Config, ConfigError, File};
+
+pub fn makeConfig() {
+    let mut c = Config::new();
+    let mut home_config = home_dir().unwrap();
+    home_config.push(".git_global.ini");
+    c.merge(File::with_name(
+        home_config.to_str().unwrap()));
+}
 
 /// Returns the definitive clap::App instance for git-global.
 pub fn get_clap_app<'a, 'b>() -> App<'a, 'b> {

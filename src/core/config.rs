@@ -9,9 +9,6 @@ use app_dirs::{AppInfo, AppDataType, app_dir, get_app_dir};
 use walkdir::{DirEntry};
 use git2;
 
-extern crate dirs;
-extern crate serde_json;
-
 use core::{
     repo::{Repo, RepoTag},
     result::{GitGlobalResult}
