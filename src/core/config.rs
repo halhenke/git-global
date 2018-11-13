@@ -2,6 +2,8 @@ use colored::*;
 use std::env;
 use std::path::{PathBuf, Path};
 use std::io::{Read, Write, Result};
+use std::io::{Error, ErrorKind};
+use std::result::{Result as BResult};
 use std::fs::{File, remove_file};
 use app_dirs::{AppInfo, AppDataType, app_dir, get_app_dir};
 use walkdir::{DirEntry};
@@ -16,7 +18,7 @@ use core::{
     };
 
 
-const APP: AppInfo = AppInfo { name: "git-global", author: "peap" };
+const APP: AppInfo = AppInfo { name: "git-global", author: "hal" };
 const CACHE_FILE: &'static str = "repos.txt";
 const TAG_CACHE_FILE: &'static str = "tags.txt";
 const SETTING_BASEDIR: &'static str = "global.basedir";
@@ -115,7 +117,7 @@ impl GitGlobalConfig {
             cache_file: cache_file,
             tags_file,
         };
-        ggc.tags = ggc.read_tags();
+        ggc.tags = ggc.read_tags().unwrap_or(vec!());
         ggc
     }
 
@@ -195,6 +197,13 @@ impl GitGlobalConfig {
         self.cache_file.as_path().exists()
     }
 
+    pub fn make_empty_cache(&self) -> Result<()> {
+        let mut f = File::create(&self.cache_file).unwrap();
+        let rt: RepoTagCache = RepoTagCache::new(&Vec::new(), &Vec::new());
+        let serialized = serde_json::to_string(&rt).unwrap();
+        f.write_all(serialized.as_bytes())
+    }
+
     /// Remove the cache file
     pub fn destroy_cache(&self) -> Result<()> {
         remove_file(self.cache_file.as_path())
@@ -205,20 +214,34 @@ impl GitGlobalConfig {
         self.get_cached_repos().len() == 0
     }
 
-    pub fn read_tags(&self) -> Vec<RepoTag> {
+    pub fn read_tags(&self) -> Result<Vec<RepoTag>> {
         if !self.cache_file.as_path().exists() {
             // Try to create the cache directory if the cache *file* doesn't
             // exist; app_dir() handles an existing directory just fine.
             match app_dir(AppDataType::UserCache, &APP, "cache") {
-                Ok(_) => (),
-                Err(e) => panic!("Could not create cache directory: {}", e),
+                Ok(_) => {
+                    // panic!("Oh SHIT!");
+                    // self.make_empty_cache();
+                    return Err(Error::new(ErrorKind::NotFound, "Cache Directory exists but no Cache file"));
+                    // return Err("Cache Directory exisits but no Cache file")
+                },
+                // Ok(_) => (),
+                Err(e) => {
+                    // panic!("OH SNAP!");
+                    // return Err("No Cache Directory found");
+                    return Err(Error::new(ErrorKind::NotFound, "No Cache Directory exists"));
+                    // return Ok(vec!());
+                    // return Err(Error::new(ErrorKind::Other, "No Cache Directory found"));
+                    // return Error::new(ErrorKind::Other, "No Cache Directory found");
+                },
+                // Err(e) => panic!("Could not create cache directory: {}", e),
             }
         }
         let mut f = File::open(&self.cache_file)
             .expect("Could not create cache file.");
         let reader = &mut Vec::new();
         f.read_to_end(reader)
-            .expect("Couldnt read ");
+            .expect("Couldnt read.");
 
         let _temp: RepoTagCache = serde_json::from_slice(reader)
             .expect("Could not deserialize");
@@ -227,7 +250,7 @@ impl GitGlobalConfig {
         // let _repos: &Vec<Repo> = serialized.0;
         let tags = _tags.to_vec();
         debug!("Tags are {:?}", &tags);
-        tags
+        Ok(tags)
     }
 
     pub fn write_tags(&self) {
@@ -320,6 +343,14 @@ impl GitGlobalConfig {
     pub fn get_cached_results(&self) -> GitGlobalResult {
         GitGlobalResult::new(&self.get_cached_repos())
     }
+}
+
+pub fn save_repos_and_tags(repos: Vec<Repo>, tags: Vec<RepoTag>) {
+    let mut gc: GitGlobalConfig = GitGlobalConfig::new();
+    // gc.repos = repos;
+    gc.tags = tags;
+    gc.cache_repos(&repos);
+    // hmmmm...
 }
 
 
