@@ -1,94 +1,46 @@
 //! The `status` subcommand: shows `git status -s` for all known repos.
 
-use colored::*;
-use std::io::{Write, stderr};
-use std::sync::{Arc, mpsc};
+extern crate colored;
+use self::colored::*;
+use std::io::{stderr, Write};
+use std::sync::{mpsc, Arc};
 use std::thread;
 
 use git2;
 
-use core::{GitGlobalResult, Repo, get_repos};
 use core::errors::Result;
-
-/// Translates a file's status flags to their "short format" representation.
-///
-/// Follows an example in the git2-rs crate's `examples/status.rs`.
-fn get_short_format_status(path: &str, status: git2::Status) -> String {
-    let mut istatus = match status {
-        s if s.contains(git2::Status::INDEX_NEW) => "A",
-        s if s.contains(git2::Status::INDEX_MODIFIED) => "M",
-        s if s.contains(git2::Status::INDEX_DELETED) => "D",
-        s if s.contains(git2::Status::INDEX_RENAMED) => "R",
-        s if s.contains(git2::Status::INDEX_TYPECHANGE) => "T",
-        _ => " ",
-    };
-    let mut wstatus = match status {
-        s if s.contains(git2::Status::WT_NEW) => {
-            if istatus == " " {
-                istatus = "?";
-            }
-            "?"
-        }
-        s if s.contains(git2::Status::WT_MODIFIED) => "M",
-        s if s.contains(git2::Status::WT_DELETED) => "D",
-        s if s.contains(git2::Status::WT_RENAMED) => "R",
-        s if s.contains(git2::Status::WT_TYPECHANGE) => "T",
-        _ => " ",
-    };
-    if status.contains(git2::Status::IGNORED) {
-        istatus = "!";
-        wstatus = "!";
-    }
-    // TODO: handle submodule statuses?
-    format!("{}{} {}",
-        istatus.blue().to_string(),
-        wstatus.red().to_string(),
-        path.green().to_string())
-}
-
-/// Returns "short format" output for the given repo.
-fn get_status_lines(repo: Arc<Repo>) -> Vec<String> {
-    let git2_repo = match repo.as_git2_repo() {
-        None => {
-            writeln!(&mut stderr(),
-                     "Could not open {} as a git repo. Perhaps you should run \
-                `git global scan` again.",
-                     repo)
-                .expect("failed to write to STDERR");
-            return vec![];
-        }
-        Some(repo) => repo,
-    };
-    let mut opts = git2::StatusOptions::new();
-    opts.show(git2::StatusShow::IndexAndWorkdir)
-        .include_ignored(false);
-    let statuses = git2_repo.statuses(Some(&mut opts))
-        .expect(&format!("Could not get statuses for {}.", repo));
-    statuses.iter()
-        .map(|entry| {
-            let path = entry.path().unwrap();
-            let status = entry.status();
-            let status_for_path = get_short_format_status(path, status);
-            // result.add_repo_message(repo, format!("{}", status_for_path));
-            format!("{}", status_for_path)
-        })
-        .collect()
-}
+use core::{get_repos, GitGlobalResult, Repo};
 
 /// Gathers `git status -s` for all known repos.
 pub fn get_results() -> Result<GitGlobalResult> {
+    let include_untracked = true;
+    // let include_untracked = config.show_untracked;
     let repos = get_repos();
     let n_repos = repos.len();
     let mut result = GitGlobalResult::new(&repos);
     result.pad_repo_output();
     // TOOD: limit number of threads, perhaps with mpsc::sync_channel(n)?
-    let (tx, rx) = mpsc::channel();
+    let (tx, rx): (
+        std::sync::mpsc::Sender<(String, Vec<String>)>,
+        std::sync::mpsc::Receiver<(_, _)>,
+    ) = mpsc::channel();
+    // let (tx, rx) = mpsc::channel();
     for repo in repos {
         let tx = tx.clone();
         let repo = Arc::new(repo);
         thread::spawn(move || {
             let path = repo.path().to_string();
-            let lines = get_status_lines(repo);
+            let mut status_opts = git2::StatusOptions::new();
+            status_opts
+                .show(git2::StatusShow::IndexAndWorkdir)
+                .include_untracked(include_untracked)
+                .include_ignored(false);
+            // let lines = get_status_lines(status_opts);
+            let lines = repo.get_status_lines(status_opts);
+
+            // let path = repo.path().to_string();
+            // let lines = repo.get_status_lines();
+            // let lines = get_status_lines(repo);
             tx.send((path, lines)).unwrap();
         });
     }
@@ -96,8 +48,11 @@ pub fn get_results() -> Result<GitGlobalResult> {
         let (path, lines) = rx.recv().unwrap();
         let repo = Repo::new(path.to_string());
 
-        let ss = format!("{} {}", "Status for".blue(),
-            repo.path().green().underline());
+        let ss = format!(
+            "{} {}",
+            "Status for".blue(),
+            repo.path().green().underline()
+        );
         if lines.is_empty() {
             result.add_repo_message(&repo, ss.dimmed().to_string());
         } else {

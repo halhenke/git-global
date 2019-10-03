@@ -1,7 +1,7 @@
-use std::fmt;
 use git2;
-use std::path::Path;
+use std::fmt;
 use std::iter::FromIterator;
+use std::path::Path;
 
 /// A git repository, represented by the full path to its base directory.
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Hash, Clone)]
@@ -25,33 +25,89 @@ impl Repo {
 
     /// Returns the name of the repo as a `String`.
     pub fn name(&self) -> &str {
-        Path::new(&self.path)
-            .file_name()
-            .unwrap()
-            .to_str()
-            .unwrap()
+        Path::new(&self.path).file_name().unwrap().to_str().unwrap()
         // Path::new(self.path).file_stem()
     }
 
     /// Returns the `git2::Repository` equivalent of this repo.
-    pub fn as_git2_repo(&self) -> Option<git2::Repository> {
-        git2::Repository::open(&self.path).ok()
+    pub fn as_git2_repo(&self) -> git2::Repository {
+        git2::Repository::open(&self.path).ok().expect(
+            "Could not open {} as a git repo. Perhaps you should run \
+             `git global scan` again.",
+        )
     }
+
+    /// Returns "short format" status output.
+    pub fn get_status_lines(
+        &self,
+        mut status_opts: git2::StatusOptions,
+    ) -> Vec<String> {
+        let git2_repo = self.as_git2_repo();
+        let statuses = git2_repo
+            .statuses(Some(&mut status_opts))
+            .expect(&format!("Could not get statuses for {}.", self));
+        statuses
+            .iter()
+            .map(|entry| {
+                let path = entry.path().unwrap();
+                let status = entry.status();
+                let status_for_path = self.get_short_format_status(status);
+                format!("{} {}", status_for_path, path)
+            })
+            .collect()
+    }
+
+    /// Translates a file's status flags to their "short format" representation.
+    ///
+    /// Follows an example in the git2-rs crate's `examples/status.rs`.
+    fn get_short_format_status(&self, status: git2::Status) -> String {
+        let mut istatus = match status {
+            s if s.is_index_new() => 'A',
+            s if s.is_index_modified() => 'M',
+            s if s.is_index_deleted() => 'D',
+            s if s.is_index_renamed() => 'R',
+            s if s.is_index_typechange() => 'T',
+            _ => ' ',
+        };
+        let mut wstatus = match status {
+            s if s.is_wt_new() => {
+                if istatus == ' ' {
+                    istatus = '?';
+                }
+                '?'
+            }
+            s if s.is_wt_modified() => 'M',
+            s if s.is_wt_deleted() => 'D',
+            s if s.is_wt_renamed() => 'R',
+            s if s.is_wt_typechange() => 'T',
+            _ => ' ',
+        };
+        if status.is_ignored() {
+            istatus = '!';
+            wstatus = '!';
+        }
+        if status.is_conflicted() {
+            istatus = 'C';
+            wstatus = 'C';
+        }
+        // TODO: handle submodule statuses?
+        format!("{}{}", istatus, wstatus)
+    }
+
+    // =====================================================
+    //  TAGS
+    // =====================================================
 
     pub fn tag(&mut self, tag: &str) -> () {
         self.tags.push(RepoTag::new(tag));
     }
 
     pub fn has_tag(&mut self, tag: &str) -> bool {
-        self.tags
-            .iter()
-            .any(|t| t.name == tag)
+        self.tags.iter().any(|t| t.name == tag)
     }
 
     pub fn untag(&mut self, tag: &str) -> () {
-        let id_match = self.tags
-            .iter()
-            .position(|x| x.name == tag);
+        let id_match = self.tags.iter().position(|x| x.name == tag);
         if let Some(id) = id_match {
             self.tags.remove(id);
         }
@@ -63,7 +119,7 @@ impl Repo {
             .clone()
             .into_iter()
             .map(|x| String::from(x))
-            .collect()
+            .collect();
     }
 }
 // type VecRep = Vec<Repo>;
@@ -84,9 +140,7 @@ pub fn all_tags<'a>(reps: &Vec<Repo>) -> Vec<RepoTag> {
     // return v.iter().flatten().collect();
     // return vi.collect();
     return v;
-
 }
-
 
 impl fmt::Display for Repo {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -96,13 +150,13 @@ impl fmt::Display for Repo {
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Hash, Clone, Debug)]
 pub struct RepoTag {
-    pub name: String
+    pub name: String,
 }
 
 impl RepoTag {
     pub fn new(name: &str) -> RepoTag {
         RepoTag {
-            name: name.to_string()
+            name: name.to_string(),
         }
     }
 }
@@ -123,9 +177,7 @@ impl fmt::Display for RepoTag {
 /// RepoTag is basically a wrapper around a string
 impl From<String> for RepoTag {
     fn from(name: String) -> RepoTag {
-        Self {
-            name
-        }
+        Self { name }
     }
 }
 
