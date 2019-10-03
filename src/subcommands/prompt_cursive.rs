@@ -1,7 +1,7 @@
+use std::collections::HashMap;
 use std::io;
 use std::sync::mpsc;
 use std::thread;
-use std::collections::HashMap;
 
 extern crate cursive;
 
@@ -14,8 +14,7 @@ use self::cursive::views::{Dialog, OnEventView, SelectView, TextView};
 
 use core::errors::Result as WeirdResult;
 
-
-use core::{GitGlobalConfig, RepoTag, GitGlobalResult, get_repos};
+use core::{get_repos, GitGlobalConfig, GitGlobalResult, RepoTag};
 
 #[derive(Debug)]
 struct Selectable<'a> {
@@ -27,8 +26,7 @@ impl<'a> Selectable<'a> {
     pub fn inc(&mut self) -> usize {
         if self.selected < (self.selections.len() - 1) {
             self.selected = self.selected + 1;
-        }
-        else {
+        } else {
             self.selected;
         }
         self.selected
@@ -37,22 +35,16 @@ impl<'a> Selectable<'a> {
     pub fn dec(&mut self) -> usize {
         if self.selected >= 1 {
             self.selected = self.selected - 1;
-        }
-        else {
+        } else {
             self.selected;
         }
         self.selected
     }
 }
 
-
 pub fn go() -> WeirdResult<GitGlobalResult> {
-    let mut _sel = Selectable{
-        selections: [
-            "Choice 1",
-            "Choice 2",
-            "Choice 3",
-        ],
+    let mut _sel = Selectable {
+        selections: ["Choice 1", "Choice 2", "Choice 3"],
         selected: 0,
     };
 
@@ -79,11 +71,11 @@ pub fn go() -> WeirdResult<GitGlobalResult> {
 
     // Let's override the `j` and `k` keys for navigation
     let select = OnEventView::new(select)
-        .on_pre_event_inner('k', |s| {
+        .on_pre_event_inner('k', |s, k| {
             s.select_up(1);
             Some(EventResult::Consumed(None))
         })
-        .on_pre_event_inner('j', |s| {
+        .on_pre_event_inner('j', |s, k| {
             s.select_down(1);
             Some(EventResult::Consumed(None))
         });

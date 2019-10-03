@@ -1,33 +1,33 @@
 //! The `list` subcommand: lists all repos known to git-global.
 
-extern crate github_gql;
+extern crate github_rs;
 extern crate serde_json;
 extern crate strfmt;
-use self::github_gql as gql;
-use self::gql::client::{Github};
-use self::gql::query::{Query};
-use self::serde_json::{Value};
+use self::github_rs as gql;
+use self::gql::client::{Executor, Github};
+// use self::gql::client::{Client, Github};
+// use self::gql::query::Query;
+use self::serde_json::Value;
 
 use self::strfmt::strfmt;
 use std::collections::HashMap;
 
-use std::path::Path;
-use std::io::Read;
 use std::fs::File;
+use std::io::Read;
+use std::path::Path;
 
-use core::{GitGlobalResult, get_repos};
 use core::errors::Result;
+use core::{get_repos, GitGlobalResult};
 
 fn get_query(owner: &str, name: &str) -> String {
-// fn get_query(owner: &str, name: &str) -> Value {
+    // fn get_query(owner: &str, name: &str) -> Value {
     let p = Path::new("src/queries/tags.json")
         .canonicalize()
         .unwrap()
         .into_os_string();
     let mut tok = File::open(p).unwrap();
     let mut template = String::new();
-    tok.read_to_string(&mut template)
-        .expect("Read String fail");
+    tok.read_to_string(&mut template).expect("Read String fail");
     // let mut json = String::new();
     // NOTE: How do I use a non string literal as a formatter?
     // - you need to use a templating thing
@@ -51,12 +51,10 @@ pub fn get_results() -> Result<GitGlobalResult> {
         .into_os_string();
     let mut tok = File::open(p).unwrap();
     let mut json = String::new();
-    tok.read_to_string(&mut json)
-        .expect("Read String fail");
+    tok.read_to_string(&mut json).expect("Read String fail");
     let tok_val: Value = serde_json::from_str(&json).unwrap();
 
-    let mut gh = Github::new(&tok_val["github"].as_str().unwrap())
-        .unwrap();
+    let mut gh = Github::new(&tok_val["github"].as_str().unwrap()).unwrap();
 
     // let q_str = r#"
     //     query {
@@ -65,8 +63,7 @@ pub fn get_results() -> Result<GitGlobalResult> {
     //         }
     //     }
     // "#.replace("\n", "");
-    let q_str =
-        r#"query {
+    let q_str = r#"query {
             repository(owner: \"halhenke\", name: \"stack-mate\") {
                 labels(first: 10) {
                     edges {
@@ -76,14 +73,25 @@ pub fn get_results() -> Result<GitGlobalResult> {
                     }
                 }
             }
-        }"#.split("\n").collect::<Vec<_>>().concat();
-    let q = Query::new_raw(q_str);
-    let (head, stat, code) = gh.query::<Value>(&q).unwrap();
+        }"#
+    .split("\n")
+    .collect::<Vec<_>>()
+    .concat();
+    // let q = gh.client.get_query(q_str);
+    let q = gh.get().user().execute::<Value>();
+    // let q = client.get()
+    // let q = gh.query(q_str);
 
-    println!("head {}", head);
+    // NOTE: Trying to work it
+    // return "Sorry!";
+
+    // let q = Query::new_raw(q_str);
+    let (head, stat, code) = q.unwrap();
+    // let (head, stat, code) = gh.query::<Value>(&q).unwrap();
+
+    // println!("head {}", head);
     println!("stat {}", stat);
     println!("code {}", code.unwrap());
-
 
     let repos = get_repos();
     let mut result = GitGlobalResult::new(&repos);

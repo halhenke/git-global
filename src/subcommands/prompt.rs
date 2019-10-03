@@ -1,16 +1,14 @@
+use std::collections::HashMap;
 use std::io;
 use std::sync::mpsc;
 use std::thread;
-use std::collections::HashMap;
 
-use tui::Terminal;
 use tui::backend::TermionBackend;
-use tui::widgets::{Widget, Block, Borders, SelectableList};
-use tui::layout::{Layout, Direction,
-    Constraint::Percentage
-};
+use tui::layout::{Constraint::Percentage, Direction, Layout};
+use tui::widgets::{Block, Borders, SelectableList, Widget};
+use tui::Terminal;
 // use tui::layout::{Group, Size, Direction};
-use tui::style::{Style, Color, Modifier};
+use tui::style::{Color, Modifier, Style};
 extern crate termion;
 use self::termion::event;
 use self::termion::input::TermRead;
@@ -19,7 +17,7 @@ use core::errors::Result as WeirdResult;
 
 #[macro_use]
 use macros::hash_num;
-use core::{GitGlobalResult};
+use core::GitGlobalResult;
 // use super::super::{GitGlobalResult, RepoTag, get_repos, get_tagged_repos};
 
 enum Event {
@@ -37,8 +35,7 @@ impl<'a> Selectable<'a> {
     pub fn inc(&mut self) -> usize {
         if self.selected < (self.selections.len() - 1) {
             self.selected = self.selected + 1;
-        }
-        else {
+        } else {
             self.selected;
         }
         self.selected
@@ -47,8 +44,7 @@ impl<'a> Selectable<'a> {
     pub fn dec(&mut self) -> usize {
         if self.selected >= 1 {
             self.selected = self.selected - 1;
-        }
-        else {
+        } else {
             self.selected;
         }
         self.selected
@@ -58,12 +54,8 @@ impl<'a> Selectable<'a> {
 pub fn go() -> WeirdResult<GitGlobalResult> {
     let mut terminal = init().expect("Failed initialization");
 
-    let mut sel = Selectable{
-        selections: vec![
-            "Choice 1",
-            "Choice 2",
-            "Choice 3",
-        ],
+    let mut sel = Selectable {
+        selections: vec!["Choice 1", "Choice 2", "Choice 3"],
         selected: 0,
     };
 
@@ -125,8 +117,7 @@ pub fn go() -> WeirdResult<GitGlobalResult> {
         draw(&mut terminal, &sel).expect("Draw fail");
     }
     terminal.clear()?;
-    terminal.show_cursor()
-        .expect("Show Cursur fail");
+    terminal.show_cursor().expect("Show Cursur fail");
 
     println!("Selected was {}", sel.selections[sel.selected]);
 
@@ -142,36 +133,40 @@ fn init() -> Result<Terminal<TermionBackend<io::Stdout>>, io::Error> {
 }
 
 // fn draw(t: &mut Terminal<TermionBackend>) -> () {
-fn draw(term: &mut Terminal<TermionBackend<io::Stdout>>, sel: & Selectable) -> Result<(), io::Error> {
-
+fn draw(
+    term: &mut Terminal<TermionBackend<io::Stdout>>,
+    sel: &Selectable,
+) -> Result<(), io::Error> {
     let size = term.size()?;
 
     term.draw(|mut t| {
         let chunks = Layout::default()
             .direction(Direction::Vertical)
             .margin(1)
-            .constraints([Percentage(10), Percentage(80), Percentage(10)].as_ref())
+            .constraints(
+                [Percentage(10), Percentage(80), Percentage(10)].as_ref(),
+            )
             .split(size);
-            // .render(t, &size, |t, chunks| {
-            Block::default()
-                .title("Block")
-                .borders(Borders::ALL)
-                .render(&mut t, chunks[0]);
-            SelectableList::default()
-                .block(
-                    Block::default()
-                        .title("Choose One of these")
-                        .borders(Borders::ALL)
-                )
-                .items(&sel.selections)
-                .select(Some(sel.selected))
-                .style(Style::default().fg(Color::White))
-                .highlight_style(Style::default().modifier(Modifier::Italic))
-                .highlight_symbol(">>")
-                .render(&mut t, chunks[1]);
-            Block::default()
-                .title("Block 2")
-                .borders(Borders::ALL)
-                .render(&mut t, chunks[2]);
+        // .render(t, &size, |t, chunks| {
+        Block::default()
+            .title("Block")
+            .borders(Borders::ALL)
+            .render(&mut t, chunks[0]);
+        SelectableList::default()
+            .block(
+                Block::default()
+                    .title("Choose One of these")
+                    .borders(Borders::ALL),
+            )
+            .items(&sel.selections)
+            .select(Some(sel.selected))
+            .style(Style::default().fg(Color::White))
+            .highlight_style(Style::default().modifier(Modifier::ITALIC))
+            .highlight_symbol(">>")
+            .render(&mut t, chunks[1]);
+        Block::default()
+            .title("Block 2")
+            .borders(Borders::ALL)
+            .render(&mut t, chunks[2]);
     })
 }

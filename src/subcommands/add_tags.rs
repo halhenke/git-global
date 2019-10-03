@@ -1,29 +1,19 @@
 use std::cell::{RefCell, RefMut};
-use std::rc::Rc;
 use std::ops::{Deref, DerefMut};
+use std::rc::Rc;
 
 extern crate cursive;
 
-use self::cursive::Cursive;
 use self::cursive::align::HAlign;
 use self::cursive::event::{Callback, Event, EventResult, Key};
-use self::cursive::{
-    traits::*,
-    view::Selector
-    };
 use self::cursive::views::{
-    Dialog,
-    EditView,
-    LinearLayout,
-    ListView,
-    MenuPopup,
-    OnEventView,
-    SelectView,
-    TextContent,
-    TextView
+    Dialog, EditView, LinearLayout, ListView, MenuPopup, OnEventView,
+    SelectView, TextContent, TextView,
 };
+use self::cursive::Cursive;
+use self::cursive::{traits::*, view::Selector};
 use core::errors::Result as WeirdResult;
-use core::{GitGlobalConfig, RepoTag, GitGlobalResult, get_repos};
+use core::{get_repos, GitGlobalConfig, GitGlobalResult, RepoTag};
 use mut_static::MutStatic;
 use take_mut;
 
@@ -37,34 +27,33 @@ pub fn delete_tag(sel: &mut SelectView) -> Option<EventResult> {
     // match Some(id) {
     match sel.selected_id() {
         Some(id) => {
-        // if let Some(id) = sel.selected_id() {
+            // if let Some(id) = sel.selected_id() {
             let tag: String = sel.get_item(id).unwrap().1.clone();
-            let cb: Callback = Callback::from_fn(
-                move |siv: &mut Cursive| {
-                    siv.add_layer(Dialog::around(
-                        TextView::new(format!("Delete tag: {}?", tag)))
-                            .button("No", |s| {
-                                s.pop_layer();
-                            })
-                            .button("Yes", move |s| {
-                                s.call_on_id("tag_list", |v: &mut SelectView| {
-                                    v.remove_item(id);
-                                });
-                                s.pop_layer();
-                            }));
+            let cb: Callback = Callback::from_fn(move |siv: &mut Cursive| {
+                siv.add_layer(
+                    Dialog::around(TextView::new(format!(
+                        "Delete tag: {}?",
+                        tag
+                    )))
+                    .button("No", |s| {
+                        s.pop_layer();
+                    })
+                    .button("Yes", move |s| {
+                        s.call_on_id("tag_list", |v: &mut SelectView| {
+                            v.remove_item(id);
+                        });
+                        s.pop_layer();
+                    }),
+                );
             });
             Some(EventResult::Consumed(Some(cb)))
-        },
-        None => {
-            None
         }
+        None => None,
     }
-
 }
 
-
 pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
-// pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult<'a>> {
+    // pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult<'a>> {
     let user_config = GitGlobalConfig::new();
 
     trace!("go");
@@ -78,25 +67,24 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
 
     // https://github.com/gyscos/Cursive/issues/179
     let mut_content = TextContent::new(
-        user_config.tag_names()
-            .join("\n")
-            // .for_each(|&x| String::from(x).push_str("\n"))
-            // .map(|&x| String::from(x).push_str("\n"))
-            // .map(|&x| x.append("\n"))
-            // .collect::<String>()
+        user_config.tag_names().join("\n"), // .for_each(|&x| String::from(x).push_str("\n"))
+                                            // .map(|&x| String::from(x).push_str("\n"))
+                                            // .map(|&x| x.append("\n"))
+                                            // .collect::<String>()
     );
     let sel_tags_1: Vec<&str> = user_config.tag_names();
-    let sel_tags_2: Vec<String> = user_config.tag_names()
+    let sel_tags_2: Vec<String> = user_config
+        .tag_names()
         .into_iter()
         .map(|x| String::from(x))
         .collect();
     // let sel_tags_1: Vec<String> = user_config.tag_names()
-        // .into_iter()
-        // .map(|x| String::from(x))
-        // .collect();
+    // .into_iter()
+    // .map(|x| String::from(x))
+    // .collect();
     // let sel_tags_2: Vec<String> = sel_tags_1.clone();
     let sel_tags = sel_tags_1.into_iter().zip(sel_tags_2.into_iter());
-        // .collect::<Vec<String>>();
+    // .collect::<Vec<String>>();
     // let sel_tags = user_config.tag_names().iter()
     //         .zip(*user_config.tag_names().collect::<String>());
 
@@ -159,24 +147,24 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
                 Dialog::new()
                     .title("Add a Tag...")
                     .padding((1, 1, 1, 0))
-                    .content(
-                        e_view
-                    )
+                    .content(e_view)
                     .button("q", move |s: &mut Cursive| {
                         debug!("q was called...");
                         save_tags_and_quit(s, &m4_con);
                         // save_tags_and_quit(s, &mut user_config, &m4_con);
                     })
                     .button("Ok", move |s: &mut Cursive| {
-                        let name = s.call_on_id(
-                            "tag",
-                            |view: &mut EditView| view.get_content(),
-                        ).unwrap();
+                        let name = s
+                            .call_on_id("tag", |view: &mut EditView| {
+                                view.get_content()
+                            })
+                            .unwrap();
                         debug!("OK was called...");
                         let nut_con = mut_con.clone();
                         let mut b1 = nut_con.borrow_mut();
                         show_next_screen(s, &name.clone().deref(), &mut b1);
-                    }).with_id("dialog")
+                    })
+                    .with_id("dialog"),
             )
             // .child(
             //     t_view
@@ -184,27 +172,24 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
             .child(
                 // sel_view
                 OnEventView::new(
-                    SelectView::new()
-                        .with_all(
-                            sel_tags
-                        )
-                        .with_id("tag_list")
+                    SelectView::new().with_all(sel_tags).with_id("tag_list"),
                 )
                 // .on_event(Event::Key::Del).has_callback()
                 // .on_event_inner('p', |mut s1| {
-                .on_event_inner(Event::Key(Key::Backspace), |s1| {
-                    // s.pop_layer();
-                    // s1.get_inner().add_item("bolo", "yolo")
-                    // s1.get_mut().add_item("bolo", "yolo".to_string());
-                    // s1.get_mut().select_up(1);
+                .on_event_inner(
+                    Event::Key(Key::Backspace),
+                    |s1, k| {
+                        // s.pop_layer();
+                        // s1.get_inner().add_item("bolo", "yolo")
+                        // s1.get_mut().add_item("bolo", "yolo".to_string());
+                        // s1.get_mut().select_up(1);
 
-
-                    delete_tag(&mut s1.get_mut())
-                    // let sel = s1.get_mut();
-                })
-                // .on_event(Event::Key::Del)::with_cb(
-                // )
-            )
+                        delete_tag(&mut s1.get_mut())
+                        // let sel = s1.get_mut();
+                    },
+                ), // .on_event(Event::Key::Del)::with_cb(
+                   // )
+            ),
     );
 
     siv.run();
@@ -215,44 +200,34 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
 }
 
 fn save_tags_and_quit(s: &mut Cursive, tags: &RMut) {
-// fn save_tags_and_quit(s: &mut Cursive, user_config: &mut GitGlobalConfig, tags: &RMut) {
+    // fn save_tags_and_quit(s: &mut Cursive, user_config: &mut GitGlobalConfig, tags: &RMut) {
     let mut user_config = GitGlobalConfig::new();
     trace!("save_tags_and_quit");
     debug!("wtf???");
     let mut t_list: Vec<String> = Vec::new();
-    s.call_on_id("tag_list",
-        |tl: &mut SelectView| {
-            error!("tag count is {}", tl.len());
-            let count = tl.len();
-            for i in 0..count  {
-                t_list.push(tl.get_item(i).unwrap().0.to_string())
-            }
+    s.call_on_id("tag_list", |tl: &mut SelectView| {
+        error!("tag count is {}", tl.len());
+        let count = tl.len();
+        for i in 0..count {
+            t_list.push(tl.get_item(i).unwrap().0.to_string())
         }
-    );
-    let tag_list: String = tags
-        .borrow()
-        .deref()
-        .get_content()
-        .source()
-        .to_string();
-    s.call_on_id("tag",
-        |view: &mut EditView| {
-            let po = &tag_list.clone();
-            view.set_content(po.to_string());
-        }
-    ).expect("final unwrap...");
+    });
+    let tag_list: String =
+        tags.borrow().deref().get_content().source().to_string();
+    s.call_on_id("tag", |view: &mut EditView| {
+        let po = &tag_list.clone();
+        view.set_content(po.to_string());
+    })
+    .expect("final unwrap...");
     let tag_list_list = t_list;
     debug!("About to print tags");
     debug!("tags are: {:?}", &tag_list_list);
     // user_config.add_tags(
     //     tag_list_list
     // );
-    user_config.replace_tags(
-        tag_list_list
-    );
+    user_config.replace_tags(tag_list_list);
     user_config.write_tags();
-    s.cb_sink()
-        .send(Box::new(|siv: &mut Cursive| siv.quit()));
+    s.cb_sink().send(Box::new(|siv: &mut Cursive| siv.quit()));
 }
 
 fn show_next_screen(s: &mut Cursive, name: &str, c: &mut TextContent) {
@@ -261,16 +236,15 @@ fn show_next_screen(s: &mut Cursive, name: &str, c: &mut TextContent) {
         s.add_layer(Dialog::info("Please enter a name!"));
     } else {
         trace!("show_next_screen 2");
-        s.call_on_id("tag_list",
-            |view: &mut SelectView|
-                view.add_item_str(name)
-        ).expect("failure");
-        s.call_on_id("tag",
-            |view: &mut EditView|
-                {
-                    view.set_content("")
-                    // view.set_cursor(0)
-                }).expect("failure");
+        s.call_on_id("tag_list", |view: &mut SelectView| {
+            view.add_item_str(name)
+        })
+        .expect("failure");
+        s.call_on_id("tag", |view: &mut EditView| {
+            view.set_content("")
+            // view.set_cursor(0)
+        })
+        .expect("failure");
         // // s.focus_id("tag").unwrap();
         s.focus(&Selector::Id("tag")).expect("thing");
     }
