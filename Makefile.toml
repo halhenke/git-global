@@ -9,7 +9,7 @@ args = ["build", "--release"]
 description = "install git-global-hal globally"
 workspace = false
 command = "cargo"
-args = ["install", "--force", "--bin", "${APP_NAME}"]
+args = ["install", "--force", "--path", "."]
 
 
 [tasks.build-shell-completions]
