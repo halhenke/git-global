@@ -1,44 +1,38 @@
 use std;
-use std::any::Any;
-use std::borrow::{Borrow, BorrowMut};
-use std::cell::{RefCell, RefMut};
-use std::iter::Zip;
-use std::ops::{Deref, DerefMut};
+// use std::any::Any;
+// use std::borrow::{Borrow, BorrowMut};
+use std::cell::RefCell;
+// use std::iter::Zip;
+use std::ops::Deref;
 use std::rc::Rc;
 extern crate cursive;
-use itertools::rciter;
-use itertools::Itertools;
+// use itertools::rciter;
+// use itertools::Itertools;
 
-use std::fs::{File, OpenOptions};
+use std::fs::OpenOptions;
 use std::io::Write;
 
-use macros::rc_mut;
+// use macros::rc_mut;
 
-use self::cursive::align::HAlign;
 use self::cursive::event::{Callback, Event, EventResult, Key};
-use self::cursive::Cursive;
-use self::cursive::{
-    theme::ColorStyle,
-    views::{
-        EditView, IdView, Layer, LinearLayout, ListView, MenuPopup, Menubar,
-        OnEventView, Panel, ScrollView, SelectView, TextContent, TextView,
-        ViewRef,
-    },
+use self::cursive::traits::*;
+use self::cursive::views::{
+    EditView, IdView, LinearLayout, OnEventView, Panel, SelectView,
+    TextContent, ViewRef,
 };
-use self::cursive::{traits::*, view::Selector, Printer, XY};
+use self::cursive::Cursive;
 use core::errors::Result as WeirdResult;
 use core::{
-    all_tags, get_repos, save_repos_and_tags, GitGlobalConfig, GitGlobalResult,
-    Repo, RepoTag,
+    save_repos_and_tags, GitGlobalConfig, GitGlobalResult, Repo, RepoTag,
 };
-use mut_static::MutStatic;
+// use mut_static::MutStatic;
 use std::cell::Ref;
-use std::iter::FromIterator;
-use take_mut;
+// use std::iter::FromIterator;
+// use take_mut;
+
+// use std::fmt;
+
 type RMut = Rc<RefCell<TextContent>>;
-
-use std::fmt;
-
 type RcResult = Rc<GitGlobalResult>;
 type RcRcResult = Rc<RefCell<GitGlobalResult>>;
 type RcRepo = Rc<RefCell<Repo>>;
@@ -49,8 +43,8 @@ type RcVecRepo = Rc<RefCell<Vec<Repo>>>;
 /// Not sure if I use this here
 struct TagStatus {
     repos: RcVecRepo,
-    currentRepo: RcRepo,
-    currentTags: RcVecRepoTag,
+    current_repo: RcRepo,
+    current_tags: RcVecRepoTag,
 }
 
 impl TagStatus {
@@ -61,8 +55,8 @@ impl TagStatus {
     ) -> TagStatus {
         TagStatus {
             repos: repos,
-            currentRepo: repo,
-            currentTags: tags,
+            current_repo: repo,
+            current_tags: tags,
         }
     }
 }
@@ -118,7 +112,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     // let mut cur_ptr = reps.as_mut_ptr();
 
     let rct = reps.clone();
-    let repoNames = &rct.iter().map(|x| x.path.clone()).zip(rct.iter());
+    let repo_names = &rct.iter().map(|x| x.path.clone()).zip(rct.iter());
 
     let rreps = Rc::new(RefCell::new(reps));
     let ttags = Rc::new(RefCell::new(result_tags));
@@ -131,15 +125,12 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     siv.load_theme_file("assets/style.toml").unwrap();
 
     // https://github.com/gyscos/Cursive/issues/179
-    let mut_content = TextContent::new(
-        vec!["aaaa", "bbbb"]
-            // user_config.tag_names()
-            .join("\n"),
-    );
 
+    #[allow(dead_code)]
     type SelRepoList<'a> =
         std::iter::Zip<std::vec::IntoIter<&'a str>, std::vec::IntoIter<Repo>>;
 
+    #[allow(dead_code)]
     type SelRepoList2 = std::iter::Zip<String, Repo>;
 
     type SelTagList<'a> = std::iter::Zip<
@@ -383,7 +374,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
         })
         .with_id("tag-pool");
 
-    /// Main Window
+    // Main Window
     siv.add_layer(
         LinearLayout::vertical()
             .child(
@@ -400,7 +391,8 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
                     )
                     .on_event_inner(Event::Key(Key::Esc), |s1, k| {
                         let cb = Callback::from_fn(|siv: &mut Cursive| {
-                            siv.focus_id("repo-field");
+                            siv.focus_id("repo-field")
+                                .expect("failed to focus on 'repo-field'");
                         });
                         return Some(EventResult::Consumed(Some(cb)));
                     })
@@ -565,7 +557,9 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
         save_repos_and_tags(ireps.clone(), itags.clone());
 
         // s.quit();
-        s.cb_sink().send(Box::new(|siv: &mut Cursive| siv.quit()));
+        s.cb_sink()
+            .send(Box::new(|siv: &mut Cursive| siv.quit()))
+            .expect("thread send failed");
     }
 
     Ok(GitGlobalResult::new(&vec![]))

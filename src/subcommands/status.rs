@@ -2,7 +2,7 @@
 
 extern crate colored;
 use self::colored::*;
-use std::io::{stderr, Write};
+// use std::io::{stderr, Write};
 use std::sync::{mpsc, Arc};
 use std::thread;
 

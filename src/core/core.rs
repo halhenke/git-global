@@ -7,7 +7,7 @@ use colored::*;
 pub use core::config::GitGlobalConfig;
 pub use core::repo::{Repo, RepoTag};
 pub use core::result::GitGlobalResult;
-use std::fmt;
+// use std::fmt;
 
 use walkdir::{DirEntry, WalkDir};
 
@@ -30,7 +30,7 @@ pub fn repo_filter(
         for f in e.path().read_dir().expect("read dir failed") {
             let ff = f.expect("unwrap again...");
             if ff.file_type()?.is_file() && ff.file_name() == ".gitignore" {
-                let contents = fs::read_to_string(ff.path());
+                let _contents = fs::read_to_string(ff.path());
                 return Ok(true);
             }
         }

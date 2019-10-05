@@ -150,6 +150,7 @@ impl GitGlobalConfig {
         self.tags = new_tags;
     }
 
+    #[allow(dead_code)]
     fn tags(&self) -> &Vec<RepoTag> {
         &self.tags
     }
@@ -190,6 +191,7 @@ impl GitGlobalConfig {
         remove_file(self.cache_file.as_path())
     }
 
+    #[allow(dead_code)]
     /// Do we have any repos in the cache?
     fn empty_cache(&self) -> bool {
         self.get_cached_repos().len() == 0

@@ -1,24 +1,24 @@
 //! The command line interface for git-global.
 
 use clap::{App, Arg, Shell, SubCommand};
-use dirs::home_dir;
 use std::io;
 use std::io::{stderr, Write};
 
-use core::GitGlobalResult;
-// use core::GitGlobalResult;
 use core::errors;
 use core::GitGlobalError;
+use core::GitGlobalResult;
 use subcommands;
 
-use config::{Config, ConfigError, File};
+// use dirs::home_dir;
+// use config::{Config, ConfigError, File};
 
-pub fn makeConfig() {
-    let mut c = Config::new();
-    let mut home_config = home_dir().unwrap();
-    home_config.push(".git_global.ini");
-    c.merge(File::with_name(home_config.to_str().unwrap()));
-}
+// pub fn make_config() {
+//     let mut c = Config::new();
+//     let mut home_config = home_dir().unwrap();
+//     home_config.push(".git_global.ini");
+//     c.merge(File::with_name(home_config.to_str().unwrap()))
+//         .unwrap();
+// }
 
 /// Returns the definitive clap::App instance for git-global.
 pub fn get_clap_app<'a, 'b>() -> App<'a, 'b> {

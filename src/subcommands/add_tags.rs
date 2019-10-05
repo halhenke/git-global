@@ -1,20 +1,20 @@
-use std::cell::{RefCell, RefMut};
-use std::ops::{Deref, DerefMut};
+use std::cell::RefCell;
+use std::ops::Deref;
 use std::rc::Rc;
 
 extern crate cursive;
 
-use self::cursive::align::HAlign;
+// use self::cursive::align::HAlign;
 use self::cursive::event::{Callback, Event, EventResult, Key};
 use self::cursive::views::{
-    Dialog, EditView, LinearLayout, ListView, MenuPopup, OnEventView,
-    SelectView, TextContent, TextView,
+    Dialog, EditView, LinearLayout, OnEventView, SelectView, TextContent,
+    TextView,
 };
 use self::cursive::Cursive;
 use self::cursive::{traits::*, view::Selector};
 use core::errors::Result as WeirdResult;
-use core::{get_repos, GitGlobalConfig, GitGlobalResult, RepoTag};
-use mut_static::MutStatic;
+use core::{GitGlobalConfig, GitGlobalResult};
+// use mut_static::MutStatic;
 use take_mut;
 
 type RMut = Rc<RefCell<TextContent>>;
