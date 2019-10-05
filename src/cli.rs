@@ -4,9 +4,9 @@ use clap::{App, Arg, Shell, SubCommand};
 use std::io;
 use std::io::{stderr, Write};
 
-use core::errors;
-use core::GitGlobalError;
-use core::GitGlobalResult;
+use repo::errors;
+use repo::GitGlobalError;
+use repo::GitGlobalResult;
 use subcommands;
 
 // use dirs::home_dir;

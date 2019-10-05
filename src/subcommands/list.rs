@@ -1,7 +1,7 @@
 //! The `list` subcommand: lists all repos known to git-global.
 
-use core::{GitGlobalResult, get_repos};
-use core::errors::Result;
+use repo::errors::Result;
+use repo::{get_repos, GitGlobalResult};
 
 /// Forces the display of each repo path, without any extra output.
 pub fn get_results() -> Result<GitGlobalResult> {

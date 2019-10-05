@@ -21,8 +21,8 @@ use self::cursive::views::{
     TextContent, ViewRef,
 };
 use self::cursive::Cursive;
-use core::errors::Result as WeirdResult;
-use core::{
+use repo::errors::Result as WeirdResult;
+use repo::{
     save_repos_and_tags, GitGlobalConfig, GitGlobalResult, Repo, RepoTag,
 };
 // use mut_static::MutStatic;

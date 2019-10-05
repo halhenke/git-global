@@ -1,56 +1,34 @@
-use std::cell::{RefCell, RefMut};
-use std::sync::{Arc, Mutex};
-use std::rc::{Rc};
-use std::ops::{Deref, DerefMut};
-use std::iter::Zip;
-use std::any::Any;
 use std;
-use std::borrow::{
-    Borrow,
-    BorrowMut};
+use std::any::Any;
+use std::borrow::{Borrow, BorrowMut};
+use std::cell::{RefCell, RefMut};
+use std::iter::Zip;
+use std::ops::{Deref, DerefMut};
+use std::rc::Rc;
+use std::sync::{Arc, Mutex};
 extern crate cursive;
 
-use self::cursive::Cursive;
 use self::cursive::align::HAlign;
 use self::cursive::event::{Callback, Event, EventResult, Key};
+use self::cursive::Cursive;
 use self::cursive::{
-    traits::*,
-    view::Selector
-    };
-use self::cursive::{
-    view::{
-        View,
-        ViewWrapper,
-    },
-    menu::{
-        MenuTree,
-    },
+    menu::MenuTree,
+    view::{View, ViewWrapper},
     views::{
-        BoxView,
-        Dialog,
-        EditView,
-        IdView,
-        Layer,
-        LinearLayout,
-        ListView,
-        Menubar,
-        MenuPopup,
-        OnEventView,
-        Panel,
-        ScrollView,
-        SelectView,
-        TextContent,
-        TextView,
-        }};
-use core::errors::Result as WeirdResult;
-use core::{GitGlobalConfig, Repo, RepoTag, GitGlobalResult, get_repos};
+        BoxView, Dialog, EditView, IdView, Layer, LinearLayout, ListView,
+        MenuPopup, Menubar, OnEventView, Panel, ScrollView, SelectView,
+        TextContent, TextView,
+    },
+};
+use self::cursive::{traits::*, view::Selector};
 use mut_static::MutStatic;
-use take_mut;
+use repo::errors::Result as WeirdResult;
+use repo::{get_repos, GitGlobalConfig, GitGlobalResult, Repo, RepoTag};
 use std::cell::Ref;
+use take_mut;
 type RMut = Rc<RefCell<TextContent>>;
 
 use std::fmt;
-
 
 struct TagStatusSimple<'a> {
     repos: &'a Vec<Repo>,
@@ -59,20 +37,23 @@ struct TagStatusSimple<'a> {
     currentTags: &'a Vec<RepoTag>,
 }
 impl<'a> TagStatusSimple<'a> {
-//     pub fn new(repos: RcVecRepo, repo: RcRepo, tags: RcVecRepoTag) -> TagStatus {
-// // impl TagStatus {
-// //     pub fn new(repos: Vec<Repo>, repo: Repo, tags: Vec<RepoTag>) -> TagStatus {
-// // impl<'a> TagStatus<'a> {
+    //     pub fn new(repos: RcVecRepo, repo: RcRepo, tags: RcVecRepoTag) -> TagStatus {
+    // // impl TagStatus {
+    // //     pub fn new(repos: Vec<Repo>, repo: Repo, tags: Vec<RepoTag>) -> TagStatus {
+    // // impl<'a> TagStatus<'a> {
     // pub fn new(repos: &'a Vec<Repo>, repo: usize, tags: &'a Vec<RepoTag>) -> TagStatusSimple<'a> {
-    pub fn new(repos: &'a Vec<Repo>, repo: &'a Repo, tags: &'a Vec<RepoTag>) -> TagStatusSimple<'a> {
+    pub fn new(
+        repos: &'a Vec<Repo>,
+        repo: &'a Repo,
+        tags: &'a Vec<RepoTag>,
+    ) -> TagStatusSimple<'a> {
         return TagStatusSimple {
             repos: repos,
             currentRepo: repo,
             currentTags: tags,
-        }
+        };
     }
 }
-
 
 type RcResult = Rc<GitGlobalResult>;
 type RcRcResult = Rc<RefCell<GitGlobalResult>>;
@@ -84,7 +65,6 @@ type RcVecRepo = Rc<RefCell<Vec<Repo>>>;
 // type RcRepoTag<'a> = Rc<RefCell<&'a RepoTag>>;
 // type RcVecRepoTag<'a> = Rc<RefCell<&'a Vec<RepoTag>>>;
 // type RcVecRepo<'a> = Rc<RefCell<&'a Vec<Repo>>>;
-
 
 lazy_static! {
     // static ref HASHMAP: HashMap<u32, &'static str> = {
@@ -121,10 +101,7 @@ lazy_static! {
 }
 
 pub fn repo_2_name<'a>(s: &'a str) -> &'a str {
-    s.rsplit("/")
-        .collect::<Vec<&str>>()
-        .first()
-        .unwrap()
+    s.rsplit("/").collect::<Vec<&str>>().first().unwrap()
 }
 
 // note
@@ -182,14 +159,13 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     siv.load_theme_file("assets/style.toml").unwrap();
 
     // https://github.com/gyscos/Cursive/issues/179
-    let mut_content = TextContent::new(
-        user_config.tag_names()
-            .join("\n")
-    );
+    let mut_content = TextContent::new(user_config.tag_names().join("\n"));
 
-    type SelTagList<'a> = std::iter::Zip<std::vec::IntoIter<&'a str>, std::vec::IntoIter<String>>;
+    type SelTagList<'a> =
+        std::iter::Zip<std::vec::IntoIter<&'a str>, std::vec::IntoIter<String>>;
 
-    type SelRepoList<'a> = std::iter::Zip<std::vec::IntoIter<&'a str>, std::vec::IntoIter<Repo>>;
+    type SelRepoList<'a> =
+        std::iter::Zip<std::vec::IntoIter<&'a str>, std::vec::IntoIter<Repo>>;
 
     type SelRepoList2 = std::iter::Zip<String, Repo>;
 
@@ -200,26 +176,22 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
             .into_iter()
             .map(|x| String::from(x))
             .collect();
-        return tags_1
-            .into_iter()
-            .zip(tags_2.into_iter())
+        return tags_1.into_iter().zip(tags_2.into_iter());
     }
 
     pub use std::vec::IntoIter;
 
-
     // /// Turn a Vector of Repos into a Zip suitable for display in a SelectList
     fn selectify_repos(repos: Vec<Repo>) -> Vec<(String, Repo)> {
-    // fn selectify_repos<'a>(repos: &'a Vec<Repo>) -> Vec<(String, &'a Repo)> {
-            repos
+        // fn selectify_repos<'a>(repos: &'a Vec<Repo>) -> Vec<(String, &'a Repo)> {
+        repos
             .into_iter()
-            .map(|r| (r.name().to_string(), r) )
+            .map(|r| (r.name().to_string(), r))
             .collect()
     }
 
     debug!("ADD TAGS: did we get here - 3");
     let mut new_tags: Vec<String> = Vec::new();
-
 
     /// VIEWS
     let e_view = EditView::new()
@@ -230,9 +202,7 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     // let repo_selector: SelectView<RcRepo> = SelectView::new();
     let repo_selector = SelectView::new()
         // .with_all(selectify_repos(
-        .with_all(selectify_repos(
-            stat_two.repos.clone()
-        ))
+        .with_all(selectify_repos(stat_two.repos.clone()))
         // .with_all(selectify(
         //     user_config.get_cached_repos()
         //         .iter()
@@ -248,9 +218,8 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
                 .repos
                 .iter()
                 // .position(
-                .find(
-                    |& x| x == ss
-            ).unwrap();
+                .find(|&x| x == ss)
+                .unwrap();
 
             unsafe {
                 // CURRENT_REPO = sss;
@@ -268,12 +237,12 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
             //     foo = ss;
             // }
             // stat_1;
-                // .deref()
-                // .get_mut()
-                // .borrow_mut()
-                // .get_mut()
-                // .currentRepo = ss;
-                // .currentRepo = ss.clone();
+            // .deref()
+            // .get_mut()
+            // .borrow_mut()
+            // .get_mut()
+            // .currentRepo = ss;
+            // .currentRepo = ss.clone();
         })
         // .on_submit(|s, r| {
         .on_submit(|s: &mut Cursive, r: &Repo| {
@@ -282,23 +251,19 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
         .min_width(20)
         .with_id("repo-field");
     // let tags_displayer: IdView<BoxView<SelectView>> = OnEventView()
-    let tags_displayer  = OnEventView::new(
+    let tags_displayer = OnEventView::new(
         SelectView::new()
-            .with_all(selectify(
-                vec!("hoo", "lah", "laa")
-            ))
+            .with_all(selectify(vec!["hoo", "lah", "laa"]))
             .min_width(20)
-            .with_id("tag-display")
-    ).on_event(Event::Key(Key::Esc), |s|
+            .with_id("tag-display"),
+    )
+    .on_event(Event::Key(Key::Esc), |s| {
         s.focus_id("repo-field").expect("...")
-    );
+    });
     let tags_pool: IdView<SelectView> = SelectView::new()
-    // let tags_pool: IdView<ScrollView<SelectView>> = SelectView::new()
-            .with_all(selectify(
-            user_config.tags
-                .iter()
-                .map(|r| r.name.as_str())
-                .collect()
+        // let tags_pool: IdView<ScrollView<SelectView>> = SelectView::new()
+        .with_all(selectify(
+            user_config.tags.iter().map(|r| r.name.as_str()).collect(),
         ))
         // .scrollable()
         .with_id("tag-pool");
@@ -309,29 +274,24 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
             .child(
                 LinearLayout::horizontal()
                     .child(Panel::new(repo_selector))
-                    .child(Panel::new(tags_displayer))
+                    .child(Panel::new(tags_displayer)),
             )
             .child(
                 // sel_view
                 Panel::new(
-                    OnEventView::new(
-                        tags_pool
-                    )
-                    // .on_event_inner(Event::Key(Key::Backspace), |s1| {
-                    //     delete_tag(&mut s1.get_mut())
-                    // })
-                    // NOTE: Due to fucking annoying design this has to come
-                    // after/outside `OnEventView` - otherwise we never get to unwrap
-                    // properly
-                    .scrollable()
-                    // .on_event(Event::Key::Del)::with_cb(
-                    // )
-                )
-            )
+                    OnEventView::new(tags_pool)
+                        // .on_event_inner(Event::Key(Key::Backspace), |s1| {
+                        //     delete_tag(&mut s1.get_mut())
+                        // })
+                        // NOTE: Due to fucking annoying design this has to come
+                        // after/outside `OnEventView` - otherwise we never get to unwrap
+                        // properly
+                        .scrollable(), // .on_event(Event::Key::Del)::with_cb(
+                                       // )
+                ),
+            ),
     );
-    siv.add_global_callback('q', |s1| {
-        s1.quit()
-    });
+    siv.add_global_callback('q', |s1| s1.quit());
     siv.run();
     debug!("ADD TAGS: called - 33");
 

@@ -4,9 +4,9 @@
 //! the `get_repos()` function.
 
 use colored::*;
-pub use core::config::GitGlobalConfig;
-pub use core::repo::{Repo, RepoTag};
-pub use core::result::GitGlobalResult;
+pub use repo::config::GitGlobalConfig;
+pub use repo::repo::{Repo, RepoTag};
+pub use repo::result::GitGlobalResult;
 // use std::fmt;
 
 use walkdir::{DirEntry, WalkDir};

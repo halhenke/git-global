@@ -1,6 +1,5 @@
+use repo::repo::{Repo, RepoTag};
 use std::collections::HashMap;
-use core::repo::{Repo, RepoTag};
-
 
 /// The result of a git-global subcommand.
 ///
@@ -69,7 +68,7 @@ impl GitGlobalResult {
 
     /// Writes all result messages to STDOUT, as JSON.
     pub fn print_json(&self) {
-        let mut json = object!{
+        let mut json = object! {
             "error" => false,
             "messages" => array![],
             "repo_messages" => object!{}
@@ -85,7 +84,9 @@ impl GitGlobalResult {
                 for line in messages.iter().filter(|l| *l != "") {
                     json["repo_messages"][&repo.path]
                         .push(line.to_string())
-                        .expect("Failed pushing line to JSON repo-messages array.");
+                        .expect(
+                            "Failed pushing line to JSON repo-messages array.",
+                        );
                 }
             }
         }
@@ -93,8 +94,8 @@ impl GitGlobalResult {
     }
 
     /**
-        When we need to get all the tags from the current tags
-     */
+       When we need to get all the tags from the current tags
+    */
     pub fn all_tags(&self) -> Vec<&RepoTag> {
         // self.repos
         //     .iter()

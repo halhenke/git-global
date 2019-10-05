@@ -12,8 +12,8 @@ use self::cursive::views::{
 };
 use self::cursive::Cursive;
 use self::cursive::{traits::*, view::Selector};
-use core::errors::Result as WeirdResult;
-use core::{GitGlobalConfig, GitGlobalResult};
+use repo::errors::Result as WeirdResult;
+use repo::{GitGlobalConfig, GitGlobalResult};
 // use mut_static::MutStatic;
 use take_mut;
 

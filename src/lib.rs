@@ -42,17 +42,17 @@
 
 extern crate app_dirs;
 extern crate chrono;
-extern crate walkdir;
-extern crate tui;
-extern crate git2;
-extern crate itertools;
 extern crate config;
 extern crate dirs;
+extern crate git2;
+extern crate itertools;
 extern crate serde_json;
+extern crate tui;
+extern crate walkdir;
 #[macro_use]
 extern crate pipeline;
-extern crate mut_static;
 extern crate colored;
+extern crate mut_static;
 #[macro_use]
 extern crate clap;
 #[macro_use]
@@ -72,13 +72,12 @@ pub mod macros;
 extern crate take_mut;
 
 mod cli;
-pub mod core;
-
-pub mod subcommands;  // Using `pub mod` so we see the docs.
+pub mod repo;
+pub mod subcommands; // Using `pub mod` so we see the docs.
 
 pub use cli::run_from_command_line;
 
-// pub use core::{
+// pub use repo::{
 //     GitGlobalConfig,
 //     GitGlobalResult,
 //     Repo,
@@ -86,5 +85,5 @@ pub use cli::run_from_command_line;
 //     RepoTag,
 //     get_tagged_repos
 // };
-// pub use core::Result;
-// pub use core::GitGlobalError;
+// pub use repo::Result;
+// pub use repo::GitGlobalError;

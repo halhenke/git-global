@@ -8,8 +8,8 @@ use std::thread;
 
 use git2;
 
-use core::errors::Result;
-use core::{get_repos, GitGlobalResult, Repo};
+use repo::errors::Result;
+use repo::{get_repos, GitGlobalResult, Repo};
 
 /// Gathers `git status -s` for all known repos.
 pub fn get_results(only_modified: bool) -> Result<GitGlobalResult> {

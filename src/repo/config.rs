@@ -9,7 +9,7 @@ use std::path::{Path, PathBuf};
 // use std::result::Result as BResult;
 use walkdir::DirEntry;
 
-use core::{
+use repo::{
     repo::{Repo, RepoTag},
     result::GitGlobalResult,
 };

@@ -1,13 +1,13 @@
 //! The `filter` subcommand: lists all repos known to git-global.
 
-use core::{GitGlobalResult, RepoTag, get_tagged_repos};
-use core::errors::Result;
-use subcommands::utilities::{print_str_pat};
+use repo::errors::Result;
+use repo::{get_tagged_repos, GitGlobalResult, RepoTag};
+use subcommands::utilities::print_str_pat;
 
 /// Forces the display of each repo path, without any extra output.
 pub fn get_results(pat: &str, tags: Vec<&str>) -> Result<GitGlobalResult> {
-
-    let tag_conv = &tags.iter()
+    let tag_conv = &tags
+        .iter()
         .flat_map(|x| x.split(","))
         .map(|x| x.trim())
         .map(|x| RepoTag::new(&x))
