@@ -36,22 +36,6 @@ pub fn repo_filter(
     return Ok(false);
 }
 
-fn repo_check(repos: &mut Vec<Repo>, entry: DirEntry) -> () {
-    // println!("We are checking {} to see if it has a repo...", entry.path().to_str().expect("MISSING"));
-    if entry.file_type().is_dir() && entry.file_name() == ".git" {
-        let parent_path =
-            entry.path().parent().expect("Could not determine parent.");
-        match parent_path.to_str() {
-            Some(path) => {
-                repos.push(Repo::new(path.to_string()));
-            }
-            None => (),
-        }
-        // Lets not recurse into git directories...
-        // next;
-    }
-}
-
 fn is_a_repo(entry: &DirEntry) -> bool {
     // println!("entry is {}", entry.path().to_str().unwrap());
     entry.file_type().is_dir()
@@ -65,54 +49,10 @@ fn is_a_git(entry: &DirEntry) -> bool {
     entry.file_type().is_dir() && entry.file_name() == ".git"
 }
 
-// fn parent_is_a_repo(entry: &DirEntry) -> bool {
-//     // println!("entry is {}", entry.path().to_str().unwrap());
-//     // parent = entry.path()
-//     entry.file_type().is_dir()
-//         && entry.path().read_dir().expect("read dir failed").any(|f| {
-//             let ff = f.expect("works");
-//             ff.file_type().unwrap().is_dir() && ff.file_name() == ".git"
-//         })
-// }
-
 fn my_repo_check(repos: &mut Vec<Repo>, entry: DirEntry) -> () {
-    // println!("We are checking {} to see if it has a repo...", entry.path().to_str().expect("MISSING"));
     if is_a_repo(&entry) {
-        // if entry.file_type().is_dir() {
-        //     if entry.path().read_dir().expect("read dir failed").any(|f| {
-        //         let ff = f.expect("works");
-        //         ff.file_type().unwrap().is_dir() && ff.file_name() == ".git"
-        //     }) {
         println!("A REPO IS {}", entry.path().to_str().unwrap());
         repos.push(Repo::new(entry.path().to_str().unwrap().to_string()));
-        // }
-
-        // for f in entry.path().read_dir().expect("read dir failed") {
-        //     let ff = f.expect("unwrap again...");
-        //     if ff.file_type().unwrap().is_dir() && ff.file_name() == ".git" {
-        //         repos.push(Repo::new(
-        //             entry.path().to_str().unwrap().to_string(),
-        //         ));
-        //         break;
-        //         // let contents = fs::read_to_string(ff.path());
-        //         // return Ok(true);
-        //     }
-        // }
-        // let it = entry.path().read_dir().expect("read dir failed").collect();
-        // if it.contains()
-
-        // }
-        // entry.file_name() == ".git" {
-        //     let parent_path =
-        //         entry.path().parent().expect("Could not determine parent.");
-        //     match parent_path.to_str() {
-        //         Some(path) => {
-        //             repos.push(Repo::new(path.to_string()));
-        //         }
-        //         None => (),
-        //     }
-        // Lets not recurse into git directories...
-        // next;
     }
 }
 
@@ -147,40 +87,13 @@ pub fn find_repos() -> Vec<Repo> {
         "Scanning for git repos under {}; this may take a while...",
         basedir.green()
     );
-    // for entry in walker {
-    //     if let Ok(e) = entry {
-    //         if user_config.filter(&e) && is_a_repo(&e) {
-    //             repos.push(Repo::new(e.path().to_str().unwrap().to_string()));
-    //         }
-    //     }
-    // }
-    for entry in walker.filter_entry(|e| walk_here(&e, &user_config))
-    // walker.filter_entry(|e| user_config.filter(e) && !is_a_repo(&e))
-    {
+
+    for entry in walker.filter_entry(|e| walk_here(&e, &user_config)) {
         match entry {
             Ok(entry) => {
-                // if !((&repos).into_iter().any(|r| {
-                //     println!(
-                //         "rpath {}, entry_parent {}",
-                //         r.path,
-                //         entry.path().parent().unwrap().to_str().unwrap()
-                //     );
-                //     return r.path
-                //         == entry.path().parent().unwrap().to_str().unwrap();
-                // })) {
-                // if !(entry.path().parent().unwrap().read_dir().unwrap().any(
-                //     |ff| {
-                //         // let
-                //         let fff = ff.unwrap();
-                //         return (&fff).file_type().unwrap().is_dir()
-                //             && (&fff).file_name() == ".git";
-                //     },
-                // )) {
                 if !repos_contains_ancestor(&entry, &repos) {
                     my_repo_check(&mut repos, entry);
                 }
-                // my_repo_check(&mut repos, entry);
-                // repo_check(&mut repos, entry);
             }
             Err(_) => (),
         }
