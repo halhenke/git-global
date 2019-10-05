@@ -12,7 +12,7 @@ use core::errors::Result;
 use core::{get_repos, GitGlobalResult, Repo};
 
 /// Gathers `git status -s` for all known repos.
-pub fn get_results() -> Result<GitGlobalResult> {
+pub fn get_results(only_modified: bool) -> Result<GitGlobalResult> {
     let include_untracked = true;
     // let include_untracked = config.show_untracked;
     let repos = get_repos();
@@ -54,7 +54,9 @@ pub fn get_results() -> Result<GitGlobalResult> {
             repo.path().green().underline()
         );
         if lines.is_empty() {
-            result.add_repo_message(&repo, ss.dimmed().to_string());
+            if !only_modified {
+                result.add_repo_message(&repo, ss.dimmed().to_string());
+            }
         } else {
             result.add_repo_message(&repo, ss.to_string());
         }

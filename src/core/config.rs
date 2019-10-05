@@ -1,21 +1,23 @@
-use colored::*;
-use std::env;
-use std::path::{PathBuf, Path};
-use std::io::{Read, Write, Result};
-use std::io::{Error, ErrorKind};
-use std::result::{Result as BResult};
-use std::fs::{File, remove_file};
-use app_dirs::{AppInfo, AppDataType, app_dir, get_app_dir};
-use walkdir::{DirEntry};
+// use colored::*;
+// use std::env;
+use app_dirs::{app_dir, get_app_dir, AppDataType, AppInfo};
 use git2;
+use std::fs::{remove_file, File};
+use std::io::{Error, ErrorKind};
+use std::io::{Read, Result, Write};
+use std::path::{Path, PathBuf};
+// use std::result::Result as BResult;
+use walkdir::DirEntry;
 
 use core::{
     repo::{Repo, RepoTag},
-    result::{GitGlobalResult}
-    };
+    result::GitGlobalResult,
+};
 
-
-const APP: AppInfo = AppInfo { name: "git-global", author: "hal" };
+const APP: AppInfo = AppInfo {
+    name: "git-global",
+    author: "hal",
+};
 const CACHE_FILE: &'static str = "repos.txt";
 const TAG_CACHE_FILE: &'static str = "tags.txt";
 const SETTING_BASEDIR: &'static str = "global.basedir";
@@ -33,7 +35,6 @@ pub struct GitGlobalConfig {
     pub cache_file: PathBuf,
     pub tags_file: PathBuf,
 }
-
 
 #[derive(Serialize, Deserialize, Debug)]
 struct RepoTagCache {
@@ -86,14 +87,16 @@ impl GitGlobalConfig {
         if !Path::exists(Path::new(&basedir)) {
             panic!("Your provided basedir: {} does not exist", basedir);
         }
-        let cache_file = match get_app_dir(AppDataType::UserCache, &APP, "cache") {
-            Ok(mut dir) => {
-                dir.push(CACHE_FILE);
-                dir
-            }
-            Err(_) => panic!("TODO: work without XDG"),
-        };
-        let tags_file = match get_app_dir(AppDataType::UserCache, &APP, "cache") {
+        let cache_file =
+            match get_app_dir(AppDataType::UserCache, &APP, "cache") {
+                Ok(mut dir) => {
+                    dir.push(CACHE_FILE);
+                    dir
+                }
+                Err(_) => panic!("TODO: work without XDG"),
+            };
+        let tags_file = match get_app_dir(AppDataType::UserCache, &APP, "cache")
+        {
             Ok(mut dir) => {
                 dir.push(TAG_CACHE_FILE);
                 dir
@@ -114,24 +117,18 @@ impl GitGlobalConfig {
             cache_file: cache_file,
             tags_file,
         };
-        ggc.tags = ggc.read_tags().unwrap_or(vec!());
+        ggc.tags = ggc.read_tags().unwrap_or(vec![]);
         ggc
     }
 
     /// Returns `true` if this directory entry should be included in scans.
     pub fn filter(&self, entry: &DirEntry) -> bool {
         let entry_path = entry.path().to_str().expect("DirEntry without path.");
-        // self.ignored_patterns
-        //     // .into_iter()
-        //     .iter()
-        //     .for_each(|x| println!("Ignored patters is: {}", x));
-
-        (self.ignored_patterns.len() == 1 && self.ignored_patterns[0] == "") || !self.ignored_patterns
-            .iter()
-            .any(|pat| entry_path.contains(pat))
-        // println!("The patterns are empty == {}", self.ignored_patterns.len());
-        // println!("This path {} is a {}", entry_path, a);
-        // a
+        (self.ignored_patterns.len() == 1 && self.ignored_patterns[0] == "")
+            || !self
+                .ignored_patterns
+                .iter()
+                .any(|pat| entry_path.contains(pat))
     }
 
     pub fn append_tags(&mut self, tags: Vec<String>) -> () {
@@ -142,22 +139,14 @@ impl GitGlobalConfig {
             .collect();
         debug!("new_repos is {:?}", new_repos);
         debug!("Before add tags - self.tags is {:?}", self.tags);
-        self.tags
-            .append(
-                new_repos
-            );
-        self.tags
-            .dedup_by(|a, b|
-                a.name.as_str()
-                    .eq_ignore_ascii_case(b.name.as_str())
-            );
+        self.tags.append(new_repos);
+        self.tags.dedup_by(|a, b| {
+            a.name.as_str().eq_ignore_ascii_case(b.name.as_str())
+        });
     }
 
     pub fn replace_tags(&mut self, tags: Vec<String>) -> () {
-        let new_tags = tags
-            .into_iter()
-            .map(|t| t.into())
-            .collect();
+        let new_tags = tags.into_iter().map(|t| t.into()).collect();
         self.tags = new_tags;
     }
 
@@ -166,11 +155,8 @@ impl GitGlobalConfig {
     }
 
     pub fn tag_names(&self) -> Vec<&str> {
-    // pub fn tag_names(&self) -> &Vec<&str> {
-        self.tags
-            .iter()
-            .map(|g| g.name.as_str())
-            .collect()
+        // pub fn tag_names(&self) -> &Vec<&str> {
+        self.tags.iter().map(|g| g.name.as_str()).collect()
     }
 
     pub fn print_tags(&self) {
@@ -183,12 +169,10 @@ impl GitGlobalConfig {
             println!("{}", tag.name);
         }
     }
-
 }
 
 /// Cache Stuff
 impl GitGlobalConfig {
-
     /// Returns boolean indicating if the cache file exists.
     pub fn has_cache(&self) -> bool {
         self.cache_file.as_path().exists()
@@ -219,29 +203,33 @@ impl GitGlobalConfig {
                 Ok(_) => {
                     // panic!("Oh SHIT!");
                     // self.make_empty_cache();
-                    return Err(Error::new(ErrorKind::NotFound, "Cache Directory exists but no Cache file"));
+                    return Err(Error::new(
+                        ErrorKind::NotFound,
+                        "Cache Directory exists but no Cache file",
+                    ));
                     // return Err("Cache Directory exisits but no Cache file")
-                },
+                }
                 // Ok(_) => (),
                 Err(e) => {
                     // panic!("OH SNAP!");
                     // return Err("No Cache Directory found");
-                    return Err(Error::new(ErrorKind::NotFound, "No Cache Directory exists"));
+                    return Err(Error::new(
+                        ErrorKind::NotFound,
+                        "No Cache Directory exists",
+                    ));
                     // return Ok(vec!());
                     // return Err(Error::new(ErrorKind::Other, "No Cache Directory found"));
                     // return Error::new(ErrorKind::Other, "No Cache Directory found");
-                },
-                // Err(e) => panic!("Could not create cache directory: {}", e),
+                } // Err(e) => panic!("Could not create cache directory: {}", e),
             }
         }
-        let mut f = File::open(&self.cache_file)
-            .expect("Could not create cache file.");
+        let mut f =
+            File::open(&self.cache_file).expect("Could not create cache file.");
         let reader = &mut Vec::new();
-        f.read_to_end(reader)
-            .expect("Couldnt read.");
+        f.read_to_end(reader).expect("Couldnt read.");
 
-        let _temp: RepoTagCache = serde_json::from_slice(reader)
-            .expect("Could not deserialize");
+        let _temp: RepoTagCache =
+            serde_json::from_slice(reader).expect("Could not deserialize");
 
         let _tags: &Vec<RepoTag> = &_temp.tags;
         // let _repos: &Vec<Repo> = serialized.0;
@@ -270,7 +258,6 @@ impl GitGlobalConfig {
 
         debug!("WRITING TAGS: called - 3");
 
-
         type RepoTagTuple<'a> = (&'a Vec<Repo>, &'a Vec<RepoTag>);
         let _wowser: RepoTagTuple = (&repos, &self.tags);
 
@@ -295,7 +282,8 @@ impl GitGlobalConfig {
                 Err(e) => panic!("Could not create cache directory: {}", e),
             }
         }
-        let mut f = File::create(&self.cache_file).expect("Could not create cache file.");
+        let mut f = File::create(&self.cache_file)
+            .expect("Could not create cache file.");
 
         // type RepoTagTuple<'a> = (&'a Vec<Repo>, &'a Vec<RepoTag>);
 
@@ -304,11 +292,10 @@ impl GitGlobalConfig {
         let rt: RepoTagCache = RepoTagCache::new(repos, &self.tags);
         let serialized = serde_json::to_string(&rt).unwrap();
 
-
         debug!("CACHING REPOS: SERIALIZED:\n{}", &serialized);
 
-
-        f.write_all(serialized.as_bytes()).expect("Problem writing cache file");
+        f.write_all(serialized.as_bytes())
+            .expect("Problem writing cache file");
     }
 
     /// Returns the list of repos found in the cache file.
@@ -324,12 +311,14 @@ impl GitGlobalConfig {
 
             // let reader = &mut BufReader::new(f);
             let reader = &mut Vec::new();
-            f.read_to_end(reader)
-                .expect("Couldnt read ");
-            debug!("reader is {}", String::from_utf8(reader.clone()).expect("more"));
+            f.read_to_end(reader).expect("Couldnt read ");
+            debug!(
+                "reader is {}",
+                String::from_utf8(reader.clone()).expect("more")
+            );
 
-            let _temp: RepoTagCache = serde_json::from_slice(reader)
-                .expect("Could not deserialize");
+            let _temp: RepoTagCache =
+                serde_json::from_slice(reader).expect("Could not deserialize");
 
             let _repos: &Vec<Repo> = &_temp.repos;
             repos = _repos.to_vec();
@@ -349,7 +338,6 @@ pub fn save_repos_and_tags(repos: Vec<Repo>, tags: Vec<RepoTag>) {
     gc.cache_repos(&repos);
     // hmmmm...
 }
-
 
 trait Cached {
     fn cache_repos(&self, repos: &Vec<Repo>);
