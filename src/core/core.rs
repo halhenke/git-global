@@ -39,9 +39,14 @@ pub fn repo_filter(
 }
 
 /// Is this the path of a .git directory?
-fn is_a_git(entry: &DirEntry) -> bool {
-    entry.file_type().is_dir() && entry.file_name() == ".git"
+fn is_a_git(entry: &std::fs::DirEntry) -> bool {
+    entry.path().is_dir() && entry.file_name() == ".git"
 }
+// fn is_a_git<D>(entry: &D) -> bool {
+//     entry.file_type().is_dir() && entry.file_name() == ".git"
+// fn is_a_git(entry: &DirEntry) -> bool {
+//     entry.file_type().is_dir() && entry.file_name() == ".git"
+// }
 
 /// Is this the path of a git repository?
 fn is_a_repo(entry: &DirEntry) -> bool {
