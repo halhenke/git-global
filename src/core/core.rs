@@ -14,7 +14,9 @@ use walkdir::{DirEntry, WalkDir};
 extern crate serde;
 extern crate serde_json;
 
-/// Trying to get .gitignore contents...
+/// Trying to get .gitignore contents
+/// - part of a strategy to not recurse into ignored directories
+/// Not used at preesnt but perhaps later.
 pub fn repo_filter(
     e: &DirEntry,
     uc: GitGlobalConfig,
@@ -36,44 +38,40 @@ pub fn repo_filter(
     return Ok(false);
 }
 
-fn is_a_repo(entry: &DirEntry) -> bool {
-    // println!("entry is {}", entry.path().to_str().unwrap());
-    entry.file_type().is_dir()
-        && entry.path().read_dir().expect("read dir failed").any(|f| {
-            let ff = f.expect("works");
-            ff.file_type().unwrap().is_dir() && ff.file_name() == ".git"
-        })
-}
-
+/// Is this the path of a .git directory?
 fn is_a_git(entry: &DirEntry) -> bool {
     entry.file_type().is_dir() && entry.file_name() == ".git"
 }
 
+/// Is this the path of a git repository?
+fn is_a_repo(entry: &DirEntry) -> bool {
+    debug!("entry is {}", entry.path().to_str().unwrap());
+    entry.file_type().is_dir()
+        && entry.path().read_dir().expect("read dir failed").any(|f| {
+            let ff = f.expect("works");
+            // ff.file_type().unwrap().is_dir() && ff.file_name() == ".git"
+            is_a_git(&ff)
+        })
+}
+
+/// Add repos to the list of repos
 fn my_repo_check(repos: &mut Vec<Repo>, entry: DirEntry) -> () {
     if is_a_repo(&entry) {
-        println!("A REPO IS {}", entry.path().to_str().unwrap());
+        debug!("A REPO IS {}", entry.path().to_str().unwrap());
         repos.push(Repo::new(entry.path().to_str().unwrap().to_string()));
     }
 }
 
-fn repos_contains_ancestor(
-    entry: &DirEntry,
-    // uc: &GitGlobalConfig,
-    repos: &Vec<Repo>,
-) -> bool {
+/// Does this list of repos contain an ancestor of the current path?
+fn repos_contains_ancestor(entry: &DirEntry, repos: &Vec<Repo>) -> bool {
     repos.into_iter().any(|r| entry.path().starts_with(&r.path))
 }
 
-fn walk_here(
-    entry: &DirEntry,
-    uc: &GitGlobalConfig,
-    // repos: &Vec<Repo>,
-) -> bool {
+/// Should we
+/// 1) Do Something with this path
+/// 2) Recurse into any contents of this path
+fn walk_here(entry: &DirEntry, uc: &GitGlobalConfig) -> bool {
     uc.filter(entry)
-    // && is_a_repo(entry)
-    // && repos
-    //     .into_iter()
-    //     .any(|r| r.path == entry.path().to_str().unwrap())
 }
 
 /// Walks the configured base directory, looking for git repos.
