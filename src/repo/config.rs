@@ -172,7 +172,7 @@ impl GitGlobalConfig {
     }
 }
 
-/// Cache Stuff
+/// GitGlobalConfig is mainly responsible for reading Global Configuration settings, and fetching/caching the list of Repos on the system based on that
 impl GitGlobalConfig {
     /// Returns boolean indicating if the cache file exists.
     pub fn has_cache(&self) -> bool {

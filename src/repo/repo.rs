@@ -153,6 +153,7 @@ pub struct RepoTag {
     pub name: String,
 }
 
+/// Basically a wrapper around a string ¯\_(ツ)_/¯
 impl RepoTag {
     pub fn new(name: &str) -> RepoTag {
         RepoTag {
@@ -186,29 +187,6 @@ impl From<RepoTag> for String {
         repo.name
     }
 }
-
-// impl FromIterator<RepoTag> for Vec<RepoTag> {
-//     fn from_iter<I: IntoIterator<Item=RepoTag>>(iter: I) -> Vec<RepoTag> {
-//         let v = Vec::new();
-//         for i in iter {
-//             v.push(i)
-//         }
-//         v
-//     }
-// }
-
-// impl From<Vec<RepoTag>> for Vec<String> {
-//     fn (reps) {
-//         reps.iter()
-//             .map(|x| x.name)
-//             .collect()
-//     }
-// }
-// impl Into<Vec<String>> for Vec<RepoTag> {
-//     fn (reps) {
-
-//     }
-// }
 
 pub fn does_this_work(reps: Vec<RepoTag>) -> Vec<String> {
     // return reps.into();
