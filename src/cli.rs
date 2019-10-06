@@ -104,6 +104,12 @@ pub fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
                         .short("m")
                         .long("modified-only")
                         .required(false),
+                )
+                .arg(
+                    Arg::with_name("ignore_untracked")
+                        .short("i")
+                        .long("ignore-untracked")
+                        .required(false),
                 ),
         )
         .subcommand(SubCommand::with_name("completions"))
@@ -193,7 +199,11 @@ fn get_status(matches: clap::ArgMatches) -> errors::Result<GitGlobalResult> {
         .subcommand_matches("status")
         .unwrap()
         .value_of("path_filter");
-    subcommands::status::get_results(modified, path_filter)
+    let ignore_untracked = matches
+        .subcommand_matches("status")
+        .unwrap()
+        .is_present("ignore_untracked");
+    subcommands::status::get_results(modified, ignore_untracked, path_filter)
 }
 
 /// Writes results to STDOUT, as either text or JSON, and returns `0`.

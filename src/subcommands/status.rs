@@ -14,6 +14,7 @@ use repo::{get_repos, GitGlobalResult, Repo};
 /// Gathers `git status -s` for all known repos.
 pub fn get_results(
     only_modified: bool,
+    ignore_untracked: bool,
     path_filter: Option<&str>,
 ) -> Result<GitGlobalResult> {
     let include_untracked = true;
@@ -39,7 +40,14 @@ pub fn get_results(
                 .include_untracked(include_untracked)
                 .include_ignored(false);
             // let lines = get_status_lines(status_opts);
-            let lines = repo.get_status_lines(status_opts);
+            let mut lines = repo.get_status_lines(status_opts);
+
+            if ignore_untracked {
+                lines = lines
+                    .into_iter()
+                    .filter(|l| !l.starts_with("??"))
+                    .collect();
+            }
 
             // let path = repo.path().to_string();
             // let lines = repo.get_status_lines();
