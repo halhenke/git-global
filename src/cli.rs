@@ -106,6 +106,7 @@ pub fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
                         .required(false),
                 ),
         )
+        .subcommand(SubCommand::with_name("completions"))
 }
 
 /// Runs the appropriate git-global subcommand based on command line arguments.
@@ -117,14 +118,14 @@ pub fn run_from_command_line() -> i32 {
     let matches = clap_app.get_matches();
     let use_json = matches.is_present("json");
 
-    if matches.is_present("generate-zsh-completions") {
-        get_clap_app().gen_completions_to(
-            "git-global-hal",
-            Shell::Zsh,
-            &mut io::stdout(),
-        );
-        return 0;
-    }
+    // if matches.is_present("generate-zsh-completions") {
+    //     get_clap_app().gen_completions_to(
+    //         "_git-global-hal",
+    //         Shell::Zsh,
+    //         &mut io::stdout(),
+    //     );
+    //     return 0;
+    // }
 
     let results = match matches.subcommand_name() {
         Some("bullshit") => subcommands::bullshit::get_results(),
@@ -164,6 +165,16 @@ pub fn run_from_command_line() -> i32 {
         // Some("tag-projects") => subcommands::tag_projects_simple::go(),
         // Some("tag-projects") => subcommands::tag_projects_lazy::go(),
         Some("status") => get_status(matches),
+        Some("completions") => {
+            let mut file = std::fs::File::create("_git-global-hal")
+                .expect("Could not write completions file");
+            get_clap_app().gen_completions_to(
+                "git-global-hal",
+                Shell::Zsh,
+                &mut file, // &mut io::stdout(),
+            );
+            Ok(GitGlobalResult::new(&Vec::new()))
+        }
         Some(cmd) => Err(GitGlobalError::BadSubcommand(cmd.to_string())),
         None => get_status(matches),
     };
