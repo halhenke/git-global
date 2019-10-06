@@ -93,6 +93,13 @@ pub fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
             SubCommand::with_name("status")
                 .about("shows status of all git repos")
                 .arg(
+                    Arg::with_name("path_filter")
+                        .short("p")
+                        .long("paths")
+                        .takes_value(true)
+                        .required(false),
+                )
+                .arg(
                     Arg::with_name("modified")
                         .short("m")
                         .long("modified-only")
@@ -171,7 +178,11 @@ fn get_status(matches: clap::ArgMatches) -> errors::Result<GitGlobalResult> {
         .subcommand_matches("status")
         .unwrap()
         .is_present("modified");
-    subcommands::status::get_results(modified)
+    let path_filter = matches
+        .subcommand_matches("status")
+        .unwrap()
+        .value_of("path_filter");
+    subcommands::status::get_results(modified, path_filter)
 }
 
 /// Writes results to STDOUT, as either text or JSON, and returns `0`.

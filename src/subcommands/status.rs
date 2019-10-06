@@ -12,7 +12,10 @@ use repo::errors::Result;
 use repo::{get_repos, GitGlobalResult, Repo};
 
 /// Gathers `git status -s` for all known repos.
-pub fn get_results(only_modified: bool) -> Result<GitGlobalResult> {
+pub fn get_results(
+    only_modified: bool,
+    path_filter: Option<&str>,
+) -> Result<GitGlobalResult> {
     let include_untracked = true;
     // let include_untracked = config.show_untracked;
     let repos = get_repos();
@@ -46,6 +49,13 @@ pub fn get_results(only_modified: bool) -> Result<GitGlobalResult> {
     }
     for _ in 0..n_repos {
         let (path, lines) = rx.recv().unwrap();
+
+        if let Some(path_filter) = path_filter {
+            if !path.contains(path_filter) {
+                continue;
+            }
+        }
+
         let repo = Repo::new(path.to_string());
 
         let ss = format!(
