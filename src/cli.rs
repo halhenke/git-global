@@ -1,7 +1,6 @@
 //! The command line interface for git-global.
 
 use clap::{App, Arg, Shell, SubCommand};
-use std::io;
 use std::io::{stderr, Write};
 
 use repo::errors;
@@ -90,6 +89,9 @@ pub fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
                 .about("update cache of git repos on your machine"),
         )
         .subcommand(
+            SubCommand::with_name("new-scan").about("...trying to jwalk"),
+        )
+        .subcommand(
             SubCommand::with_name("status")
                 .about("shows status of all git repos")
                 .arg(
@@ -157,6 +159,7 @@ pub fn run_from_command_line() -> i32 {
         }
         Some("clean") => subcommands::clean::cache_clear(),
         Some("scan") => subcommands::scan::get_results(),
+        Some("new-scan") => subcommands::new_scan::get_results(),
         Some("prompt") => subcommands::prompt::go(),
         Some("prompt-cursive") => subcommands::prompt_cursive::go(),
         Some("tag") => {

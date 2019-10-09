@@ -71,6 +71,8 @@ pub mod macros;
 
 extern crate take_mut;
 
+extern crate jwalk;
+
 mod cli;
 pub mod repo;
 pub mod subcommands; // Using `pub mod` so we see the docs.

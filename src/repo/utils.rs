@@ -8,7 +8,9 @@ pub use repo::config::GitGlobalConfig;
 pub use repo::repo::{Repo, RepoTag};
 pub use repo::result::GitGlobalResult;
 // use std::fmt;
+use std::sync::Arc;
 
+use jwalk;
 use walkdir::{DirEntry, WalkDir};
 
 extern crate serde;
@@ -49,6 +51,17 @@ fn is_a_git(entry: &std::fs::DirEntry) -> bool {
 // }
 
 /// Is this the path of a git repository?
+fn new_is_a_repo(entry: &jwalk::DirEntry) -> bool {
+    // fn is_a_repo<T>(entry: &T) -> bool {
+    debug!("entry is {}", entry.path().to_str().unwrap());
+    entry.file_type.as_ref().unwrap().is_dir()
+        && entry.path().read_dir().expect("read dir failed").any(|f| {
+            let ff = f.expect("works");
+            // ff.file_type().unwrap().is_dir() && ff.file_name() == ".git"
+            is_a_git(&ff)
+        })
+}
+/// Is this the path of a git repository?
 fn is_a_repo(entry: &DirEntry) -> bool {
     debug!("entry is {}", entry.path().to_str().unwrap());
     entry.file_type().is_dir()
@@ -67,8 +80,23 @@ fn my_repo_check(repos: &mut Vec<Repo>, entry: DirEntry) -> () {
     }
 }
 
+fn my_new_repo_check(repos: &mut Vec<Repo>, entry: jwalk::DirEntry) -> () {
+    if new_is_a_repo(&entry) {
+        debug!("A REPO IS {}", entry.path().to_str().unwrap());
+        repos.push(Repo::new(entry.path().to_str().unwrap().to_string()));
+    }
+}
+
 /// Does this list of repos contain an ancestor of the current path?
 fn repos_contains_ancestor(entry: &DirEntry, repos: &Vec<Repo>) -> bool {
+    repos.into_iter().any(|r| entry.path().starts_with(&r.path))
+}
+
+/// Does this list of repos contain an ancestor of the current path?
+fn new_repos_contains_ancestor(
+    entry: &jwalk::DirEntry,
+    repos: &Vec<Repo>,
+) -> bool {
     repos.into_iter().any(|r| entry.path().starts_with(&r.path))
 }
 
@@ -80,6 +108,109 @@ fn walk_here(entry: &DirEntry, uc: &GitGlobalConfig) -> bool {
 }
 
 /// Walks the configured base directory, looking for git repos.
+pub fn new_find_repos() -> Vec<Repo> {
+    let mut repos: Vec<Repo> = Vec::new();
+    let user_config = GitGlobalConfig::new();
+    let basedir = &user_config.basedir;
+    // let basedir = "/Users/hal/code/purescipt";
+    // let walker = WalkDir::new(basedir).into_iter();
+    let mut walker = jwalk::WalkDir::new(basedir)
+        .skip_hidden(false)
+        .process_entries(|v| {
+            // println!(
+            //     "Out the map {:#?}",
+            //     v.iter().nth(1).unwrap().as_ref().unwrap()
+            // );
+            v.into_iter().for_each(|de| {
+                // v.into_iter().map(|de| {
+                // v.iter().map(|de| {
+                println!("In the map ");
+                let mut d: &mut jwalk::DirEntry = de.as_mut().unwrap();
+                if d.file_type.as_ref().unwrap().is_dir()
+                    && d.path()
+                        .read_dir()
+                        .unwrap()
+                        // .cloned()
+                        // .for_each(|f| {
+                        //     println!(
+                        //         "f is {}",
+                        //         f.unwrap().path().to_str().unwrap()
+                        //     )
+                        // })
+                        // .collect::<Vec<Result<std::fs::DirEntry, std::io::Error>>>()
+                        // .collect::<Vec<std::fs::DirEntry>>()
+                        .any(|f| {
+                            let ff = f.unwrap();
+                            println!("f path is {}", ff.path().display());
+                            ff.file_name() == ".git"
+                        })
+                {
+                    println!("A match! {}", d.path().display());
+                    // d.content_spec = None;
+                    // let dd = Arc::make_mut(d);
+                    d.content_spec = None;
+                    // .unwrap().make_mut() = None;
+                    println!(
+                        "d.content_spec {:?}",
+                        d.content_spec // d.unwrap().try_unwrap().content_spec // d.content_spec
+                    );
+                }
+            });
+            // .collect::<Vec<std::io::error::Result<DirEntry>>>();
+        })
+        .into_iter();
+    format!(
+        "{}, {}",
+        "Scanning for git repos under {}; this may take a while...",
+        basedir.green()
+    );
+
+    // println!("You went through {} paths", walker.by_ref().count());
+    // println!(
+    //     "You set {} content_specs to zero",
+    //     walker
+    //         .filter(|d| d.as_ref().unwrap().content_spec.is_none())
+    //         .count()
+    // );
+
+    for entry in walker {
+        match entry {
+            Ok(entry) => {
+                if entry.file_type.as_ref().unwrap().is_dir()
+                    && entry.content_spec.is_none()
+                {
+                    println!("A GIT: {}", entry.file_name.to_str().unwrap());
+                    my_new_repo_check(&mut repos, entry);
+                }
+                // if let Some(e) = entry {
+                //     if e.content_spec == None {
+                //         println!("A GIT ", e.file_name);
+                //     }
+                // }
+                // if !new_repos_contains_ancestor(&entry, &repos) {
+                //     // if !repos_contains_ancestor(&entry, &repos) {
+                //     my_new_repo_check(&mut repos, entry);
+                // }
+            }
+            Err(_) => (),
+        }
+    }
+    // for entry in walker.filter_entry(|e| walk_here(&e, &user_config)) {
+    //     match entry {
+    //         Ok(entry) => {
+    //             if !repos_contains_ancestor(&entry, &repos) {
+    //                 my_repo_check(&mut repos, entry);
+    //             }
+    //         }
+    //         Err(_) => (),
+    //     }
+    // }
+    repos.sort_by(|a, b| a.path().cmp(&b.path()));
+    repos
+}
+
+/// Walks the configured base directory, looking for git repos.
+/// Am trying out the jwalk crate rather than walkdir...s
 pub fn find_repos() -> Vec<Repo> {
     let mut repos: Vec<Repo> = Vec::new();
     let user_config = GitGlobalConfig::new();
