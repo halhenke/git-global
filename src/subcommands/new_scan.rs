@@ -16,7 +16,7 @@ use repo::{cache_repos, new_find_repos, GitGlobalResult};
 /// Caches the results of `find_repos()` and says how many were found.
 pub fn get_results() -> Result<GitGlobalResult> {
     let repos = new_find_repos();
-    // cache_repos(&repos);
+    cache_repos(&repos);
     let mut result = GitGlobalResult::new(&repos);
     result.add_message(format!(
         "Found {} repos. Use `git global list` to show them.",

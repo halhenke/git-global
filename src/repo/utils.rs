@@ -113,50 +113,28 @@ pub fn new_find_repos() -> Vec<Repo> {
     let user_config = GitGlobalConfig::new();
     let basedir = &user_config.basedir;
     // let basedir = "/Users/hal/code/purescipt";
-    // let walker = WalkDir::new(basedir).into_iter();
     let mut walker = jwalk::WalkDir::new(basedir)
         .skip_hidden(false)
         .process_entries(|v| {
-            // println!(
-            //     "Out the map {:#?}",
-            //     v.iter().nth(1).unwrap().as_ref().unwrap()
-            // );
+            debug!(
+                "Out the map {:#?}",
+                v.iter().nth(1).unwrap().as_ref().unwrap()
+            );
             v.into_iter().for_each(|de| {
-                // v.into_iter().map(|de| {
-                // v.iter().map(|de| {
-                println!("In the map ");
+                debug!("In the map ");
                 let mut d: &mut jwalk::DirEntry = de.as_mut().unwrap();
                 if d.file_type.as_ref().unwrap().is_dir()
-                    && d.path()
-                        .read_dir()
-                        .unwrap()
-                        // .cloned()
-                        // .for_each(|f| {
-                        //     println!(
-                        //         "f is {}",
-                        //         f.unwrap().path().to_str().unwrap()
-                        //     )
-                        // })
-                        // .collect::<Vec<Result<std::fs::DirEntry, std::io::Error>>>()
-                        // .collect::<Vec<std::fs::DirEntry>>()
-                        .any(|f| {
-                            let ff = f.unwrap();
-                            println!("f path is {}", ff.path().display());
-                            ff.file_name() == ".git"
-                        })
+                    && d.path().read_dir().unwrap().any(|f| {
+                        let ff = f.unwrap();
+                        debug!(".git path is {}", ff.path().display());
+                        ff.file_name() == ".git"
+                    })
                 {
-                    println!("A match! {}", d.path().display());
-                    // d.content_spec = None;
-                    // let dd = Arc::make_mut(d);
+                    debug!("A match! {}", d.path().display());
                     d.content_spec = None;
-                    // .unwrap().make_mut() = None;
-                    println!(
-                        "d.content_spec {:?}",
-                        d.content_spec // d.unwrap().try_unwrap().content_spec // d.content_spec
-                    );
+                    debug!("d.content_spec {:?}", d.content_spec);
                 }
             });
-            // .collect::<Vec<std::io::error::Result<DirEntry>>>();
         })
         .into_iter();
     format!(
@@ -165,13 +143,14 @@ pub fn new_find_repos() -> Vec<Repo> {
         basedir.green()
     );
 
-    // println!("You went through {} paths", walker.by_ref().count());
-    // println!(
-    //     "You set {} content_specs to zero",
-    //     walker
-    //         .filter(|d| d.as_ref().unwrap().content_spec.is_none())
-    //         .count()
-    // );
+    debug!("You went through {} paths", walker.by_ref().count());
+    debug!(
+        "You set {} content_specs to zero",
+        walker
+            .by_ref()
+            .filter(|d| d.as_ref().unwrap().content_spec.is_none())
+            .count()
+    );
 
     for entry in walker {
         match entry {
@@ -179,32 +158,13 @@ pub fn new_find_repos() -> Vec<Repo> {
                 if entry.file_type.as_ref().unwrap().is_dir()
                     && entry.content_spec.is_none()
                 {
-                    println!("A GIT: {}", entry.file_name.to_str().unwrap());
+                    debug!("A GIT: {}", entry.file_name.to_str().unwrap());
                     my_new_repo_check(&mut repos, entry);
                 }
-                // if let Some(e) = entry {
-                //     if e.content_spec == None {
-                //         println!("A GIT ", e.file_name);
-                //     }
-                // }
-                // if !new_repos_contains_ancestor(&entry, &repos) {
-                //     // if !repos_contains_ancestor(&entry, &repos) {
-                //     my_new_repo_check(&mut repos, entry);
-                // }
             }
             Err(_) => (),
         }
     }
-    // for entry in walker.filter_entry(|e| walk_here(&e, &user_config)) {
-    //     match entry {
-    //         Ok(entry) => {
-    //             if !repos_contains_ancestor(&entry, &repos) {
-    //                 my_repo_check(&mut repos, entry);
-    //             }
-    //         }
-    //         Err(_) => (),
-    //     }
-    // }
     repos.sort_by(|a, b| a.path().cmp(&b.path()));
     repos
 }
