@@ -9,7 +9,7 @@ use self::cursive::views::{Dialog, OnEventView, SelectView, TextView};
 
 use repo::errors::Result as WeirdResult;
 
-use repo::{get_repos, GitGlobalConfig, GitGlobalResult, RepoTag};
+use repo::{get_repos, GitGlobalConfig, GitGlobalResult};
 
 #[derive(Debug)]
 struct Selectable<'a> {

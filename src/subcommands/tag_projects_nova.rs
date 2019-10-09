@@ -179,7 +179,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     debug!("ADD TAGS: did we get here - 3");
     let mut new_tags: Vec<String> = Vec::new();
 
-    /// VIEWS
+    // VIEWS
     let e_view = EditView::new()
         // .on_submit(show_popup)
         // .on_submit_mut(edit_cb)

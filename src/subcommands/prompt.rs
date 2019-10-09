@@ -14,8 +14,6 @@ use self::termion::input::TermRead;
 
 use repo::errors::Result as WeirdResult;
 
-#[macro_use]
-use macros::hash_num;
 use repo::GitGlobalResult;
 // use super::super::{GitGlobalResult, RepoTag, get_repos, get_tagged_repos};
 
