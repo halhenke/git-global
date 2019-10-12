@@ -117,21 +117,8 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     let uc = GitGlobalConfig::new();
     let mut reps: Vec<Repo> = uc.get_cached_repos();
     let results = uc.get_cached_results();
-    let result_tags: Vec<RepoTag> = results
-        .all_tags()
-        .into_iter()
-        // .map(move |r| *r)
-        .cloned()
-        // .map(|&x| x)
-        // .map(AsRef::asref)
-        .collect();
-
-    let rct = reps.clone();
-    let repo_names = &rct.iter().map(|x| x.path.clone()).zip(rct.iter());
-    let mut cur2 = reps.as_mut_ptr();
-    let mut cur3 = reps.as_mut_ptr();
-    let mut rcur = Rc::new(RefCell::new(cur2));
-
+    let existing_tags: Vec<RepoTag> =
+        results.all_tags().into_iter().cloned().collect();
     // let fake_tags: dyn IntoIterator<
     //     Item = &str,
     //     IntoIter = std::vec::Vec<String>,
@@ -144,15 +131,30 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     let fake_tags = ["haskell", "ml", "rust"]
         .to_owned()
         .into_iter()
-        .map(|&t| RepoTag::new(t));
+        .map(|&t| RepoTag::new(t))
+        .collect();
     // .map(RefCell::new) // note: theres no need for mutable tags
     // .map(Rc::new)
     // .collect();
+    let all_tags = {
+        if existing_tags.is_empty() {
+            fake_tags
+        } else {
+            existing_tags
+        }
+    };
+    // let globals = TagStatus::new_from_rc(repos, ex, repo: RcRepo, repo_tags: RcVecRepoTag)
 
-    let rreps = Rc::new(RefCell::new(reps));
-    let ttags = Rc::new(RefCell::new(result_tags));
+    // let rct = reps.clone();
+    // let repo_names = &rct.iter().map(|x| x.path.clone()).zip(rct.iter());
+    // let mut cur2 = reps.as_mut_ptr();
+    // let mut cur3 = reps.as_mut_ptr();
+    // let mut rcur = Rc::new(RefCell::new(cur2));
+
+    // let rreps = Rc::new(RefCell::new(reps));
+    // let ttags = Rc::new(RefCell::new(result_tags));
     // NOTE: This is just until we have some actually tagged repos
-    let config_tags = Rc::new(RefCell::new(uc.tags));
+    // let config_tags = Rc::new(RefCell::new(uc.tags));
 
     trace!("go");
 
@@ -167,8 +169,8 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     // VIEWS
     let e_view = EditView::new().with_id("tag").fixed_width(20);
     // let repo_selector: SelectView<RcRepo> = SelectView::new();
-    let rreps_1 = Rc::clone(&rreps);
-    let mut rcur2 = Rc::clone(&rcur);
+    // let rreps_1 = Rc::clone(&rreps);
+    // let mut rcur2 = Rc::clone(&rcur);
     // let repo_selector: SelectView<Repo> = SelectView::new()
     let repo_selector = SelectView::new()
         // .with_all(selectify_repos(rreps.clone()))
