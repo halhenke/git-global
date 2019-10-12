@@ -170,7 +170,9 @@ pub fn run_from_command_line() -> i32 {
         }
         // Some("tag-projects") => subcommands::tag_projects::go(),
         // Some("tag-projects") => subcommands::tag_projects_two::go(),
-        Some("tag-projects") => subcommands::tag_projects_nova::go(),
+        Some("tag-projects") => subcommands::tag_projects_redo::go(),
+        // Some("tag-projects") => subcommands::tag_projects_2019::go(),
+        // Some("tag-projects") => subcommands::tag_projects_nova::go(),
         // Some("tag-projects") => subcommands::tag_projects_simple::go(),
         // Some("tag-projects") => subcommands::tag_projects_lazy::go(),
         Some("status") => get_status(matches),
