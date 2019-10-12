@@ -59,6 +59,59 @@ pub fn repo_2_name<'a>(s: &'a str) -> &'a str {
     s.rsplit("/").collect::<Vec<&str>>().first().unwrap()
 }
 
+#[allow(dead_code)]
+type SelRepoList<'a> =
+    std::iter::Zip<std::vec::IntoIter<&'a str>, std::vec::IntoIter<Repo>>;
+
+#[allow(dead_code)]
+type SelRepoList2 = std::iter::Zip<String, Repo>;
+
+type SelTagList<'a> =
+    std::iter::Zip<std::vec::IntoIter<&'a str>, std::vec::IntoIter<String>>;
+
+fn selectify_strings<'a>(tags_1: &'a Vec<String>) -> SelTagList<'a> {
+    let tags_2: Vec<&'a str> = tags_1.iter().map(AsRef::as_ref).collect();
+    return tags_2.into_iter().zip(tags_1.to_vec());
+}
+
+fn selectify_rc_tags<'a>(rctags: &'a RcVecRepoTag) -> Vec<String> {
+    return rc_borr!(rctags)
+        // return rctags
+        //     .deref()
+        //     .borrow_mut()
+        .iter()
+        .map(|r| r.name.clone())
+        .collect::<Vec<String>>();
+}
+
+type SelRepIter<'a> = &'a Vec<(String, RcRepo)>;
+
+fn selectify_repos(repos: RcVecRepo) -> Vec<(String, Repo)> {
+    return RefCell::borrow_mut(&repos)
+        .clone()
+        .into_iter()
+        .map(|r| (r.path.clone(), r))
+        // .map(|r| (r.path.clone(), Rc::new(RefCell::new(r))))
+        .collect();
+}
+
+fn selectify_things<T>(things: Vec<T>) -> Vec<(String, T)>
+where
+    T: std::fmt::Debug,
+{
+    // let f = format!(":?", )
+    let strs: Vec<String> = things.iter().map(|f| format!("{:?}", f)).collect();
+    return strs.into_iter().zip(things.into_iter()).collect();
+    // return things.into_iter().zip(strs.iter()).collect();
+
+    // return RefCell::borrow_mut(&repos)
+    //     .clone()
+    //     .into_iter()
+    //     .map(|r| (r.path.clone(), r))
+    //     // .map(|r| (r.path.clone(), Rc::new(RefCell::new(r))))
+    //     .collect();
+}
+
 pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     // note a pointer
     let uc = GitGlobalConfig::new();
@@ -108,60 +161,6 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
 
     // https://github.com/gyscos/Cursive/issues/179
 
-    #[allow(dead_code)]
-    type SelRepoList<'a> =
-        std::iter::Zip<std::vec::IntoIter<&'a str>, std::vec::IntoIter<Repo>>;
-
-    #[allow(dead_code)]
-    type SelRepoList2 = std::iter::Zip<String, Repo>;
-
-    type SelTagList<'a> =
-        std::iter::Zip<std::vec::IntoIter<&'a str>, std::vec::IntoIter<String>>;
-
-    fn selectify_strings<'a>(tags_1: &'a Vec<String>) -> SelTagList<'a> {
-        let tags_2: Vec<&'a str> = tags_1.iter().map(AsRef::as_ref).collect();
-        return tags_2.into_iter().zip(tags_1.to_vec());
-    }
-
-    fn selectify_rc_tags<'a>(rctags: &'a RcVecRepoTag) -> Vec<String> {
-        return rc_borr!(rctags)
-            // return rctags
-            //     .deref()
-            //     .borrow_mut()
-            .iter()
-            .map(|r| r.name.clone())
-            .collect::<Vec<String>>();
-    }
-
-    type SelRepIter<'a> = &'a Vec<(String, RcRepo)>;
-
-    fn selectify_repos(repos: RcVecRepo) -> Vec<(String, Repo)> {
-        return RefCell::borrow_mut(&repos)
-            .clone()
-            .into_iter()
-            .map(|r| (r.path.clone(), r))
-            // .map(|r| (r.path.clone(), Rc::new(RefCell::new(r))))
-            .collect();
-    }
-
-    fn selectify_things<T>(things: Vec<T>) -> Vec<(String, T)>
-    where
-        T: std::fmt::Debug,
-    {
-        // let f = format!(":?", )
-        let strs: Vec<String> =
-            things.iter().map(|f| format!("{:?}", f)).collect();
-        return strs.into_iter().zip(things.into_iter()).collect();
-        // return things.into_iter().zip(strs.iter()).collect();
-
-        // return RefCell::borrow_mut(&repos)
-        //     .clone()
-        //     .into_iter()
-        //     .map(|r| (r.path.clone(), r))
-        //     // .map(|r| (r.path.clone(), Rc::new(RefCell::new(r))))
-        //     .collect();
-    }
-
     debug!("ADD TAGS: did we get here - 3");
     let mut new_tags: Vec<String> = Vec::new();
 
@@ -171,7 +170,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     let rreps_1 = Rc::clone(&rreps);
     let mut rcur2 = Rc::clone(&rcur);
     // let repo_selector: SelectView<Repo> = SelectView::new()
-    let repo_selector: IdView<BoxView> = SelectView::new()
+    let repo_selector = SelectView::new()
         // .with_all(selectify_repos(rreps.clone()))
         // .on_select(move |s: &mut Cursive, ss: &Repo| {
         //     // let rcin: Ref<Vec<Repo>> = rreps_1.deref().borrow();
@@ -188,6 +187,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
         //     s.focus_id("tag-pool").expect("...")
         //     // s.focus_id("tag-display").expect("...")
         // })
+        .item("hey", 4)
         .scrollable()
         .min_width(20)
         .max_height(10)
@@ -197,6 +197,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
         SelectView::new()
             // .with_all(selectify_strings(&safe_fake_tags))
             // .with_all(selectify_strings(fake_tags))
+            .item("hey", 4)
             .with_id("tag-display")
             .min_width(20)
             .max_height(10),
