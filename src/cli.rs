@@ -114,7 +114,7 @@ pub fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
                         .required(false),
                 ),
         )
-        .subcommand(SubCommand::with_name("completions"))
+        .subcommand(SubCommand::with_name("completions").about("outputs zsh specific completion commands and writes them to a file - `_git-global-hal` that can then be copied across to your fpath"))
 }
 
 /// Runs the appropriate git-global subcommand based on command line arguments.
