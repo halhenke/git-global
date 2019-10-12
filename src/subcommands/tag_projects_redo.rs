@@ -33,23 +33,27 @@ type RcVecRepo = Rc<RefCell<Vec<Repo>>>;
 
 /// Not sure if I use this here
 struct TagStatus {
-    repos: RcVecRepo,
-    tags: RcVecRepoTag,
-    current_repo: RcRepo,
-    repo_tags: RcVecRepoTag,
+    // struct TagStatus<'a> {
+    repos: Vec<Repo>,
+    tags: Vec<RepoTag>,
+    current_repo: Repo,
+    // current_repo: &'a Repo,
+    repo_tags: Vec<RepoTag>,
 }
 
 impl TagStatus {
     pub fn new_from_rc(
-        repos: RcVecRepo,
-        tags: RcVecRepoTag,
-        repo: RcRepo,
-        repo_tags: RcVecRepoTag,
+        repos: Vec<Repo>,
+        tags: Vec<RepoTag>,
+        current_repo: Repo,
+        // current_repo: i32,
+        repo_tags: Vec<RepoTag>,
     ) -> TagStatus {
         TagStatus {
             repos: repos,
             tags,
-            current_repo: repo,
+            current_repo,
+            // current_repo: &repos[current_repo],
             repo_tags,
         }
     }
@@ -95,11 +99,10 @@ fn selectify_repos(repos: RcVecRepo) -> Vec<(String, Repo)> {
         .collect();
 }
 
-fn selectify_things<T>(things: Vec<T>) -> Vec<(String, T)>
+fn selectify_things<T>(things: Vec<&T>) -> Vec<(String, &T)>
 where
     T: std::fmt::Debug,
 {
-    // let f = format!(":?", )
     let strs: Vec<String> = things.iter().map(|f| format!("{:?}", f)).collect();
     return strs.into_iter().zip(things.into_iter()).collect();
     // return things.into_iter().zip(strs.iter()).collect();
@@ -115,7 +118,7 @@ where
 pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     // note a pointer
     let uc = GitGlobalConfig::new();
-    let mut reps: Vec<Repo> = uc.get_cached_repos();
+    let mut repos: Vec<Repo> = uc.get_cached_repos();
     let results = uc.get_cached_results();
     let existing_tags: Vec<RepoTag> =
         results.all_tags().into_iter().cloned().collect();
@@ -143,7 +146,12 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
             existing_tags
         }
     };
-    // let globals = TagStatus::new_from_rc(repos, ex, repo: RcRepo, repo_tags: RcVecRepoTag)
+    let initial_repo = repos[0].clone();
+    let initial_tags = initial_repo.tags.clone();
+    let globals =
+        TagStatus::new_from_rc(repos, all_tags, initial_repo, initial_tags);
+
+    let mut_globals = Rc::new(RefCell::new(&globals));
 
     // let rct = reps.clone();
     // let repo_names = &rct.iter().map(|x| x.path.clone()).zip(rct.iter());
@@ -174,6 +182,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     // let repo_selector: SelectView<Repo> = SelectView::new()
     let repo_selector = SelectView::new()
         // .with_all(selectify_repos(rreps.clone()))
+        .with_all(selectify_things((*mut_globals).borrow().repos))
         // .on_select(move |s: &mut Cursive, ss: &Repo| {
         //     // let rcin: Ref<Vec<Repo>> = rreps_1.deref().borrow();
         //     // let rcin: Ref<Vec<Repo>> = rreps_1;
@@ -189,7 +198,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
         //     s.focus_id("tag-pool").expect("...")
         //     // s.focus_id("tag-display").expect("...")
         // })
-        .item("hey", 4)
+        // .item("hey", 4)
         .scrollable()
         .min_width(20)
         .max_height(10)
