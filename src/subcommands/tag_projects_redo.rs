@@ -244,8 +244,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     // let rreps_1 = Rc::clone(&rreps);
     // let mut rcur2 = Rc::clone(&rcur);
     // let repo_selector: SelectView<Repo> = SelectView::new()
-    let rrrr =
-        selectify_rc_things(&globals_rc.repos, |r| (String::from("fe"), r));
+    let rrrr = selectify_rc_things(&globals_rc.repos, |r| (r.path.clone(), r));
     let repo_selector = SelectView::new()
         // .with_all(selectify_repos(rreps.clone()))
         // .with_all(selectify_rc_things(globals_rc.repos))
@@ -275,8 +274,11 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     let tags_displayer = OnEventView::new(
         SelectView::new()
             // .with_all(selectify_strings(&safe_fake_tags))
+            .with_all(selectify_rc_things(&globals_rc.repo_tags, |t| {
+                (t.name.clone(), t)
+            }))
             // .with_all(selectify_strings(fake_tags))
-            .item("hey", 4)
+            // .item("hey", 4)
             .with_id("tag-display")
             .min_width(20)
             .max_height(10),
