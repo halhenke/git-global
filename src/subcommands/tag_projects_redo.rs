@@ -303,8 +303,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
         // ))
         .on_select(move |s: &mut Cursive, ss: &Repo| {
             // let new_tags = Rc::clone(&globals_rc.repo_tags);
-            let tags = ss.tags.clone();
-            (*rs_tags).replace(tags);
+            (*rs_tags).replace(ss.tags.clone());
             //     // let rcin: Ref<Vec<Repo>> = rreps_1.deref().borrow();
             //     // let rcin: Ref<Vec<Repo>> = rreps_1;
             //     let ss_real1 = (*rreps_1).borrow();
