@@ -38,6 +38,7 @@ type RcRef<V> = Rc<RefCell<V>>;
 // type RcVecRepo = Rc<RefCell<Vec<Repo>>>;
 
 /// Not sure if I use this here
+#[derive(PartialEq, Eq, Clone, Debug)]
 struct TagStatus {
     // struct TagStatus<'a> {
     repos: Vec<Repo>,
@@ -65,6 +66,7 @@ impl TagStatus {
     }
 }
 
+#[derive(PartialEq, Eq, Clone, Debug)]
 struct TagStatusRC<'a> {
     // struct TagStatusRC<'a> {
     repos: RcVecRepo<'a>,
@@ -202,10 +204,10 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     };
     let initial_repo = repos[0].clone();
     let initial_tags = initial_repo.tags.clone();
-    // let globals =
+    // let mut globals =
     //     TagStatus::new_from_rc(repos, all_tags, initial_repo, initial_tags);
+    // let mut_globals = Rc::new(RefCell::new(globals));
 
-    // let mut_globals = Rc::new(RefCell::new(&globals));
     let globals_rc = TagStatusRC::new_from_rc(
         Rc::new(RefCell::new(&repos)),
         Rc::new(RefCell::new(&all_tags)),
@@ -245,12 +247,21 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     // let mut rcur2 = Rc::clone(&rcur);
     // let repo_selector: SelectView<Repo> = SelectView::new()
     let repo_selector = SelectView::new()
-        // .with_all(selectify_repos(rreps.clone()))
         .with_all(selectify_rc_things(&globals_rc.repos, |r| {
             (r.path.clone(), r)
         }))
-        // .with_all(selectify_repos(&globals_rc.repos))
-        // .with_all(selectify_things((*mut_globals).borrow().repos))
+        // .with_all(selectify_things(
+        //     // RefCell::borrow(&*mut_globals).repos.iter().collect(),
+        //     {
+        //         // let tmp = (*mut_globals).borrow().::<TagStatus>::clone();
+        //         // let tmp = (*mut_globals).borrow().::<TagStatus>::clone();
+        //         // const tmp: TagStatus = (*mut_globals).borrow().clone();
+        //         // tmp.repos.iter().collect()
+        //         // TagStatus::clone(&tmp).repos.iter().collect()
+        //         // tmp.clone::<TagStatus>().repos.iter().collect()
+        //         // (*mut_globals).borrow().clone().repos.iter().collect(),
+        //     },
+        // ))
         // .on_select(move |s: &mut Cursive, ss: &Repo| {
         //     // let rcin: Ref<Vec<Repo>> = rreps_1.deref().borrow();
         //     // let rcin: Ref<Vec<Repo>> = rreps_1;
@@ -274,11 +285,16 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     // let tags_displayer: IdView<BoxView<SelectView>> = OnEventView()
     let tags_displayer = OnEventView::new(
         SelectView::new()
-            // .with_all(selectify_strings(&safe_fake_tags))
             .with_all(selectify_rc_things(&globals_rc.repo_tags, |t| {
                 (t.name.clone(), t)
             }))
-            // .with_all(selectify_strings(fake_tags))
+            // .with_all(selectify_strings(
+            //     &RefCell::borrow(&*mut_globals)
+            //         .tags
+            //         .iter()
+            //         .map(|t| t.name.clone())
+            //         .collect(),
+            // ))
             // .item("hey", 4)
             .with_id("tag-display")
             .min_width(20)
