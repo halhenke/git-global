@@ -244,11 +244,12 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     // let rreps_1 = Rc::clone(&rreps);
     // let mut rcur2 = Rc::clone(&rcur);
     // let repo_selector: SelectView<Repo> = SelectView::new()
-    let rrrr = selectify_rc_things(&globals_rc.repos, |r| (r.path.clone(), r));
     let repo_selector = SelectView::new()
         // .with_all(selectify_repos(rreps.clone()))
-        // .with_all(selectify_rc_things(globals_rc.repos))
-        .with_all(selectify_repos(&globals_rc.repos))
+        .with_all(selectify_rc_things(&globals_rc.repos, |r| {
+            (r.path.clone(), r)
+        }))
+        // .with_all(selectify_repos(&globals_rc.repos))
         // .with_all(selectify_things((*mut_globals).borrow().repos))
         // .on_select(move |s: &mut Cursive, ss: &Repo| {
         //     // let rcin: Ref<Vec<Repo>> = rreps_1.deref().borrow();
