@@ -5,16 +5,20 @@
 
 #[macro_export]
 macro_rules! rc_borr {
-    ($e: ident) => {
+    ($e:ident) => {
+        // ($a:tt $e:ident) => {
+        // ($a:tt $e:ident) => {
+        // ($($e:tt)*) => {
+        // ($e:ident) => {
         // use std::cell::{RefCell, RefMut};
         // use std::rc::Rc;
         // use std::ops::{Deref, DerefMut};
 
         // equiv to:
         // RefCell::borrow_mut(&$e)
-        $e
-            .deref()
-            .borrow_mut()
+
+        $e.deref().borrow_mut()
+        // $($e)*.deref().borrow_mut()
     };
 }
 #[macro_export]
