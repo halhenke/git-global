@@ -134,23 +134,17 @@ fn selectify_repos(repos: &RcVecRepo) -> Vec<(String, Repo)> {
 
 /// General selectifier for RC types
 fn selectify_rc_things<R>(
-    // fn selectify_rc_things<V: IntoIterator>(
     things: &Rc<RefCell<&Vec<R>>>,
+    map_fn: impl Fn(R) -> (String, R), // note: This gives a Sized error when used with `dyn` instead of `impl`
 ) -> Vec<(String, R)>
 where
-    // std::vec::Vec<(std::string::String, V)>: std::iter::FromIterator<(
-    //     std::string::String,
-    //     // <V as Repo>,
-    //     // <V as std::iter::IntoIterator>::Item,
-    // )>,
     R: Clone,
 {
     comp_print!("HEY============");
     return RefCell::borrow_mut(&things)
         .clone()
         .into_iter()
-        .map(|r| (String::from("fe"), r))
-        // .map(|r| (r.path.clone(), r))
+        .map(map_fn)
         .collect();
     // let strs: Vec<String> = RefCell::borrow_mut(things.deref())
     //     .iter()
@@ -250,7 +244,8 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     // let rreps_1 = Rc::clone(&rreps);
     // let mut rcur2 = Rc::clone(&rcur);
     // let repo_selector: SelectView<Repo> = SelectView::new()
-    let rrrr = selectify_rc_things(&globals_rc.repos);
+    let rrrr =
+        selectify_rc_things(&globals_rc.repos, |r| (String::from("fe"), r));
     let repo_selector = SelectView::new()
         // .with_all(selectify_repos(rreps.clone()))
         // .with_all(selectify_rc_things(globals_rc.repos))
