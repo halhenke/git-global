@@ -283,7 +283,14 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     // let mut rcur2 = Rc::clone(&rcur);
     // let repo_selector: SelectView<Repo> = SelectView::new()
 
+    // REPO SELECTOR
     let rs_tags = Rc::clone(&globals_rc.repo_tags);
+    let rs_repo = Rc::clone(&globals_rc.current_repo);
+    // TAGS DISPLAY
+    let td_repo = Rc::clone(&globals_rc.current_repo);
+    // TAGS_POOL
+    let tp_repo = Rc::clone(&globals_rc.current_repo);
+    let tp_tags = Rc::clone(&globals_rc.repo_tags);
 
     let repo_selector = SelectView::new()
         .with_all(selectify_rc_things(&globals_rc.repos, |r| {
@@ -304,6 +311,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
         .on_select(move |s: &mut Cursive, ss: &Repo| {
             // let new_tags = Rc::clone(&globals_rc.repo_tags);
             (*rs_tags).replace(ss.tags.clone());
+            (*rs_repo).replace(ss.clone());
             //     // let rcin: Ref<Vec<Repo>> = rreps_1.deref().borrow();
             //     // let rcin: Ref<Vec<Repo>> = rreps_1;
             //     let ss_real1 = (*rreps_1).borrow();
@@ -343,16 +351,16 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     )
     .on_event(Event::Key(Key::Esc), |s| {
         s.focus_id("repo-field").expect("...")
+    })
+    .on_event(Event::Key(Key::Backspace), move |s| {
+        let mut this: ViewRef<SelectView> = s.find_id("tag-display").unwrap();
+        //     // this.clear();
+        //     if let Some(id) = this.selected_id() {
+        //         let name = this.selection().unwrap();
+        //         let cb = this.remove_item(id);
+        //         cb(s);
+        //     }
     });
-    // .on_event(Event::Key(Key::Backspace), move |s| {
-    //     let mut this: ViewRef<SelectView> = s.find_id("tag-display").unwrap();
-    //     // this.clear();
-    //     if let Some(id) = this.selected_id() {
-    //         let name = this.selection().unwrap();
-    //         let cb = this.remove_item(id);
-    //         cb(s);
-    //     }
-    // });
     // let ct = selectify_rc_tags(&config_tags.clone());
     // let mut rcur1 = Rc::clone(&rcur);
     // let mut rcur1 = rcur.clone();
@@ -367,11 +375,16 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
         .with_all(selectify_things_two(fake_more_tags, |t| {
             (t.name.clone(), t)
         }))
-        // .on_submit(move |s: &mut Cursive, ss: &String| {
-        //     // updated_display_tags(s, &((*rcur1).borrow().deref()))
-        //     updated_display_tags(s, &fuckRepo)
-        //     // updated_display_tags(s, &(**c3po));
-        // })
+        .on_submit(move |s: &mut Cursive, ss: &RepoTag| {
+            (*tp_repo).replace_with(|rt| {
+                rt.tags.push(ss.clone());
+                rt.clone()
+            });
+
+            //     // updated_display_tags(s, &((*rcur1).borrow().deref()))
+            //     updated_display_tags(s, &fuckRepo)
+            //     // updated_display_tags(s, &(**c3po));
+        })
         .with_id("tag-pool");
 
     // Main Window
