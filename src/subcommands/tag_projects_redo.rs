@@ -31,6 +31,7 @@ type RcRepo<'a> = Rc<RefCell<&'a Repo>>;
 type RcRepoTag<'a> = Rc<RefCell<&'a RepoTag>>;
 type RcVecRepoTag<'a> = Rc<RefCell<&'a Vec<RepoTag>>>;
 type RcVecRepo<'a> = Rc<RefCell<&'a Vec<Repo>>>;
+type RcRef<V> = Rc<RefCell<V>>;
 // type RcRepo = Rc<RefCell<Repo>>;
 // type RcRepoTag = Rc<RefCell<RepoTag>>;
 // type RcVecRepoTag = Rc<RefCell<Vec<RepoTag>>>;
@@ -131,6 +132,25 @@ fn selectify_repos(repos: RcVecRepo) -> Vec<(String, Repo)> {
         .collect();
 }
 
+/// General selectifier for RC types
+fn selectify_rc_things<V: IntoIterator>(things: RcRef<&V>) -> Vec<(String, V)>
+where
+    std::vec::Vec<(std::string::String, V)>: std::iter::FromIterator<(
+        std::string::String,
+        // V,
+        <V as std::iter::IntoIterator>::Item,
+    )>,
+    V: Clone,
+{
+    comp_print!("HEY============");
+    return RefCell::borrow_mut(&things)
+        .clone()
+        .into_iter()
+        .map(|r| (String::from("fe"), r))
+        // .map(|r| (r.path.clone(), r))
+        .collect();
+}
+
 fn selectify_things<T>(things: Vec<&T>) -> Vec<(String, &T)>
 where
     T: std::fmt::Debug,
@@ -222,8 +242,10 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     // let rreps_1 = Rc::clone(&rreps);
     // let mut rcur2 = Rc::clone(&rcur);
     // let repo_selector: SelectView<Repo> = SelectView::new()
+    let rrrr = selectify_rc_things(globals_rc.repos);
     let repo_selector = SelectView::new()
         // .with_all(selectify_repos(rreps.clone()))
+        // .with_all(selectify_rc_things(globals_rc.repos))
         .with_all(selectify_repos(globals_rc.repos))
         // .with_all(selectify_things((*mut_globals).borrow().repos))
         // .on_select(move |s: &mut Cursive, ss: &Repo| {

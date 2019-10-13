@@ -28,6 +28,12 @@ macro_rules! rcref {
     };
 }
 
+macro_rules! comp_print {
+    ($e:expr) => {
+        println!("{:#?}", $e);
+    };
+}
+
 // macro_rules! mkHash {
 //     ( $e:ident, $( $s:expr ),* ) => (
 
