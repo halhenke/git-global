@@ -27,15 +27,15 @@ type RMut = Rc<RefCell<TextContent>>;
 type RcResult = Rc<GitGlobalResult>;
 type RcRcResult = Rc<RefCell<GitGlobalResult>>;
 
-type RcRepo<'a> = Rc<RefCell<&'a Repo>>;
-type RcRepoTag<'a> = Rc<RefCell<&'a RepoTag>>;
-type RcVecRepoTag<'a> = Rc<RefCell<&'a Vec<RepoTag>>>;
-type RcVecRepo<'a> = Rc<RefCell<&'a Vec<Repo>>>;
+// type RcRepo<'a> = Rc<RefCell<&'a Repo>>;
+// type RcRepoTag<'a> = Rc<RefCell<&'a RepoTag>>;
+// type RcVecRepoTag<'a> = Rc<RefCell<&'a Vec<RepoTag>>>;
+// type RcVecRepo<'a> = Rc<RefCell<&'a Vec<Repo>>>;
 type RcRef<V> = Rc<RefCell<V>>;
-// type RcRepo = Rc<RefCell<Repo>>;
-// type RcRepoTag = Rc<RefCell<RepoTag>>;
-// type RcVecRepoTag = Rc<RefCell<Vec<RepoTag>>>;
-// type RcVecRepo = Rc<RefCell<Vec<Repo>>>;
+type RcRepo = Rc<RefCell<Repo>>;
+type RcRepoTag = Rc<RefCell<RepoTag>>;
+type RcVecRepoTag = Rc<RefCell<Vec<RepoTag>>>;
+type RcVecRepo = Rc<RefCell<Vec<Repo>>>;
 
 /// Not sure if I use this here
 #[derive(PartialEq, Eq, Clone, Debug)]
@@ -67,23 +67,23 @@ impl TagStatus {
 }
 
 #[derive(PartialEq, Eq, Clone, Debug)]
-struct TagStatusRC<'a> {
-    // struct TagStatusRC<'a> {
-    repos: RcVecRepo<'a>,
-    tags: RcVecRepoTag<'a>,
-    current_repo: RcRepo<'a>,
-    // current_repo: &'a Repo<'a>,
-    repo_tags: RcVecRepoTag<'a>,
+struct TagStatusRC {
+    // struct TagStatusRC {
+    repos: RcVecRepo,
+    tags: RcVecRepoTag,
+    current_repo: RcRepo,
+    // current_repo: &'a Repo,
+    repo_tags: RcVecRepoTag,
 }
 
-impl TagStatusRC<'_> {
-    pub fn new_from_rc<'a>(
-        repos: RcVecRepo<'a>,
-        tags: RcVecRepoTag<'a>,
-        current_repo: RcRepo<'a>,
+impl TagStatusRC {
+    pub fn new_from_rc(
+        repos: RcVecRepo,
+        tags: RcVecRepoTag,
+        current_repo: RcRepo,
         // current_repo: &'a Repo,
-        repo_tags: RcVecRepoTag<'a>,
-    ) -> TagStatusRC<'a> {
+        repo_tags: RcVecRepoTag,
+    ) -> TagStatusRC {
         TagStatusRC {
             repos: repos,
             tags,
@@ -93,6 +93,23 @@ impl TagStatusRC<'_> {
         }
     }
 }
+// impl TagStatusRC<'_> {
+//     pub fn new_from_rc<'a>(
+//         repos: RcVecRepo<'a>,
+//         tags: RcVecRepoTag<'a>,
+//         current_repo: RcRepo<'a>,
+//         // current_repo: &'a Repo,
+//         repo_tags: RcVecRepoTag<'a>,
+//     ) -> TagStatusRC<'a> {
+//         TagStatusRC {
+//             repos: repos,
+//             tags,
+//             current_repo,
+//             // current_repo: &repos[current_repo],
+//             repo_tags,
+//         }
+//     }
+// }
 
 pub fn repo_2_name<'a>(s: &'a str) -> &'a str {
     s.rsplit("/").collect::<Vec<&str>>().first().unwrap()
@@ -136,7 +153,7 @@ fn selectify_repos(repos: &RcVecRepo) -> Vec<(String, Repo)> {
 
 /// General selectifier for RC types
 fn selectify_rc_things<R>(
-    things: &Rc<RefCell<&Vec<R>>>,
+    things: &Rc<RefCell<Vec<R>>>,
     map_fn: impl Fn(R) -> (String, R), // note: This gives a Sized error when used with `dyn` instead of `impl`
 ) -> Vec<(String, R)>
 where
@@ -155,7 +172,21 @@ where
     // return strs.into_iter().zip(things.into_iter()).collect();
 }
 
-fn selectify_things<T>(things: Vec<&T>) -> Vec<(String, &T)>
+fn selectify_things_two<T>(
+    things: Vec<T>,
+    map_fn: impl Fn(T) -> (String, T),
+) -> Vec<(String, T)>
+where
+    T: std::fmt::Debug,
+{
+    // let strs: Vec<String> = things.into_iter().map(map_fn).collect();
+    let strs = things.into_iter().map(map_fn).collect();
+    // let strs: Vec<String> = things.iter().map(|f| format!("{:?}", f)).collect();
+    // return strs.into_iter().zip(things.into_iter()).collect();
+    return strs;
+}
+
+fn selectify_things<T>(things: Vec<T>) -> Vec<(String, T)>
 where
     T: std::fmt::Debug,
 {
@@ -192,6 +223,11 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
         .into_iter()
         .map(|&t| RepoTag::new(t))
         .collect();
+    let fake_more_tags = ["haskell", "ml", "rust", "apple", "web dev"]
+        .to_owned()
+        .into_iter()
+        .map(|&t| RepoTag::new(t))
+        .collect();
     // .map(RefCell::new) // note: theres no need for mutable tags
     // .map(Rc::new)
     // .collect();
@@ -209,10 +245,10 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     // let mut_globals = Rc::new(RefCell::new(globals));
 
     let globals_rc = TagStatusRC::new_from_rc(
-        Rc::new(RefCell::new(&repos)),
-        Rc::new(RefCell::new(&all_tags)),
-        Rc::new(RefCell::new(&initial_repo)),
-        Rc::new(RefCell::new(&initial_tags)),
+        Rc::new(RefCell::new(repos)),
+        Rc::new(RefCell::new(all_tags)),
+        Rc::new(RefCell::new(initial_repo)),
+        Rc::new(RefCell::new(initial_tags)),
         // rcref!(repos),
         // rcref!(all_tags),
         // rcref!(initial_repo),
@@ -246,6 +282,9 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     // let rreps_1 = Rc::clone(&rreps);
     // let mut rcur2 = Rc::clone(&rcur);
     // let repo_selector: SelectView<Repo> = SelectView::new()
+
+    let rs_tags = Rc::clone(&globals_rc.repo_tags);
+
     let repo_selector = SelectView::new()
         .with_all(selectify_rc_things(&globals_rc.repos, |r| {
             (r.path.clone(), r)
@@ -262,16 +301,19 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
         //         // (*mut_globals).borrow().clone().repos.iter().collect(),
         //     },
         // ))
-        // .on_select(move |s: &mut Cursive, ss: &Repo| {
-        //     // let rcin: Ref<Vec<Repo>> = rreps_1.deref().borrow();
-        //     // let rcin: Ref<Vec<Repo>> = rreps_1;
-        //     let ss_real1 = (*rreps_1).borrow();
-        //     let ss_real = ss_real1
-        //         .iter()
-        //         // .position(|x| x.path == ss.path)
-        //         .find(|x| x.path == ss.path)
-        //         .unwrap();
-        // })
+        .on_select(move |s: &mut Cursive, ss: &Repo| {
+            // let new_tags = Rc::clone(&globals_rc.repo_tags);
+            let tags = ss.tags.clone();
+            (*rs_tags).replace(tags);
+            //     // let rcin: Ref<Vec<Repo>> = rreps_1.deref().borrow();
+            //     // let rcin: Ref<Vec<Repo>> = rreps_1;
+            //     let ss_real1 = (*rreps_1).borrow();
+            //     let ss_real = ss_real1
+            //         .iter()
+            //         // .position(|x| x.path == ss.path)
+            //         .find(|x| x.path == ss.path)
+            //         .unwrap();
+        })
         // .on_submit(|s: &mut Cursive, r: &Repo| {
         //     // Lets focus on these tags for now
         //     s.focus_id("tag-pool").expect("...")
@@ -315,12 +357,17 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     // let ct = selectify_rc_tags(&config_tags.clone());
     // let mut rcur1 = Rc::clone(&rcur);
     // let mut rcur1 = rcur.clone();
-    let fuckRepo = Repo {
-        path: "cock".to_string(),
-        tags: vec![],
-    };
-    let tags_pool: IdView<SelectView> = SelectView::new()
+    // let fuckRepo = Repo {
+    //     path: "cock".to_string(),
+    //     tags: vec![],
+    // };
+    // let taggs: Vec<(String, RepoTag)> =
+    //     selectify_things_two(fake_more_tags, |t| (t.name.clone(), t));
+    let tags_pool: IdView<_> = SelectView::new()
         // .with_all(selectify_strings(&ct))
+        .with_all(selectify_things_two(fake_more_tags, |t| {
+            (t.name.clone(), t)
+        }))
         // .on_submit(move |s: &mut Cursive, ss: &String| {
         //     // updated_display_tags(s, &((*rcur1).borrow().deref()))
         //     updated_display_tags(s, &fuckRepo)
