@@ -14,6 +14,7 @@ use self::cursive::views::{
     TextContent, ViewRef,
 };
 use self::cursive::Cursive;
+use self::cursive::{Printer, XY};
 use repo::errors::Result as WeirdResult;
 use repo::{
     save_repos_and_tags, GitGlobalConfig, GitGlobalResult, Repo, RepoTag,
@@ -159,7 +160,6 @@ fn selectify_rc_things<R>(
 where
     R: Clone,
 {
-    comp_print!("HEY============");
     return RefCell::borrow_mut(&things)
         .clone()
         .into_iter()
@@ -269,7 +269,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     trace!("go");
 
     let mut siv = Cursive::default();
-    siv.load_theme_file("assets/style.toml").unwrap();
+    let main_theme = siv.load_theme_file("assets/style.toml").unwrap();
 
     // https://github.com/gyscos/Cursive/issues/179
 
@@ -299,12 +299,6 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
         // .with_all(selectify_things(
         //     // RefCell::borrow(&*mut_globals).repos.iter().collect(),
         //     {
-        //         // let tmp = (*mut_globals).borrow().::<TagStatus>::clone();
-        //         // let tmp = (*mut_globals).borrow().::<TagStatus>::clone();
-        //         // const tmp: TagStatus = (*mut_globals).borrow().clone();
-        //         // tmp.repos.iter().collect()
-        //         // TagStatus::clone(&tmp).repos.iter().collect()
-        //         // tmp.clone::<TagStatus>().repos.iter().collect()
         //         // (*mut_globals).borrow().clone().repos.iter().collect(),
         //     },
         // ))
@@ -332,8 +326,9 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
         .max_height(10)
         .with_id("repo-field");
     // let tags_displayer: IdView<BoxView<SelectView>> = OnEventView()
-    let tags_displayer = OnEventView::new(
+    let mut tags_displayer = OnEventView::new(
         SelectView::new()
+            // .with_all_str(vec!["Gladly", "my", "dear"])
             .with_all(selectify_rc_things(&globals_rc.repo_tags, |t| {
                 (t.name.clone(), t)
             }))
@@ -361,15 +356,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
         //         cb(s);
         //     }
     });
-    // let ct = selectify_rc_tags(&config_tags.clone());
-    // let mut rcur1 = Rc::clone(&rcur);
-    // let mut rcur1 = rcur.clone();
-    // let fuckRepo = Repo {
-    //     path: "cock".to_string(),
-    //     tags: vec![],
-    // };
-    // let taggs: Vec<(String, RepoTag)> =
-    //     selectify_things_two(fake_more_tags, |t| (t.name.clone(), t));
+
     let tags_pool: IdView<_> = SelectView::new()
         // .with_all(selectify_strings(&ct))
         .with_all(selectify_things_two(fake_more_tags, |t| {
@@ -380,8 +367,22 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
                 rt.tags.push(ss.clone());
                 rt.clone()
             });
-
-            //     // updated_display_tags(s, &((*rcur1).borrow().deref()))
+            (*tp_tags).replace_with(|rt| {
+                rt.push(ss.clone());
+                rt.clone()
+            });
+            println!("And we print");
+            debug_write_file(
+                // vec![String::from("add Repo: "), r.path, "\n"],
+                vec!["add Tag: ", &ss.name, "\n"]
+                    // vec!["We printed this", "and this"]
+                    .into_iter()
+                    .map(String::from)
+                    .collect(),
+                "tmp_out",
+            );
+            updated_display_tags(s, &((*tp_repo).borrow().deref()))
+            // updated_display_tags(s, &((*rcur1).borrow().deref()))
             //     updated_display_tags(s, &fuckRepo)
             //     // updated_display_tags(s, &(**c3po));
         })
@@ -420,7 +421,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     );
     // #[rock]
     siv.add_global_callback('q', move |s1| {
-        // s1.quit();
+        s1.quit();
         trace!("agg1");
         // let more_reps = rreps.clone();
         // let more_tags = config_tags.clone();
@@ -430,80 +431,100 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     siv.run();
     debug!("ADD TAGS: called - 33");
 
-    // debug!("Current Total Tags {:?}", uc.get_cached_results().all_tags());
-    // debug!("Current Total Tags {:?}", ttags.deref().borrow());
-
-    // println!("new tags is {:?}", &fake_tags);
     fn updated_display_tags(siv: &mut Cursive, r: &Repo) {
+        println!("updated_display_tags called");
+        debug_write_file(
+            // vec![String::from("add Repo: "), r.path, "\n"],
+            vec!["add Repo: ", &r.path, "\n"]
+                // vec!["And then i went to", "the beach"]
+                .into_iter()
+                .map(String::from)
+                .collect(),
+            "tmp_out",
+        );
+
         // siv.call_on_id("tag-pool", |v: &mut SelectView| {
         let found = siv.call_on_id("tag-display", |v: &mut SelectView| {
             // &siv.focus_id("tag-display");
             // v.select_down(1);
             v.clear();
-            v.add_all(selectify_strings(unsafe {
-                // &(*cur)
-                &r
-                    // .as_ref()
-                    .tags
-                    .clone()
-                    .into_iter()
-                    .map(|x| x.name)
-                    .collect::<Vec<String>>()
-            }));
+            let tags = &r
+                .get_tags()
+                .into_iter()
+                .map(String::from)
+                .collect::<Vec<String>>();
+            v.add_all_str(tags);
+            // v.add_all_str(
+            //     vec!["ooga", "booga"]
+            //         .into_iter()
+            //         .map(String::from)
+            //         .collect::<Vec<String>>(),
+            // );
+            // v.add_all(selectify_strings(unsafe {
+            //     // &(*cur)
+            //     &r
+            //         // .as_ref()
+            //         .tags
+            //         .clone()
+            //         .into_iter()
+            //         .map(|x| x.name)
+            //         .collect::<Vec<String>>()
+            // }));
         });
     }
 
     // fn toggle_bg(sel: SelectView) {
-    //     let xy = XY {
-    //         x: 0,
-    //         y: 0,
-    //     };
+    //     let xy = XY { x: 0, y: 0 };
     //     let printer = Printer {
-    //         size: sel.required_size(xy)
+    //         offset: Vec2::new(0, 0),
+    //         content_offset: Vec2::new(0, 0),
+    //         enabled: true,
+    //         output_size: sel.required_size(xy),
+    //         focused: false,
+    //         size: sel.required_size(xy),
+    //         theme: &main_theme,
     //     };
-    //     sel.draw(printer.with_color(ColorStyle::primary, || {
-    //         printer.print()
-    //     }));
+    //     sel.draw(printer.with_color(ColorStyle::primary, || printer.print()));
     // }
 
-    //     /// Final behaviour - for some reason this only works inside this block
-    //     fn save_repos_and_quit(
-    //         s: &mut Cursive,
-    //         reps: RcVecRepo,
-    //         tags: RcVecRepoTag,
-    //     ) {
-    //         // fn save_repos_and_quit(s: &mut Cursive, reps: RcVecRepo, tags: RcVecRepoTag, repsmo: *const Vec<Repo>) {
+    /// Final behaviour - for some reason this only works inside this block
+    fn save_repos_and_quit(
+        s: &mut Cursive,
+        reps: RcVecRepo,
+        tags: RcVecRepoTag,
+    ) {
+        // fn save_repos_and_quit(s: &mut Cursive, reps: RcVecRepo, tags: RcVecRepoTag, repsmo: *const Vec<Repo>) {
 
-    //         trace!("srq1: {}", Rc::strong_count(&reps));
-    //         // let ireps = Rc::try_unwrap(reps).expect("we have the repos");
-    //         // let itags = Rc::try_unwrap(tags).expect("we have the tags");
-    //         trace!("srq2");
+        trace!("srq1: {}", Rc::strong_count(&reps));
+        // let ireps = Rc::try_unwrap(reps).expect("we have the repos");
+        // let itags = Rc::try_unwrap(tags).expect("we have the tags");
+        trace!("srq2");
 
-    //         // let tmp = &ireps.clone();
-    //         trace!("srq3");
-    //         let irepst = RefCell::borrow(&reps);
-    //         let ireps = irepst.deref();
-    //         let itagst = RefCell::borrow(&tags);
-    //         // borrow(&tags);
-    //         let itags = itagst.deref();
-    //         // save_repos_and_tags(ireps.into_inner(), itags.into_inner());
-    //         save_repos_and_tags(ireps.clone(), itags.clone());
+        // let tmp = &ireps.clone();
+        trace!("srq3");
+        let irepst = RefCell::borrow(&reps);
+        let ireps = irepst.deref();
+        let itagst = RefCell::borrow(&tags);
+        // borrow(&tags);
+        let itags = itagst.deref();
+        // save_repos_and_tags(ireps.into_inner(), itags.into_inner());
+        save_repos_and_tags(ireps.clone(), itags.clone());
 
-    //         // s.quit();
-    //         s.cb_sink()
-    //             .send(Box::new(|siv: &mut Cursive| siv.quit()))
-    //             .expect("thread send failed");
-    //     }
+        // s.quit();
+        s.cb_sink()
+            .send(Box::new(|siv: &mut Cursive| siv.quit()))
+            .expect("thread send failed");
+    }
 
     Ok(GitGlobalResult::new(&vec![]))
 }
 
-// fn debug_write_file(messages: Vec<String>, log_file: &str) {
-//     let strs_join: String = messages.as_slice().join("\n");
-//     let file = OpenOptions::new()
-//         .append(true)
-//         .create(true)
-//         .open("tmp_out")
-//         .unwrap()
-//         .write_all(strs_join.as_ref());
-// }
+fn debug_write_file(messages: Vec<String>, log_file: &str) {
+    let strs_join: String = messages.as_slice().join("\n");
+    let file = OpenOptions::new()
+        .append(true)
+        .create(true)
+        .open("tmp_out")
+        .unwrap()
+        .write_all(strs_join.as_ref());
+}
