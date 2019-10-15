@@ -230,6 +230,7 @@ where
 
 pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     // note a pointer
+    // let debug_buffer = vec![];
     let uc = GitGlobalConfig::new();
     let mut repos: Vec<Repo> = uc.get_cached_repos();
     let results = uc.get_cached_results();
@@ -318,7 +319,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     let tp_repo = Rc::clone(&globals_rc.current_repo);
     let tp_tags = Rc::clone(&globals_rc.repo_tags);
 
-    let repo_selector = SelectView::new()
+    let repo_selector_inner: SelectView<Repo> = SelectView::new()
         .with_all(selectify_rc_things(&globals_rc.repos, |r| {
             (r.path.clone(), r)
         }))
@@ -332,77 +333,64 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
             // let new_tags = Rc::clone(&globals_rc.repo_tags);
             (*rs_tags).replace(ss.tags.clone());
             (*rs_repo).replace(ss.clone());
-            &s.call_on_id("tag-display", |v: &mut SelectView| {
-                &v.clear();
-                // &v.add_item_str("WTF?");
-                let stag: Vec<(String, RepoTag)> =
-                    selectify_rc_things(&rs_tags, |t| (t.name.clone(), t));
-                v.add_all(
-                    vec![(
-                        RepoTag::from("hola".to_string()),
-                        String::from("hola"),
-                    )],
-                    // vec![("hola", RepoTag::from("hola".to_string()))],
-                    // note: THIS MAKES NO SENSE!
-                    // selectify_rc_things_backwards(&rs_tags, |t| {
-                    //     (t.clone(), (&t).name.clone())
-                    // }),
-                    // <stag as Vec<(String, RepoTag)>,
-                    // selectify_rc_things(&rs_tags, |t| (t.name.clone(), t)),
-                );
-            });
-            //     // let rcin: Ref<Vec<Repo>> = rreps_1.deref().borrow();
-            //     // let rcin: Ref<Vec<Repo>> = rreps_1;
-            //     let ss_real1 = (*rreps_1).borrow();
-            //     let ss_real = ss_real1
-            //         .iter()
-            //         // .position(|x| x.path == ss.path)
-            //         .find(|x| x.path == ss.path)
-            //         .unwrap();
-        })
-        // .on_submit(|s: &mut Cursive, r: &Repo| {
-        //     // Lets focus on these tags for now
-        //     s.focus_id("tag-pool").expect("...")
-        //     // s.focus_id("tag-display").expect("...")
-        // })
-        // .item("hey", 4)
-        .scrollable()
-        .min_width(20)
-        .max_height(10)
-        .with_id("repo-field");
+            let mut dd: ViewRef<SelectView<RepoTag>> =
+                s.find_id("tag-display").unwrap();
+            &dd.clear();
+            &dd.add_all(selectify_rc_things(&rs_tags, |t| (t.name.clone(), t)));
+            // &dd.insert_item(
+            //     0,
+            //     String::from("hola"),
+            //     // "fuck".to_string(),
+            //     RepoTag::from("hola".to_string()),
+            // );
+            // let dd: &IdView<SelectView<RepoTag>> =
+            //     &**(&s.find_id("tag-display").unwrap());
+            // let ddd = views::IdView::<V>::get_mut
+            // let ddd = dd.borrow_mut();
+            // dd.wtf();
+        });
+    // .on_submit(|s: &mut Cursive, r: &Repo| {
+    //     // Lets focus on these tags for now
+    //     s.focus_id("tag-pool").expect("...")
+    //     // s.focus_id("tag-display").expect("...")
+    // })
+    // .item("hey", 4)
+    let repo_selector_id = repo_selector_inner.with_id("repo-field");
+    let repo_selector =
+        repo_selector_id.scrollable().min_width(20).max_height(10);
     // let tags_displayer: IdView<BoxView<SelectView>> = OnEventView()
-    let mut tags_displayer = OnEventView::new(
-        SelectView::new()
-            // .with_all_str(vec!["Gladly", "my", "dear"])
-            .with_all(selectify_rc_things(&globals_rc.repo_tags, |t| {
-                (t.name.clone(), t)
-            }))
-            // .with_all(selectify_strings(
-            //     &RefCell::borrow(&*mut_globals)
-            //         .tags
-            //         .iter()
-            //         .map(|t| t.name.clone())
-            //         .collect(),
-            // ))
-            // .item("hey", 4)
-            .with_id("tag-display")
-            .min_width(20)
-            .max_height(10),
-    )
-    .on_event(Event::Key(Key::Esc), |s| {
-        s.focus_id("repo-field").expect("...")
-    })
-    .on_event(Event::Key(Key::Backspace), move |s| {
-        let mut this: ViewRef<SelectView> = s.find_id("tag-display").unwrap();
-        //     // this.clear();
-        //     if let Some(id) = this.selected_id() {
-        //         let name = this.selection().unwrap();
-        //         let cb = this.remove_item(id);
-        //         cb(s);
-        //     }
-    });
+    // let tags_displayer: SelectView<RepoTag> = OnEventView::new(
+    let tags_displayer_inner: SelectView<RepoTag> = SelectView::new()
+        // .with_all_str(vec!["Gladly", "my", "dear"])
+        .with_all(selectify_rc_things(&globals_rc.repo_tags, |t| {
+            (t.name.clone(), t)
+        }));
+    // .with_all(selectify_strings(
+    //     &RefCell::borrow(&*mut_globals)
+    //         .tags
+    //         .iter()
+    //         .map(|t| t.name.clone())
+    //         .collect(),
+    // ))
+    // .item("hey", 4)
+    let tags_displayer_id = tags_displayer_inner.with_id("tag-display");
+    let tags_displayer_outer = tags_displayer_id.min_width(20).max_height(10);
+    let tags_displayer = OnEventView::new(tags_displayer_outer)
+        .on_event(Event::Key(Key::Esc), |s| {
+            s.focus_id("repo-field").expect("...")
+        })
+        .on_event(Event::Key(Key::Backspace), move |s| {
+            let mut this: ViewRef<SelectView> =
+                s.find_id("tag-display").unwrap();
+            //     // this.clear();
+            //     if let Some(id) = this.selected_id() {
+            //         let name = this.selection().unwrap();
+            //         let cb = this.remove_item(id);
+            //         cb(s);
+            //     }
+        });
 
-    let tags_pool: IdView<_> = SelectView::new()
+    let tags_pool_inner: SelectView<RepoTag> = SelectView::new()
         // .with_all(selectify_strings(&ct))
         .with_all(selectify_things_two(fake_more_tags, |t| {
             (t.name.clone(), t)
@@ -430,8 +418,8 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
             // updated_display_tags(s, &((*rcur1).borrow().deref()))
             //     updated_display_tags(s, &fuckRepo)
             //     // updated_display_tags(s, &(**c3po));
-        })
-        .with_id("tag-pool");
+        });
+    let tags_pool = tags_pool_inner.with_id("tag-pool");
 
     // Main Window
     siv.add_layer(
@@ -473,6 +461,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
         // save_repos_and_quit(s1, more_reps, more_tags);
         trace!("agg2");
     });
+    // debug_buffer.append_elements(["hey"]);
     siv.run();
     debug!("ADD TAGS: called - 33");
 
@@ -488,34 +477,19 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
             "tmp_out",
         );
 
-        // siv.call_on_id("tag-pool", |v: &mut SelectView| {
-        let found = siv.call_on_id("tag-display", |v: &mut SelectView| {
-            // &siv.focus_id("tag-display");
-            // v.select_down(1);
-            v.clear();
-            let tags = &r
-                .get_tags()
-                .into_iter()
-                .map(String::from)
-                .collect::<Vec<String>>();
-            v.add_all_str(tags);
-            // v.add_all_str(
-            //     vec!["ooga", "booga"]
-            //         .into_iter()
-            //         .map(String::from)
-            //         .collect::<Vec<String>>(),
-            // );
-            // v.add_all(selectify_strings(unsafe {
-            //     // &(*cur)
-            //     &r
-            //         // .as_ref()
-            //         .tags
-            //         .clone()
-            //         .into_iter()
-            //         .map(|x| x.name)
-            //         .collect::<Vec<String>>()
-            // }));
-        });
+        let mut dd: ViewRef<SelectView<RepoTag>> =
+            siv.find_id("tag-display").unwrap();
+        &dd.clear();
+        // &dd.add_all(selectify_rc_things(&rs_tags, |t| (t.name.clone(), t)));
+        // let t_tags: Vec<RepoTag> = r.get_tags();
+        let tags =
+            selectify_things_two(r.tags.clone(), |t| (t.name.clone(), t));
+        // let tags = &r
+        //     .get_tags()
+        //     .into_iter()
+        //     .map(String::from)
+        //     .collect::<Vec<String>>();
+        &dd.add_all(tags);
     }
 
     // fn toggle_bg(sel: SelectView) {
