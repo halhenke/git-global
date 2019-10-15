@@ -154,9 +154,35 @@ fn selectify_repos(repos: &RcVecRepo) -> Vec<(String, Repo)> {
 
 /// General selectifier for RC types
 fn selectify_rc_things<R>(
+    // fn selectify_rc_things<R, T>(
     things: &Rc<RefCell<Vec<R>>>,
     map_fn: impl Fn(R) -> (String, R), // note: This gives a Sized error when used with `dyn` instead of `impl`
+                                       // ) -> T
 ) -> Vec<(String, R)>
+where
+    R: Clone,
+    // T: IntoIterator<
+    //     Item = (String, R),
+    //     // IntoIter = ::std::vec::IntoIter<(String, R)>,
+    // >,
+{
+    return RefCell::borrow_mut(&things)
+        .clone()
+        .into_iter()
+        .map(map_fn)
+        // .collect::<T>();
+        .collect();
+    // let strs: Vec<String> = RefCell::borrow_mut(things.deref())
+    //     .iter()
+    //     .map(|f| format!("{:?}", f))
+    //     .collect();
+    // return strs.into_iter().zip(things.into_iter()).collect();
+}
+
+fn selectify_rc_things_backwards<R>(
+    things: &Rc<RefCell<Vec<R>>>,
+    map_fn: impl Fn(R) -> (R, String), // note: This gives a Sized error when used with `dyn` instead of `impl`
+) -> Vec<(R, String)>
 where
     R: Clone,
 {
@@ -306,6 +332,25 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
             // let new_tags = Rc::clone(&globals_rc.repo_tags);
             (*rs_tags).replace(ss.tags.clone());
             (*rs_repo).replace(ss.clone());
+            &s.call_on_id("tag-display", |v: &mut SelectView| {
+                &v.clear();
+                // &v.add_item_str("WTF?");
+                let stag: Vec<(String, RepoTag)> =
+                    selectify_rc_things(&rs_tags, |t| (t.name.clone(), t));
+                v.add_all(
+                    vec![(
+                        RepoTag::from("hola".to_string()),
+                        String::from("hola"),
+                    )],
+                    // vec![("hola", RepoTag::from("hola".to_string()))],
+                    // note: THIS MAKES NO SENSE!
+                    // selectify_rc_things_backwards(&rs_tags, |t| {
+                    //     (t.clone(), (&t).name.clone())
+                    // }),
+                    // <stag as Vec<(String, RepoTag)>,
+                    // selectify_rc_things(&rs_tags, |t| (t.name.clone(), t)),
+                );
+            });
             //     // let rcin: Ref<Vec<Repo>> = rreps_1.deref().borrow();
             //     // let rcin: Ref<Vec<Repo>> = rreps_1;
             //     let ss_real1 = (*rreps_1).borrow();
