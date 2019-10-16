@@ -38,6 +38,54 @@ type RcRepoTag = Rc<RefCell<RepoTag>>;
 type RcVecRepoTag = Rc<RefCell<Vec<RepoTag>>>;
 type RcVecRepo = Rc<RefCell<Vec<Repo>>>;
 
+#[derive(PartialEq, Eq, Clone, Debug)]
+struct LightTable {
+    repos: Vec<Repo>,
+    repo_index: i32,
+    tag_index: i32,
+}
+
+impl LightTable {
+    pub fn new(
+        repos: Vec<Repo>,
+        repo_index: i32,
+        tag_index: i32,
+    ) -> LightTable {
+        LightTable {
+            repos,
+            repo_index,
+            tag_index,
+        }
+    }
+    pub fn new_from_rc(
+        repos: Vec<Repo>,
+        repo_index: i32,
+        tag_index: i32,
+    ) -> Rc<RefCell<LightTable>> {
+        Rc::new(RefCell::new(Self::new(repos, repo_index, tag_index)))
+    }
+
+    pub fn selectify_repos(&self) -> Vec<(&str, usize)> {
+        self.repos
+            .iter()
+            .enumerate()
+            .map(|(i, r)| (r.path.as_str(), i))
+            .collect::<Vec<(&str, usize)>>()
+    }
+
+    pub fn selectify_tags(&self, index: usize) -> Vec<(&str, usize)> {
+        self.repos
+            .iter()
+            .nth(index)
+            .expect("ERROR - index requested outside of repos bounds")
+            .tags
+            .iter()
+            .enumerate()
+            .map(|(i, t)| (t.name.as_str(), i))
+            .collect::<Vec<(&str, usize)>>()
+    }
+}
+
 /// Not sure if I use this here
 #[derive(PartialEq, Eq, Clone, Debug)]
 struct TagStatus {
@@ -229,6 +277,15 @@ where
 }
 
 pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
+    let gc = GitGlobalConfig::new();
+    let mut reps: Vec<Repo> = gc.get_cached_repos();
+    let global_table = LightTable::new_from_rc(reps, 0, 0);
+    let repo_ref = Rc::clone(&global_table);
+    let repo_tag_ref = Rc::clone(&global_table);
+    let all_tags_ref = Rc::clone(&global_table);
+    // =================================================
+    //  TAKE 2
+    // =================================================
     println!("Fuck");
     debug!("Fuck");
     ic!("Fuck");
