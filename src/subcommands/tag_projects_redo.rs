@@ -10,16 +10,20 @@ use std::io::Write;
 use self::cursive::event::{Callback, Event, EventResult, Key};
 use self::cursive::traits::*;
 use self::cursive::views::{
+    DebugView, TextView,
     BoxView, EditView, IdView, LinearLayout, OnEventView, Panel, SelectView,
     TextContent, ViewRef,
 };
 use self::cursive::Cursive;
 use self::cursive::{Printer, XY};
+use self::cursive::logger;
+use self::cursive::logger::{Record, log};
 use repo::errors::Result as WeirdResult;
 use repo::{
     save_repos_and_tags, GitGlobalConfig, GitGlobalResult, Repo, RepoTag,
 };
 use std::cell::Ref;
+use std::borrow::BorrowMut;
 
 // use std::vec::IntoIter;
 use std::iter::{IntoIterator, Iterator};
@@ -43,6 +47,7 @@ struct LightTable {
     repos: Vec<Repo>,
     repo_index: usize,
     tag_index: usize,
+    tags: Vec<RepoTag>,
 }
 
 impl LightTable {
@@ -50,19 +55,22 @@ impl LightTable {
         repos: Vec<Repo>,
         repo_index: usize,
         tag_index: usize,
+        tags: Vec<RepoTag>,
     ) -> LightTable {
         LightTable {
             repos,
             repo_index,
             tag_index,
+            tags,
         }
     }
     pub fn new_from_rc(
         repos: Vec<Repo>,
         repo_index: usize,
         tag_index: usize,
+        tags: Vec<RepoTag>,
     ) -> Rc<RefCell<LightTable>> {
-        Rc::new(RefCell::new(Self::new(repos, repo_index, tag_index)))
+        Rc::new(RefCell::new(Self::new(repos, repo_index, tag_index, tags)))
     }
 
     pub fn selectify_repos(&self) -> Vec<(&str, usize)> {
@@ -115,7 +123,7 @@ impl LightTable {
             // .iter()
             .map(|(i, t)| (t.name, i))
             // .map(|(i, t)| (t.name.as_str(), i))
-            .collect::Vec<(String, usize)>()
+            .collect::<Vec<(String, usize)>>()
         // .for_each(|(i, t)| (t.name.as_str(), i))
         // .map(|(i, t)| (t, i))
         // // .clone()
@@ -320,9 +328,17 @@ where
 }
 
 pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
+    // logger::init();
+
     let gc = GitGlobalConfig::new();
     let mut reps: Vec<Repo> = gc.get_cached_repos();
-    let global_table = LightTable::new_from_rc(reps, 0, 0);
+    let mut fake_more_tags: Vec<RepoTag> =
+    ["haskell", "ml", "rust", "apple", "web dev"]
+        .to_owned()
+        .into_iter()
+        .map(|&t| RepoTag::new(t))
+        .collect();
+    let global_table = LightTable::new_from_rc(reps, 0, 0, fake_more_tags);
     let repo_ref = Rc::clone(&global_table);
     let repo_tag_ref = Rc::clone(&global_table);
     let all_tags_ref = Rc::clone(&global_table);
@@ -411,7 +427,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
 
     // https://github.com/gyscos/Cursive/issues/179
 
-    debug!("ADD TAGS: did we get here - 3");
+    // debug!("ADD TAGS: did we get here - 3");
     let mut new_tags: Vec<String> = Vec::new();
 
     // VIEWS
@@ -420,6 +436,17 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     // let rreps_1 = Rc::clone(&rreps);
     // let mut rcur2 = Rc::clone(&rcur);
     // let repo_selector: SelectView<Repo> = SelectView::new()
+
+    let error_view_inner
+     = DebugView::new();
+     let error_view_id = error_view_inner.with_id("debug-view");
+     let error_view = error_view_id
+        .max_height(20);
+
+    let text_view_inner
+     = TextView::new("Begin...");
+     let text_view_id = text_view_inner.with_id("text-view");
+     let text_view = text_view_id;
 
     // REPO SELECTOR
     let rs_tags = Rc::clone(&globals_rc.repo_tags);
@@ -552,34 +579,70 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     //         //         cb(s);
     //         //     }
     //     });
+    let extra_ref = Rc::clone(&all_tags_ref);
 
     // =================================================
     //  TAKE 2
     // =================================================
     let tags_pool_inner: SelectView<usize> = SelectView::new()
         // .with_all(selectify_strings(&ct))
-        .with_all(*(Rc::clone(&all_tags_ref)).borrow().all_tags())
+        // .with_all((*Rc::clone(&repo_ref)).borrow().selectify_repos())
+        .with_all((*Rc::clone(&all_tags_ref)).borrow().all_tags())
         .on_submit(move |s: &mut Cursive, ss: &usize| {
             // let all_tags = Rc::clone(&all_tags_ref);
             let _current_repo = (*all_tags_ref).borrow().repo_index;
-            let current_repo = (*all_tags_ref)
-                .borrow_mut()
+            let mut _light_table = (*all_tags_ref).borrow_mut();
+            let current_repo = _light_table
                 .repos
+                // .get(_current_repo)
                 .get_mut(_current_repo)
                 .expect("ERROR - repo index out of bounds");
 
-            let _current_tag = current_repo
-                .tags
-                .get(*ss)
-                .expect("ERROR - tags index out of bounds");
-            // let _current_tag = (*all_tags_ref).borrow().repos.tags.get(*ss);
-            (*all_tags_ref)
-                .borrow_mut()
-                .repos
-                .get_mut(_current_repo)
-                .expect("ERROR - repo index out of bounds")
-                .tags
-                .push(_current_tag.clone());
+            debug!("**** - current repo index {}", _current_repo);
+            debug!("**** - current repo {:#?}", current_repo);
+
+                // let dd = &s.find_id()
+            // let mut dd: ViewRef<DebugView> =
+            //     s.find_id("debug-view").unwrap();
+            // *(*dd.borrow_mut()).borrow_mut().clear();
+            // View::clear(dd);
+            // &dd.
+            let mut tt: ViewRef<TextView> =
+                s.find_id("text-view").unwrap();
+            // &tt.clear();
+            &tt.set_content(&current_repo.path);
+            // let r = Record{
+            //     level: log::Level::Info,
+            //     time: "27",
+            //     message: format!("Fuck {}", &current_repo.path)};
+            // logger::log(r);
+                // info!("Fuck {}", &current_repo.path);
+
+            // let _current_tag = current_repo
+            //     .tags
+            //     .get(*ss)
+            //     .expect("ERROR - tags index out of bounds");
+            // let _current_tags = &(*all_tags_ref).borrow().tags;
+            // let _current_tag = _current_tags.get(*ss);
+            // let _current_tag = (&_light_table).tags.get(*ss);
+            // let mut _light_table_two = (*extra_ref).borrow_mut();
+            // let _current_tag = (&_light_table_two).tags.get(*ss)
+            //     .expect("ERROR - repo index out of bounds");
+
+            // let _current_tag = (*all     _tags_ref).borrow().tags.get(*ss);
+
+            debug!("**** - current tag  index {}", *ss);
+            // debug!("**** - current tag {:#?}", _current_tag);
+
+            // current_repo.tags.push(_current_tag.unwrap().clone());
+
+            // (*all_tags_ref)
+            //     .borrow_mut()
+            //     .repos
+            //     .get_mut(_current_repo)
+            //     .expect("ERROR - repo index out of bounds")
+            //     .tags
+            //     .push(_current_tag.clone());
             // (*all_tags).borrow_mut().repos
         });
     // .on_submit(move |s: &mut Cursive, ss: &RepoTag| {
@@ -689,7 +752,13 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
                     .scrollable(), // .on_event(Event::Key::Del)::with_cb(
                                    // )
                 ),
-            ),
+            )
+            .child(
+                Panel::new(error_view)
+            )
+            .child(
+                Panel::new(text_view)
+            )
     );
     // #[rock]
     siv.add_global_callback('q', move |s1| {
