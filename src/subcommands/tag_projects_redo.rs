@@ -229,17 +229,22 @@ where
 }
 
 pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
+    println!("Fuck");
+    debug!("Fuck");
+    ic!("Fuck");
     // note a pointer
     // let debug_buffer = vec![];
     let uc = GitGlobalConfig::new();
     let mut repos: Vec<Repo> = uc.get_cached_repos();
     let results = uc.get_cached_results();
+    println!("Fuck 2");
     let existing_tags: Vec<RepoTag> =
         results.all_tags().into_iter().cloned().collect();
     // let fake_tags: dyn IntoIterator<
     //     Item = &str,
     //     IntoIter = std::vec::Vec<String>,
     // > = ["haskell", "ml", "rust"].to_owned().into_iter();
+    println!("Fuck 3");
     let safe_fake_tags: Vec<String> = vec!["haskell", "ml", "rust"]
         .iter()
         .map(|&s| String::from(s))
@@ -255,6 +260,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
         .into_iter()
         .map(|&t| RepoTag::new(t))
         .collect();
+    ic!(4);
     // .map(RefCell::new) // note: theres no need for mutable tags
     // .map(Rc::new)
     // .collect();
@@ -265,11 +271,15 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
             existing_tags
         }
     };
+    ic!(5);
+    debug!("Before initial repo");
     let initial_repo = repos[0].clone();
+    debug!("After initial repo");
     let initial_tags = initial_repo.tags.clone();
     // let mut globals =
     //     TagStatus::new_from_rc(repos, all_tags, initial_repo, initial_tags);
     // let mut_globals = Rc::new(RefCell::new(globals));
+    ic!(6);
 
     let globals_rc = TagStatusRC::new_from_rc(
         Rc::new(RefCell::new(repos)),
@@ -332,7 +342,10 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
         .on_select(move |s: &mut Cursive, ss: &Repo| {
             // let new_tags = Rc::clone(&globals_rc.repo_tags);
             (*rs_tags).replace(ss.tags.clone());
+            // *rs_tags.borrow_mut() = ss.tags;
             (*rs_repo).replace(ss.clone());
+            // *rs_repo.borrow_mut() = ss;
+
             let mut dd: ViewRef<SelectView<RepoTag>> =
                 s.find_id("tag-display").unwrap();
             &dd.clear();
@@ -396,21 +409,32 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
             (t.name.clone(), t)
         }))
         .on_submit(move |s: &mut Cursive, ss: &RepoTag| {
-            (*tp_repo).replace_with(|rt| {
-                rt.tags.push(ss.clone());
-                rt.clone()
-            });
-            (*tp_tags).replace_with(|rt| {
-                rt.push(ss.clone());
-                rt.clone()
-            });
+            // (*tp_repo).replace_with(|rt| {
+            //     rt.tags.push(ss.clone());
+            //     rt.clone()
+            // });
+            (*tp_repo).borrow_mut().tags.push(ss.clone());
+            (*tp_tags).borrow_mut().push(ss.clone());
+            // (*tp_tags).replace_with(|rt| {
+            //     rt.push(ss.clone());
+            //     rt.clone()
+            // });
             println!("And we print");
+            let _out: Vec<String> = (*tp_tags)
+                .borrow()
+                .iter()
+                .cloned()
+                .map(String::from)
+                .collect();
+            let _form: String =
+                format!("\nAdd tag to repo {}:\n", &tp_repo.borrow().path);
             debug_write_file(
                 // vec![String::from("add Repo: "), r.path, "\n"],
-                vec!["add Tag: ", &ss.name, "\n"]
+                vec![_form]
                     // vec!["We printed this", "and this"]
                     .into_iter()
                     .map(String::from)
+                    .chain(_out)
                     .collect(),
                 "tmp_out",
             );
@@ -467,15 +491,15 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
 
     fn updated_display_tags(siv: &mut Cursive, r: &Repo) {
         println!("updated_display_tags called");
-        debug_write_file(
-            // vec![String::from("add Repo: "), r.path, "\n"],
-            vec!["add Repo: ", &r.path, "\n"]
-                // vec!["And then i went to", "the beach"]
-                .into_iter()
-                .map(String::from)
-                .collect(),
-            "tmp_out",
-        );
+        // debug_write_file(
+        //     // vec![String::from("add Repo: "), r.path, "\n"],
+        //     vec!["add Repo: ", &r.path, "\n"]
+        //         // vec!["And then i went to", "the beach"]
+        //         .into_iter()
+        //         .map(String::from)
+        //         .collect(),
+        //     "tmp_out",
+        // );
 
         let mut dd: ViewRef<SelectView<RepoTag>> =
             siv.find_id("tag-display").unwrap();

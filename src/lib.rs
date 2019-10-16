@@ -79,6 +79,12 @@ pub mod subcommands; // Using `pub mod` so we see the docs.
 
 pub use cli::run_from_command_line;
 
+// use log::{Level, LevelFilter, Log, Metadata, Record};
+extern crate pretty_env_logger;
+// #[macro_use]
+// extern crate log;
+// pretty_env_logger::init();
+
 // pub use repo::{
 //     GitGlobalConfig,
 //     GitGlobalResult,
