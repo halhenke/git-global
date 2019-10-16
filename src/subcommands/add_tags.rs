@@ -56,12 +56,12 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     // pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult<'a>> {
     let user_config = GitGlobalConfig::new();
 
-    trace!("go");
+    // trace!("go");
 
-    debug!("ADD TAGS -  GOOOO: did we get here - 0");
+    // debug!("ADD TAGS -  GOOOO: did we get here - 0");
     let mut siv = Cursive::default();
-    debug!("ADD TAGS -  GOOOO: did we get here - 1");
-    debug!("ADD TAGS -  GOOOO: did we get here - 1");
+    // debug!("ADD TAGS -  GOOOO: did we get here - 1");
+    // debug!("ADD TAGS -  GOOOO: did we get here - 1");
 
     siv.load_theme_file("assets/style.toml").unwrap();
 
@@ -97,7 +97,7 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     let m3_con = Rc::clone(&mut_con);
     let m4_con = Rc::clone(&mut_con);
 
-    debug!("ADD TAGS: did we get here - 3");
+    // debug!("ADD TAGS: did we get here - 3");
 
     // Need to wrap this to make it usable in the static closures/callbacks
     // Need to keep a list of new tags as i have to display both pre-existing tags and new ones so i need to store these separately
