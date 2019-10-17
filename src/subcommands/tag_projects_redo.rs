@@ -211,6 +211,21 @@ impl TagStatusRC {
 //     }
 // }
 
+// fn get_all_tags<'a> (light_table_ref: &'a Rc<RefCell<LightTable>>) -> &'a mut Vec<RepoTag> {
+    // let _light_table = Rc::clone(&light_table_ref);
+    // let light_table: &mut LightTable = &mut (*_light_table).try_borrow_mut().expect("Mut Borrow 3 failed");
+/// note - Cant seem to do this without a clone
+fn get_all_tags<'a> (light_table_ref: &'a Rc<RefCell<LightTable>>) -> &mut Vec<RepoTag> {
+    let light_table: &mut LightTable = &mut (*light_table_ref).try_borrow_mut().expect("Mut Borrow 3 failed");
+    let _current_repo: usize = light_table.repo_index;
+    let current_repo: &mut Repo = light_table
+        .repos
+        .get_mut(_current_repo)
+        .expect("ERROR - repo index out of bounds");
+    // let current_tags: &mut Vec<RepoTag> = &mut (current_repo).tags;
+    // return current_tags.clone();
+    &mut current_repo.tags
+}
 pub fn repo_2_name<'a>(s: &'a str) -> &'a str {
     s.rsplit("/").collect::<Vec<&str>>().first().unwrap()
 }
