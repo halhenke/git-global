@@ -579,7 +579,8 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     //         //         cb(s);
     //         //     }
     //     });
-    let extra_ref = Rc::clone(&all_tags_ref);
+
+    // let extra_ref = Rc::clone(&all_tags_ref);
 
     // =================================================
     //  TAKE 2
@@ -587,30 +588,35 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     let tags_pool_inner: SelectView<usize> = SelectView::new()
         // .with_all(selectify_strings(&ct))
         // .with_all((*Rc::clone(&repo_ref)).borrow().selectify_repos())
-        .with_all((*Rc::clone(&all_tags_ref)).borrow().all_tags())
+        .with_all((*Rc::clone(&all_tags_ref)).try_borrow().expect("Borrow 1 failed").all_tags())
         .on_submit(move |s: &mut Cursive, ss: &usize| {
             // let all_tags = Rc::clone(&all_tags_ref);
-            let _current_repo = (*all_tags_ref).borrow().repo_index;
-            let mut _light_table = (*all_tags_ref).borrow_mut();
-            let current_repo = _light_table
+            // let plain_borrow = (*all_tags_ref).try_borrow().expect("Borrow 2 failed");
+            // debug!("**** - plain_borrow {:#?}", plain_borrow);
+
+            let _light_table: &mut LightTable = &mut (*all_tags_ref).try_borrow_mut().expect("Mut Borrow 3 failed");
+            debug!("**** - _light_table index {:#?}", _light_table);
+
+            let _current_repo: usize = _light_table.repo_index;
+            // let _current_repo = plain_borrow.repo_index;
+            debug!("**** - current repo index {}", _current_repo);
+
+            // let _current_repo = (*all_tags_ref).borrow().repo_index;
+
+
+            let current_repo: &mut Repo = _light_table
                 .repos
                 // .get(_current_repo)
                 .get_mut(_current_repo)
                 .expect("ERROR - repo index out of bounds");
 
-            debug!("**** - current repo index {}", _current_repo);
             debug!("**** - current repo {:#?}", current_repo);
 
                 // let dd = &s.find_id()
-            // let mut dd: ViewRef<DebugView> =
-            //     s.find_id("debug-view").unwrap();
+
             // *(*dd.borrow_mut()).borrow_mut().clear();
             // View::clear(dd);
             // &dd.
-            let mut tt: ViewRef<TextView> =
-                s.find_id("text-view").unwrap();
-            // &tt.clear();
-            &tt.set_content(&current_repo.path);
             // let r = Record{
             //     level: log::Level::Info,
             //     time: "27",
@@ -618,10 +624,21 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
             // logger::log(r);
                 // info!("Fuck {}", &current_repo.path);
 
-            // let _current_tag = current_repo
+            // let _current_tag: &Vec<RepoTag> = &(&current_repo)
+            //     .tags;
+            let _current_tags: &Vec<RepoTag> = &_light_table
+                .tags;
+
+            let _current_tag: &RepoTag = _current_tags.get(*ss)
+                .expect("ERROR - tags index out of bounds");
+
+            // let _current_tag: &RepoTag = (&current_repo)
             //     .tags
+            //     .clone()
             //     .get(*ss)
             //     .expect("ERROR - tags index out of bounds");
+            // debug!("**** - current_tag {:#?}", _current_tag);
+
             // let _current_tags = &(*all_tags_ref).borrow().tags;
             // let _current_tag = _current_tags.get(*ss);
             // let _current_tag = (&_light_table).tags.get(*ss);
@@ -629,12 +646,26 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
             // let _current_tag = (&_light_table_two).tags.get(*ss)
             //     .expect("ERROR - repo index out of bounds");
 
-            // let _current_tag = (*all     _tags_ref).borrow().tags.get(*ss);
+            // let _current_tag = plain_borrow.tags.get(*ss)
+            //     .expect("ERROR - repo index out of bounds");
+
+            // let _current_tag = (*all_tags_ref).borrow().tags.get(*ss);
+
+            let mut tt: ViewRef<TextView> =
+            s.find_id("text-view").unwrap();
+            // &tt.clear();
+            &tt.set_content(format!("{:#?}", _current_tag));
+            // &tt.set_content(&current_repo.path);
 
             debug!("**** - current tag  index {}", *ss);
             // debug!("**** - current tag {:#?}", _current_tag);
 
-            // current_repo.tags.push(_current_tag.unwrap().clone());
+            current_repo.tags.push(_current_tag.clone());
+
+            let mut dd: ViewRef<SelectView<usize>> =
+                s.find_id("tag-display").unwrap();
+            &dd.clear();
+            &dd.add_all(_light_table.selectify_tags(_current_repo));
 
             // (*all_tags_ref)
             //     .borrow_mut()
