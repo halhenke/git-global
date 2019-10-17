@@ -544,6 +544,10 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
             debug!("**** - current tag  index {}", *ss);
             // debug!("**** - current tag {:#?}", _current_tag);
 
+            if current_repo.tags.contains(&_current_tag) {
+                return;
+            }
+
             current_repo.tags.push(_current_tag.clone());
 
             let mut dd: ViewRef<SelectView<usize>> =
