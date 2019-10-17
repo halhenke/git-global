@@ -490,48 +490,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
             &dd.clear();
             &dd.add_all((*repo_ref).borrow().selectify_tags(*ss));
         });
-    // =================================================
-    //  TAKE 1
-    // =================================================
-    // let repo_selector_inner: SelectView<Repo> = SelectView::new()
-    //     .with_all(selectify_rc_things(&globals_rc.repos, |r| {
-    //         (r.path.clone(), r)
-    //     }))
-    //     // .with_all(selectify_things(
-    //     //     // RefCell::borrow(&*mut_globals).repos.iter().collect(),
-    //     //     {
-    //     //         // (*mut_globals).borrow().clone().repos.iter().collect(),
-    //     //     },
-    //     // ))
-    //     .on_select(move |s: &mut Cursive, ss: &Repo| {
-    //         // let new_tags = Rc::clone(&globals_rc.repo_tags);
-    //         (*rs_tags).replace(ss.tags.clone());
-    //         // *rs_tags.borrow_mut() = ss.tags;
-    //         (*rs_repo).replace(ss.clone());
-    //         // *rs_repo.borrow_mut() = ss;
 
-    //         let mut dd: ViewRef<SelectView<RepoTag>> =
-    //             s.find_id("tag-display").unwrap();
-    //         &dd.clear();
-    //         &dd.add_all(selectify_rc_things(&rs_tags, |t| (t.name.clone(), t)));
-    //         // &dd.insert_item(
-    //         //     0,
-    //         //     String::from("hola"),
-    //         //     // "fuck".to_string(),
-    //         //     RepoTag::from("hola".to_string()),
-    //         // );
-    //         // let dd: &IdView<SelectView<RepoTag>> =
-    //         //     &**(&s.find_id("tag-display").unwrap());
-    //         // let ddd = views::IdView::<V>::get_mut
-    //         // let ddd = dd.borrow_mut();
-    //         // dd.wtf();
-    //     });
-    // .on_submit(|s: &mut Cursive, r: &Repo| {
-    //     // Lets focus on these tags for now
-    //     s.focus_id("tag-pool").expect("...")
-    //     // s.focus_id("tag-display").expect("...")
-    // })
-    // .item("hey", 4)
     let repo_selector_id = repo_selector_inner.with_id("repo-field");
     let repo_selector =
         repo_selector_id.scrollable().min_width(20).max_height(10);
@@ -585,40 +544,6 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
             //         cb(s);
             //     }
         });
-    // =================================================
-    //  TAKE 1
-    // =================================================
-    // let tags_displayer_inner: SelectView<RepoTag> = SelectView::new()
-    //     // .with_all_str(vec!["Gladly", "my", "dear"])
-    //     .with_all(selectify_rc_things(&globals_rc.repo_tags, |t| {
-    //         (t.name.clone(), t)
-    //     }));
-    // // .with_all(selectify_strings(
-    // //     &RefCell::borrow(&*mut_globals)
-    // //         .tags
-    // //         .iter()
-    // //         .map(|t| t.name.clone())
-    // //         .collect(),
-    // // ))
-    // // .item("hey", 4)
-    // let tags_displayer_id = tags_displayer_inner.with_id("tag-display");
-    // let tags_displayer_outer = tags_displayer_id.min_width(20).max_height(10);
-    // let tags_displayer = OnEventView::new(tags_displayer_outer)
-    //     .on_event(Event::Key(Key::Esc), |s| {
-    //         s.focus_id("repo-field").expect("...")
-    //     })
-    //     .on_event(Event::Key(Key::Backspace), move |s| {
-    //         let mut this: ViewRef<SelectView> =
-    //             s.find_id("tag-display").unwrap();
-    //         //     // this.clear();
-    //         //     if let Some(id) = this.selected_id() {
-    //         //         let name = this.selection().unwrap();
-    //         //         let cb = this.remove_item(id);
-    //         //         cb(s);
-    //         //     }
-    //     });
-
-    // let extra_ref = Rc::clone(&all_tags_ref);
 
     // =================================================
     //  TAKE 2
@@ -747,50 +672,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     //     updated_display_tags(s, &((*tp_repo).borrow().deref()))
     // });
     let tags_pool = tags_pool_inner.with_id("tag-pool");
-    // =================================================
-    //  TAKE 1
-    // =================================================
-    // let tags_pool_inner: SelectView<RepoTag> = SelectView::new()
-    //     // .with_all(selectify_strings(&ct))
-    //     .with_all(selectify_things_two(fake_more_tags, |t| {
-    //         (t.name.clone(), t)
-    //     }))
-    //     .on_submit(move |s: &mut Cursive, ss: &RepoTag| {
-    //         // (*tp_repo).replace_with(|rt| {
-    //         //     rt.tags.push(ss.clone());
-    //         //     rt.clone()
-    //         // });
-    //         (*tp_repo).borrow_mut().tags.push(ss.clone());
-    //         (*tp_tags).borrow_mut().push(ss.clone());
-    //         // (*tp_tags).replace_with(|rt| {
-    //         //     rt.push(ss.clone());
-    //         //     rt.clone()
-    //         // });
-    //         println!("And we print");
-    //         let _out: Vec<String> = (*tp_tags)
-    //             .borrow()
-    //             .iter()
-    //             .cloned()
-    //             .map(String::from)
-    //             .collect();
-    //         let _form: String =
-    //             format!("\nAdd tag to repo {}:\n", &tp_repo.borrow().path);
-    //         debug_write_file(
-    //             // vec![String::from("add Repo: "), r.path, "\n"],
-    //             vec![_form]
-    //                 // vec!["We printed this", "and this"]
-    //                 .into_iter()
-    //                 .map(String::from)
-    //                 .chain(_out)
-    //                 .collect(),
-    //             "tmp_out",
-    //         );
-    //         updated_display_tags(s, &((*tp_repo).borrow().deref()))
-    //         // updated_display_tags(s, &((*rcur1).borrow().deref()))
-    //         //     updated_display_tags(s, &fuckRepo)
-    //         //     // updated_display_tags(s, &(**c3po));
-    //     });
-    // let tags_pool = tags_pool_inner.with_id("tag-pool");
+
 
     // Main Window
     siv.add_layer(
