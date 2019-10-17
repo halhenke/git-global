@@ -148,68 +148,7 @@ struct TagStatus {
     repo_tags: Vec<RepoTag>,
 }
 
-impl TagStatus {
-    pub fn new_from_rc(
-        repos: Vec<Repo>,
-        tags: Vec<RepoTag>,
-        current_repo: Repo,
-        // current_repo: i32,
-        repo_tags: Vec<RepoTag>,
-    ) -> TagStatus {
-        TagStatus {
-            repos: repos,
-            tags,
-            current_repo,
-            // current_repo: &repos[current_repo],
-            repo_tags,
-        }
-    }
-}
 
-#[derive(PartialEq, Eq, Clone, Debug)]
-struct TagStatusRC {
-    // struct TagStatusRC {
-    repos: RcVecRepo,
-    tags: RcVecRepoTag,
-    current_repo: RcRepo,
-    // current_repo: &'a Repo,
-    repo_tags: RcVecRepoTag,
-}
-
-impl TagStatusRC {
-    pub fn new_from_rc(
-        repos: RcVecRepo,
-        tags: RcVecRepoTag,
-        current_repo: RcRepo,
-        // current_repo: &'a Repo,
-        repo_tags: RcVecRepoTag,
-    ) -> TagStatusRC {
-        TagStatusRC {
-            repos: repos,
-            tags,
-            current_repo,
-            // current_repo: &repos[current_repo],
-            repo_tags,
-        }
-    }
-}
-// impl TagStatusRC<'_> {
-//     pub fn new_from_rc<'a>(
-//         repos: RcVecRepo<'a>,
-//         tags: RcVecRepoTag<'a>,
-//         current_repo: RcRepo<'a>,
-//         // current_repo: &'a Repo,
-//         repo_tags: RcVecRepoTag<'a>,
-//     ) -> TagStatusRC<'a> {
-//         TagStatusRC {
-//             repos: repos,
-//             tags,
-//             current_repo,
-//             // current_repo: &repos[current_repo],
-//             repo_tags,
-//         }
-//     }
-// }
 
 // // fn get_all_tags<'a> (light_table_ref: &'a Rc<RefCell<LightTable>>) -> &'a mut Vec<RepoTag> {
 //     // let _light_table = Rc::clone(&light_table_ref);
@@ -426,28 +365,6 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     // let mut_globals = Rc::new(RefCell::new(globals));
     ic!(6);
 
-    let globals_rc = TagStatusRC::new_from_rc(
-        Rc::new(RefCell::new(repos)),
-        Rc::new(RefCell::new(all_tags)),
-        Rc::new(RefCell::new(initial_repo)),
-        Rc::new(RefCell::new(initial_tags)),
-        // rcref!(repos),
-        // rcref!(all_tags),
-        // rcref!(initial_repo),
-        // rcref!(initial_tags),
-    );
-
-    // let rct = reps.clone();
-    // let repo_names = &rct.iter().map(|x| x.path.clone()).zip(rct.iter());
-    // let mut cur2 = reps.as_mut_ptr();
-    // let mut cur3 = reps.as_mut_ptr();
-    // let mut rcur = Rc::new(RefCell::new(cur2));
-
-    // let rreps = Rc::new(RefCell::new(reps));
-    // let ttags = Rc::new(RefCell::new(result_tags));
-    // NOTE: This is just until we have some actually tagged repos
-    // let config_tags = Rc::new(RefCell::new(uc.tags));
-
     trace!("go");
 
     let mut siv = Cursive::default();
@@ -476,14 +393,6 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
      let text_view_id = text_view_inner.with_id("text-view");
      let text_view = text_view_id;
 
-    // REPO SELECTOR
-    let rs_tags = Rc::clone(&globals_rc.repo_tags);
-    let rs_repo = Rc::clone(&globals_rc.current_repo);
-    // TAGS DISPLAY
-    let td_repo = Rc::clone(&globals_rc.current_repo);
-    // TAGS_POOL
-    let tp_repo = Rc::clone(&globals_rc.current_repo);
-    let tp_tags = Rc::clone(&globals_rc.repo_tags);
 
     // =================================================
     //  TAKE 2
