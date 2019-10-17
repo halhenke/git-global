@@ -525,11 +525,12 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     // =================================================
     //  TAKE 2
     // =================================================
+    let rr = Rc::clone(&repo_tag_ref);
     let tags_displayer_inner: SelectView<usize> = SelectView::new()
         // .with_all_str(vec!["Gladly", "my", "dear"])
         .with_all({
-            let _current_repo = (*repo_tag_ref).borrow().repo_index;
-            (*repo_tag_ref).borrow().selectify_tags(_current_repo)
+            let _current_repo = (*rr).borrow().repo_index;
+            (*rr).borrow().selectify_tags(_current_repo)
         });
     let tags_displayer_id = tags_displayer_inner.with_id("tag-display");
     let tags_displayer_outer = tags_displayer_id.min_width(20).max_height(10);
@@ -538,8 +539,30 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
             s.focus_id("repo-field").expect("...")
         })
         .on_event(Event::Key(Key::Backspace), move |s| {
-            let mut this: ViewRef<SelectView> =
+            // let mut dd: ViewRef<SelectView<usize>> =
+            //     s.find_id("tag-display").unwrap();
+
+            let mut this: ViewRef<SelectView<usize>> =
                 s.find_id("tag-display").unwrap();
+            // &dd.clear();
+            // &dd.add_all(_light_table.selectify_tags(_current_repo));
+            let i: usize = this.selected_id().expect("Couldnt get selected id");
+            (*this).remove_item(i);
+
+            // let _light_table = (*repo_tag_ref).borrow_mut();
+            let _light_table: &mut LightTable = &mut (*repo_tag_ref).try_borrow_mut().expect("Mut Borrow 3 failed");
+            // let repos = _light_table.repos;
+
+            let _current_repo: usize = _light_table.repo_index;
+            let current_repo: &mut Repo = _light_table
+                .repos
+                .get_mut(_current_repo)
+                .expect("ERROR - repo index out of bounds");
+            let _current_tags: &mut Vec<RepoTag> = &mut (current_repo).tags;
+            // let _current_tags: &Vec<RepoTag> = &_light_table
+            //     .tags;
+            _current_tags.remove(i);
+
             //     // this.clear();
             //     if let Some(id) = this.selected_id() {
             //         let name = this.selection().unwrap();
