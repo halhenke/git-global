@@ -211,12 +211,24 @@ impl TagStatusRC {
 //     }
 // }
 
-// fn get_all_tags<'a> (light_table_ref: &'a Rc<RefCell<LightTable>>) -> &'a mut Vec<RepoTag> {
-    // let _light_table = Rc::clone(&light_table_ref);
-    // let light_table: &mut LightTable = &mut (*_light_table).try_borrow_mut().expect("Mut Borrow 3 failed");
-/// note - Cant seem to do this without a clone
-fn get_all_tags<'a> (light_table_ref: &'a Rc<RefCell<LightTable>>) -> &mut Vec<RepoTag> {
-    let light_table: &mut LightTable = &mut (*light_table_ref).try_borrow_mut().expect("Mut Borrow 3 failed");
+// // fn get_all_tags<'a> (light_table_ref: &'a Rc<RefCell<LightTable>>) -> &'a mut Vec<RepoTag> {
+//     // let _light_table = Rc::clone(&light_table_ref);
+//     // let light_table: &mut LightTable = &mut (*_light_table).try_borrow_mut().expect("Mut Borrow 3 failed");
+// /// note - Cant seem to do this without a clone
+// fn get_all_tags<'a> (light_table_ref: &'a Rc<RefCell<LightTable>>) -> &mut Vec<RepoTag> {
+//     let light_table: &mut LightTable = &mut (*light_table_ref).try_borrow_mut().expect("Mut Borrow 3 failed");
+//     let _current_repo: usize = light_table.repo_index;
+//     let current_repo: &mut Repo = light_table
+//         .repos
+//         .get_mut(_current_repo)
+//         .expect("ERROR - repo index out of bounds");
+//     // let current_tags: &mut Vec<RepoTag> = &mut (current_repo).tags;
+//     // return current_tags.clone();
+//     &mut current_repo.tags
+// }
+
+fn fetch_all_tags<'a> (light_table: &'a mut LightTable) -> &mut Vec<RepoTag> {
+    // let light_table: &mut LightTable = &mut (*light_table_ref).try_borrow_mut().expect("Mut Borrow 3 failed");
     let _current_repo: usize = light_table.repo_index;
     let current_repo: &mut Repo = light_table
         .repos
@@ -226,6 +238,7 @@ fn get_all_tags<'a> (light_table_ref: &'a Rc<RefCell<LightTable>>) -> &mut Vec<R
     // return current_tags.clone();
     &mut current_repo.tags
 }
+
 pub fn repo_2_name<'a>(s: &'a str) -> &'a str {
     s.rsplit("/").collect::<Vec<&str>>().first().unwrap()
 }
@@ -527,15 +540,14 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
             let _light_table: &mut LightTable = &mut (*repo_tag_ref).try_borrow_mut().expect("Mut Borrow 3 failed");
             // let repos = _light_table.repos;
 
-            let _current_repo: usize = _light_table.repo_index;
-            let current_repo: &mut Repo = _light_table
-                .repos
-                .get_mut(_current_repo)
-                .expect("ERROR - repo index out of bounds");
-            let _current_tags: &mut Vec<RepoTag> = &mut (current_repo).tags;
-            // let _current_tags: &Vec<RepoTag> = &_light_table
-            //     .tags;
-            _current_tags.remove(i);
+            // let _current_repo: usize = _light_table.repo_index;
+            // let current_repo: &mut Repo = _light_table
+            //     .repos
+            //     .get_mut(_current_repo)
+            //     .expect("ERROR - repo index out of bounds");
+            // let _current_tags: &mut Vec<RepoTag> = &mut (current_repo).tags;
+            fetch_all_tags(_light_table).remove(i);
+            // _current_tags.remove(i);
 
             //     // this.clear();
             //     if let Some(id) = this.selected_id() {
