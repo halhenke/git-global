@@ -17,6 +17,7 @@ use self::cursive::views::{
 };
 use self::cursive::Cursive;
 use self::cursive::{Printer, XY};
+use itertools::Itertools;
 use repo::errors::Result as WeirdResult;
 use repo::{
     save_repos_and_tags, GitGlobalConfig, GitGlobalResult, Repo, RepoTag,
@@ -90,6 +91,21 @@ impl LightTable {
             .enumerate()
             .map(|(i, t)| (t.name.as_str(), i))
             .collect::<Vec<(&str, usize)>>()
+    }
+
+    pub fn all_the_tags(&self) -> Vec<(String, usize)> {
+        let mut r = self
+            .repos
+            .iter()
+            .flat_map(|r| {
+                r.tags.iter().enumerate().map(|(i, t)| (t.name.clone(), i))
+            })
+            .chain(self.all_tags())
+            .unique_by(|tup| tup.0.clone())
+            // .unique()
+            .collect::<Vec<(String, usize)>>();
+        r.sort();
+        r
     }
 
     // pub fn all_tags(&self) -> Vec<(RepoTag, usize)> {
@@ -411,6 +427,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
         repo_selector_id.scrollable().min_width(20).max_height(10);
     // let tags_displayer: IdView<BoxView<SelectView>> = OnEventView()
     // let tags_displayer: SelectView<RepoTag> = OnEventView::new(
+
     // =================================================
     //  TAKE 2
     // =================================================
@@ -450,8 +467,13 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
             //     .get_mut(_current_repo)
             //     .expect("ERROR - repo index out of bounds");
             // let _current_tags: &mut Vec<RepoTag> = &mut (current_repo).tags;
+
+            // UPDATE ALL TAGS
+            let mut all_tag_view: ViewRef<SelectView<usize>> =
+                s.find_id("tag-pool").unwrap();
+            (*all_tag_view).clear();
+            (*all_tag_view).add_all(_light_table.all_the_tags());
             fetch_all_tags(_light_table).remove(i);
-            // _current_tags.remove(i);
 
             //     // this.clear();
             //     if let Some(id) = this.selected_id() {
@@ -470,8 +492,8 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
         .with_all(
             (*Rc::clone(&all_tags_ref))
                 .try_borrow()
-                .expect("Borrow 1 failed")
-                .all_tags(),
+                .expect("tags pool initial borrow failed")
+                .all_the_tags(),
         )
         .on_submit(move |s: &mut Cursive, ss: &usize| {
             // let all_tags = Rc::clone(&all_tags_ref);
