@@ -97,12 +97,21 @@ impl LightTable {
         let mut r = self
             .repos
             .iter()
-            .flat_map(|r| {
-                r.tags.iter().enumerate().map(|(i, t)| (t.name.clone(), i))
-            })
-            .chain(self.all_tags())
-            .unique_by(|tup| tup.0.clone())
-            // .unique()
+            .flat_map(|r| r.tags.iter().map(|t| t.name.clone()))
+            // .flat_map(|r| {
+            //     r.tags.iter().enumerate().map(|(i, t)| (t.name.clone(), i))
+            // })
+            // .chain(self.all_tags())
+            // .unique_by(|tup| tup.0.clone())
+            .chain::<Vec<String>>(
+                vec!["haskell", "ml", "rust", "apple", "web dev"]
+                    .into_iter()
+                    .map(String::from)
+                    .collect(),
+            )
+            .unique()
+            .enumerate()
+            .map(|(i, t)| (t, i))
             .collect::<Vec<(String, usize)>>();
         r.sort();
         r
@@ -341,26 +350,12 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     //     IntoIter = std::vec::Vec<String>,
     // > = ["haskell", "ml", "rust"].to_owned().into_iter();
     println!("Fuck 3");
-    let safe_fake_tags: Vec<String> = vec!["haskell", "ml", "rust"]
-        .iter()
-        .map(|&s| String::from(s))
-        // .map(|s| String::from(*s))
-        .collect();
     let fake_tags = ["haskell", "ml", "rust"]
         .to_owned()
         .into_iter()
         .map(|&t| RepoTag::new(t))
         .collect();
-    let fake_more_tags: Vec<RepoTag> =
-        ["haskell", "ml", "rust", "apple", "web dev"]
-            .to_owned()
-            .into_iter()
-            .map(|&t| RepoTag::new(t))
-            .collect();
     ic!(4);
-    // .map(RefCell::new) // note: theres no need for mutable tags
-    // .map(Rc::new)
-    // .collect();
     let all_tags = {
         if existing_tags.is_empty() {
             fake_tags
@@ -389,12 +384,6 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     let mut new_tags: Vec<String> = Vec::new();
 
     // VIEWS
-    let e_view = EditView::new().with_id("tag").fixed_width(20);
-    // let repo_selector: SelectView<RcRepo> = SelectView::new();
-    // let rreps_1 = Rc::clone(&rreps);
-    // let mut rcur2 = Rc::clone(&rcur);
-    // let repo_selector: SelectView<Repo> = SelectView::new()
-
     let error_view_inner = DebugView::new();
     let error_view_id = error_view_inner.with_id("debug-view");
     let error_view = error_view_id.max_height(20);
