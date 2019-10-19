@@ -1,0 +1,123 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in library 'git-global'",
+      "cargo": {
+        "args": ["test", "--no-run", "--lib", "--package=git-global"],
+        "filter": {
+          "name": "git-global",
+          "kind": "lib"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug executable 'git-global-hal'",
+      "cargo": {
+        "args": ["build", "--bin=git-global-hal", "--package=git-global"],
+        "filter": {
+          "name": "git-global-hal",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "sourceLanguages": ["rust"],
+      "terminal": "external"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in executable 'git-global-hal'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--bin=git-global-hal",
+          "--package=git-global"
+        ],
+        "filter": {
+          "name": "git-global-hal",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug example 'macro_hash'",
+      "cargo": {
+        "args": ["build", "--example=macro_hash", "--package=git-global"],
+        "filter": {
+          "name": "macro_hash",
+          "kind": "example"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in example 'macro_hash'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--example=macro_hash",
+          "--package=git-global"
+        ],
+        "filter": {
+          "name": "macro_hash",
+          "kind": "example"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug integration test 'subcommands'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--test=subcommands",
+          "--package=git-global"
+        ],
+        "filter": {
+          "name": "subcommands",
+          "kind": "test"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug integration test 'repo'",
+      "cargo": {
+        "args": ["test", "--no-run", "--test=repo", "--package=git-global"],
+        "filter": {
+          "name": "repo",
+          "kind": "test"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}
