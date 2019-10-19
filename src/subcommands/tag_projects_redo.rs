@@ -3,8 +3,6 @@ use std::cell::RefCell;
 use std::ops::Deref;
 use std::rc::Rc;
 extern crate cursive;
-use std::collections::hash_map::DefaultHasher;
-use std::hash::{Hash, Hasher};
 
 use std::fs::OpenOptions;
 use std::io::Write;
@@ -83,21 +81,19 @@ impl LightTable {
             .collect::<Vec<(&str, usize)>>()
     }
 
-    pub fn selectify_tags(&self, index: u64) -> Vec<(&str, u64)> {
+    pub fn selectify_tags(&self, index: usize) -> Vec<(&str, usize)> {
         self.repos
             .iter()
             .nth(index)
             .expect("ERROR - index requested outside of repos bounds")
             .tags
             .iter()
-            // .enumerate()
-            .map(|t| (t.name.as_str(), LightTable::hash(t.name)))
-            // .enumerate()
-            // .map(|(i, t)| (t.name.as_str(), i))
-            .collect::<Vec<(&str, u64)>>()
+            .enumerate()
+            .map(|(i, t)| (t.name.as_str(), i))
+            .collect::<Vec<(&str, usize)>>()
     }
 
-    pub fn all_the_tags(&self) -> Vec<(String, u64)> {
+    pub fn all_the_tags(&self) -> Vec<(String, usize)> {
         let mut r = self
             .repos
             .iter()
@@ -114,18 +110,11 @@ impl LightTable {
                     .collect(),
             )
             .unique()
-            // .enumerate()
-            // .map(|(i, t)| (t, i))
-            .map(|t| (t, Self::hash(t)))
-            .collect::<Vec<(String, u64)>>();
+            .enumerate()
+            .map(|(i, t)| (t, i))
+            .collect::<Vec<(String, usize)>>();
         r.sort();
         r
-    }
-
-    pub fn hash(label: String) -> u64 {
-        let mut dh = DefaultHasher::new();
-        let result = label.hash(&mut dh);
-        dh.finish()
     }
 
     // pub fn all_tags(&self) -> Vec<(RepoTag, usize)> {
@@ -425,12 +414,14 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     let repo_selector_id = repo_selector_inner.with_id("repo-field");
     let repo_selector =
         repo_selector_id.scrollable().min_width(20).max_height(10);
+    // let tags_displayer: IdView<BoxView<SelectView>> = OnEventView()
+    // let tags_displayer: SelectView<RepoTag> = OnEventView::new(
 
     // =================================================
     //  TAKE 2
     // =================================================
     let rr = Rc::clone(&repo_tag_ref);
-    let tags_displayer_inner: SelectView<u64> = SelectView::new()
+    let tags_displayer_inner: SelectView<usize> = SelectView::new()
         // .with_all_str(vec!["Gladly", "my", "dear"])
         .with_all({
             let _current_repo = (*rr).borrow().repo_index;
