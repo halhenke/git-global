@@ -407,6 +407,22 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
                 s.find_id("tag-display").unwrap();
             &dd.clear();
             &dd.add_all((*repo_ref).borrow().selectify_tags(*ss));
+
+            let mut tt: ViewRef<TextView> = s.find_id("text-view").unwrap();
+            let mut content = String::new();
+            // we need to get rid of previous immutable ref to lighttable to call retagss
+            // let tmp_tag = _current_tag.clone();
+            // drop(_current_tag);
+            let mut _light_table = (*repo_ref).borrow_mut();
+            _light_table.retags();
+            let _content = vec![
+                // format!("Current Tag:\n{:#?}", tmp_tag),
+                // format!("Current Tag:\n{:#?}", _current_tag),
+                format!("Current Tags:\n{:#?}", _light_table.tags),
+            ]
+            .iter()
+            .for_each(|s| content.push_str(s));
+            &tt.set_content(content);
         });
 
     let repo_selector_id = repo_selector_inner.with_id("repo-field");
@@ -461,6 +477,21 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
             (*all_tag_view).clear();
             (*all_tag_view).add_all(_light_table.all_the_tags());
             fetch_all_tags(_light_table).remove(i);
+            let mut tt: ViewRef<TextView> = s.find_id("text-view").unwrap();
+            let mut content = String::new();
+            // we need to get rid of previous immutable ref to lighttable to call retagss
+            // let tmp_tag = _current_tag.clone();
+            // drop(_current_tag);
+            // let mut _light_table = (*repo_ref).borrow_mut();
+            // _light_table.retags();
+            let _content = vec![
+                format!("Deleted Tag:\n{:#?}", deleted_tag),
+                // format!("Current Tag:\n{:#?}", _current_tag),
+                format!("Current Tags:\n{:#?}", _light_table.tags),
+            ]
+            .iter()
+            .for_each(|s| content.push_str(s));
+            &tt.set_content(content);
 
             //     // this.clear();
             //     if let Some(id) = this.selected_id() {
@@ -563,6 +594,22 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
                 s.find_id("tag-display").unwrap();
             &dd.clear();
             &dd.add_all(_light_table.selectify_tags(_current_repo));
+
+            let mut tt: ViewRef<TextView> = s.find_id("text-view").unwrap();
+            let mut content = String::new();
+            // we need to get rid of previous immutable ref to lighttable to call retagss
+            let tmp_tag = _current_tag.clone();
+            drop(_current_tag);
+            _light_table.retags();
+            let _content = vec![
+                format!("Current Tag:\n{:#?}", tmp_tag),
+                // format!("Current Tag:\n{:#?}", _current_tag),
+                format!("Current Tags:\n{:#?}", _light_table.tags),
+            ]
+            .iter()
+            .for_each(|s| content.push_str(s));
+            &tt.set_content(content);
+            // &tt.set_content(&current_repo.path);
 
             // (*all_tags_ref)
             //     .borrow_mut()
