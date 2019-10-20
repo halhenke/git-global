@@ -456,7 +456,16 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
             // &dd.clear();
             // &dd.add_all(_light_table.selectify_tags(_current_repo));
             let i: usize = this.selected_id().expect("Couldnt get selected id");
+            let deleted_tag: String = String::from(
+                (*this)
+                    .get_item_mut(i)
+                    .expect("Could not get Tag.name to be deleted")
+                    .0
+                    .source(),
+            );
             (*this).remove_item(i);
+            // NOTE: Do I need to reindex either list here?
+            // (*this).remove(i);
 
             // let _light_table = (*repo_tag_ref).borrow_mut();
             let _light_table: &mut LightTable = &mut (*repo_tag_ref)
@@ -464,12 +473,24 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
                 .expect("Mut Borrow 3 failed");
             // let repos = _light_table.repos;
 
-            // let _current_repo: usize = _light_table.repo_index;
-            // let current_repo: &mut Repo = _light_table
-            //     .repos
-            //     .get_mut(_current_repo)
-            //     .expect("ERROR - repo index out of bounds");
-            // let _current_tags: &mut Vec<RepoTag> = &mut (current_repo).tags;
+            let _current_repo: usize = _light_table.repo_index;
+            let current_repo: &mut Repo = _light_table
+                .repos
+                .get_mut(_current_repo)
+                .expect("ERROR - repo index out of bounds");
+            let _current_tags: &mut Vec<RepoTag> = &mut (current_repo).tags;
+            let _current_tag_index = _current_tags
+                .iter()
+                .position(|rt| rt.name == deleted_tag)
+                .expect("did not find the index of the current tag");
+            _current_tags.remove(_current_tag_index);
+
+            // current_repo
+            //     .tags
+            // *_current_tags = _current_tags
+            //     .into_iter()
+            //     .filter(|&&mut rt| rt.name != deleted_tag)
+            //     .collect::<Vec<RepoTag>>();
 
             // UPDATE ALL TAGS
             let mut all_tag_view: ViewRef<SelectView<usize>> =
