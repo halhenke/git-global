@@ -1,23 +1,16 @@
 //! Subcommand implementations.
 pub mod add_tags;
-pub mod info;
-pub mod list;
-pub mod list_tags;
-// pub mod tag_projects;
-// pub mod tag_projects_two;
-// pub mod tag_projects_three;
-// pub mod tag_projects_2019;
-// pub mod tag_projects_nova;
-pub mod tag_projects_redo;
-// pub mod tag_projects_simple;
-// pub mod tag_projects_lazy;
 pub mod bullshit;
 pub mod clean;
 pub mod filter;
+pub mod info;
+pub mod list;
+pub mod list_tags;
 pub mod new_scan;
 pub mod prompt;
 pub mod prompt_cursive;
 pub mod scan;
 pub mod status;
 pub mod tag;
+pub mod tag_projects_redo;
 pub mod utilities;
