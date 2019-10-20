@@ -365,6 +365,9 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
             .map(|&t| RepoTag::new(t))
             .collect();
     let global_table = LightTable::new_from_rc(reps, 0, 0, fake_more_tags);
+    let mut _g = (*global_table).borrow_mut();
+    _g.reset_all_tags();
+    drop(_g);
     let repo_ref = Rc::clone(&global_table);
     let repo_tag_ref = Rc::clone(&global_table);
     let all_tags_ref = Rc::clone(&global_table);
