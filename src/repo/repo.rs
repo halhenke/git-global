@@ -148,7 +148,9 @@ impl fmt::Display for Repo {
     }
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Eq, Hash, Clone, Debug)]
+#[derive(
+    Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Debug,
+)]
 pub struct RepoTag {
     pub name: String,
 }
