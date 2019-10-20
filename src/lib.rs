@@ -1,3 +1,4 @@
+#![feature(vec_remove_item)]
 // #![feature(custom_attribute)]
 //! Keep track of all your git repositories.
 //!
@@ -71,8 +72,8 @@ pub mod macros;
 
 extern crate take_mut;
 
-extern crate jwalk;
 extern crate cursive;
+extern crate jwalk;
 
 mod cli;
 pub mod repo;
