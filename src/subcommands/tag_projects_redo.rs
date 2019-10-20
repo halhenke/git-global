@@ -98,11 +98,6 @@ impl LightTable {
             .repos
             .iter()
             .flat_map(|r| r.tags.iter().map(|t| t.name.clone()))
-            // .flat_map(|r| {
-            //     r.tags.iter().enumerate().map(|(i, t)| (t.name.clone(), i))
-            // })
-            // .chain(self.all_tags())
-            // .unique_by(|tup| tup.0.clone())
             .chain::<Vec<String>>(
                 vec!["haskell", "ml", "rust", "apple", "web dev"]
                     .into_iter()
@@ -132,7 +127,6 @@ impl LightTable {
     }
 
     pub fn reset_all_tags(&mut self) {
-        // self.tags = self.all_the_tags();
         let mut _tmp: Vec<(RepoTag)> = self
             .repos
             .iter()
@@ -148,92 +142,24 @@ impl LightTable {
             .collect::<Vec<RepoTag>>();
         _tmp.sort();
         self.tags = _tmp;
-        // .iter()
-        // .enumerate()
-        // .map(|(i, t)| (t, i))
-        // .collect::<Vec<(String, usize)>>();
     }
 
-    // pub fn all_tags(&self) -> Vec<(RepoTag, usize)> {
-    // pub fn all_tags(&self) -> Vec<(&str, usize)> {
     pub fn all_tags(&self) -> Vec<(String, usize)> {
-        // let fake_more_tags =
-        // let fake_more_tags: Vec<(usize, RepoTag)> =
-        // let fake_more_tags: Vec<RepoTag> =
         vec!["haskell", "ml", "rust", "apple", "web dev"]
-            // .to_owned()
-            // .into_iter()
             .iter()
             .map(|t| RepoTag::new(t))
-            // .into_iter()
-            //         .collect();
-            // let fuck_more_tags = fake_more_tags.clone();
-            // return fuck_more_tags
-            //     // .iter()
-            //     .into_iter()
-            //     // .clone()
-            //     // .to_owned()
             .enumerate()
-            // return fake_more_tags;
-            // .map(move |(i, t)| (t.name.as_str(), i))
-            // // .map(|(i, t)| (t.name.as_str(), i))
-            // .collect::<Vec<(&str, usize)>>();
-            //     .collect();
-            // let fs: Vec<(&str, usize)> = fake_more_tags
-            // .to_owned()
-            // .iter()
             .map(|(i, t)| (t.name, i))
-            // .map(|(i, t)| (t.name.as_str(), i))
             .collect::<Vec<(String, usize)>>()
-        // .for_each(|(i, t)| (t.name.as_str(), i))
-        // .map(|(i, t)| (t, i))
-        // // .clone()
-        // .collect::<Vec<(RepoTag, usize)>>()
-        // .collect::<Vec<(RepoTag, usize)>>()
-        // .iter()
-        // // .enumerate()
-        // .map(|(t, i)| (t.name.as_str(), *i))
-        // .collect::<Vec<(&str, usize)>>()
-        // return fs.to_owned();
     }
 }
 
-/// Not sure if I use this here
-#[derive(PartialEq, Eq, Clone, Debug)]
-struct TagStatus {
-    // struct TagStatus<'a> {
-    repos: Vec<Repo>,
-    tags: Vec<RepoTag>,
-    current_repo: Repo,
-    // current_repo: &'a Repo,
-    repo_tags: Vec<RepoTag>,
-}
-
-// // fn get_all_tags<'a> (light_table_ref: &'a Rc<RefCell<LightTable>>) -> &'a mut Vec<RepoTag> {
-//     // let _light_table = Rc::clone(&light_table_ref);
-//     // let light_table: &mut LightTable = &mut (*_light_table).try_borrow_mut().expect("Mut Borrow 3 failed");
-// /// note - Cant seem to do this without a clone
-// fn get_all_tags<'a> (light_table_ref: &'a Rc<RefCell<LightTable>>) -> &mut Vec<RepoTag> {
-//     let light_table: &mut LightTable = &mut (*light_table_ref).try_borrow_mut().expect("Mut Borrow 3 failed");
-//     let _current_repo: usize = light_table.repo_index;
-//     let current_repo: &mut Repo = light_table
-//         .repos
-//         .get_mut(_current_repo)
-//         .expect("ERROR - repo index out of bounds");
-//     // let current_tags: &mut Vec<RepoTag> = &mut (current_repo).tags;
-//     // return current_tags.clone();
-//     &mut current_repo.tags
-// }
-
 fn fetch_all_tags<'a>(light_table: &'a mut LightTable) -> &mut Vec<RepoTag> {
-    // let light_table: &mut LightTable = &mut (*light_table_ref).try_borrow_mut().expect("Mut Borrow 3 failed");
     let _current_repo: usize = light_table.repo_index;
     let current_repo: &mut Repo = light_table
         .repos
         .get_mut(_current_repo)
         .expect("ERROR - repo index out of bounds");
-    // let current_tags: &mut Vec<RepoTag> = &mut (current_repo).tags;
-    // return current_tags.clone();
     &mut current_repo.tags
 }
 
@@ -258,22 +184,16 @@ fn selectify_strings<'a>(tags_1: &'a Vec<String>) -> SelTagList<'a> {
 
 fn selectify_rc_tags<'a>(rctags: &'a RcVecRepoTag) -> Vec<String> {
     return rc_borr!(rctags)
-        // return rctags
-        //     .deref()
-        //     .borrow_mut()
         .iter()
         .map(|r| r.name.clone())
         .collect::<Vec<String>>();
 }
-
-// type SelRepIter<'a> = &'a Vec<(String, RcRepo)>;
 
 fn selectify_repos(repos: &RcVecRepo) -> Vec<(String, Repo)> {
     return RefCell::borrow_mut(&repos)
         .clone()
         .into_iter()
         .map(|r| (r.path.clone(), r))
-        // .map(|r| (r.path.clone(), Rc::new(RefCell::new(r))))
         .collect();
 }
 
@@ -282,7 +202,6 @@ fn selectify_rc_things<R>(
     // fn selectify_rc_things<R, T>(
     things: &Rc<RefCell<Vec<R>>>,
     map_fn: impl Fn(R) -> (String, R), // note: This gives a Sized error when used with `dyn` instead of `impl`
-                                       // ) -> T
 ) -> Vec<(String, R)>
 where
     R: Clone,
@@ -391,16 +310,11 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     let text_view = text_view_id;
 
     // =================================================
-    //  TAKE 2
+    //  REPO SELECTOR
     // =================================================
     let repo_selector_inner: SelectView<usize> = SelectView::new()
         .with_all((*Rc::clone(&repo_ref)).borrow().selectify_repos())
         .on_select(move |s: &mut Cursive, ss: &usize| {
-            // let new_tags = Rc::clone(&globals_rc.repo_tags);
-            // (*rs_tags).replace(ss.tags.clone());
-            // *rs_tags.borrow_mut() = ss.tags;
-            // (*rs_repo).replace(ss.clone());
-            // *rs_repo.borrow_mut() = ss;
             (*repo_ref).borrow_mut().repo_index = *ss;
 
             let mut dd: ViewRef<SelectView<usize>> =
@@ -410,37 +324,27 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
 
             let mut tt: ViewRef<TextView> = s.find_id("text-view").unwrap();
             let mut content = String::new();
-            // we need to get rid of previous immutable ref to lighttable to call retagss
-            // let tmp_tag = _current_tag.clone();
-            // drop(_current_tag);
             let mut _light_table = (*repo_ref).borrow_mut();
             _light_table.retags();
-            let _content = vec![
-                // format!("Current Tag:\n{:#?}", tmp_tag),
-                // format!("Current Tag:\n{:#?}", _current_tag),
-                format!("Current Tags:\n{:#?}", _light_table.tags),
-            ]
-            .iter()
-            .for_each(|s| content.push_str(s));
+            let _content =
+                vec![format!("Current Tags:\n{:#?}", _light_table.tags)]
+                    .iter()
+                    .for_each(|s| content.push_str(s));
             &tt.set_content(content);
         });
 
     let repo_selector_id = repo_selector_inner.with_id("repo-field");
     let repo_selector =
         repo_selector_id.scrollable().min_width(20).max_height(10);
-    // let tags_displayer: IdView<BoxView<SelectView>> = OnEventView()
-    // let tags_displayer: SelectView<RepoTag> = OnEventView::new(
 
     // =================================================
-    //  TAKE 2
+    //  TAGS DISPLAYER
     // =================================================
     let rr = Rc::clone(&repo_tag_ref);
-    let tags_displayer_inner: SelectView<usize> = SelectView::new()
-        // .with_all_str(vec!["Gladly", "my", "dear"])
-        .with_all({
-            let _current_repo = (*rr).borrow().repo_index;
-            (*rr).borrow().selectify_tags(_current_repo)
-        });
+    let tags_displayer_inner: SelectView<usize> = SelectView::new().with_all({
+        let _current_repo = (*rr).borrow().repo_index;
+        (*rr).borrow().selectify_tags(_current_repo)
+    });
     let tags_displayer_id = tags_displayer_inner.with_id("tag-display");
     let tags_displayer_outer = tags_displayer_id.min_width(20).max_height(10);
     let tags_displayer = OnEventView::new(tags_displayer_outer)
@@ -448,13 +352,9 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
             s.focus_id("repo-field").expect("...")
         })
         .on_event(Event::Key(Key::Backspace), move |s| {
-            // let mut dd: ViewRef<SelectView<usize>> =
-            //     s.find_id("tag-display").unwrap();
-
+            // note: we can find our own view here but maybe because we are wrapped in an `OnEventView`
             let mut this: ViewRef<SelectView<usize>> =
                 s.find_id("tag-display").unwrap();
-            // &dd.clear();
-            // &dd.add_all(_light_table.selectify_tags(_current_repo));
             let i: usize = this.selected_id().expect("Couldnt get selected id");
             let deleted_tag: String = String::from(
                 (*this)
@@ -465,13 +365,11 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
             );
             (*this).remove_item(i);
             // NOTE: Do I need to reindex either list here?
-            // (*this).remove(i);
 
             // let _light_table = (*repo_tag_ref).borrow_mut();
             let _light_table: &mut LightTable = &mut (*repo_tag_ref)
                 .try_borrow_mut()
                 .expect("Mut Borrow 3 failed");
-            // let repos = _light_table.repos;
 
             let _current_repo: usize = _light_table.repo_index;
             let current_repo: &mut Repo = _light_table
@@ -485,26 +383,15 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
                 .expect("did not find the index of the current tag");
             _current_tags.remove(_current_tag_index);
 
-            // current_repo
-            //     .tags
-            // *_current_tags = _current_tags
-            //     .into_iter()
-            //     .filter(|&&mut rt| rt.name != deleted_tag)
-            //     .collect::<Vec<RepoTag>>();
-
             // UPDATE ALL TAGS
             let mut all_tag_view: ViewRef<SelectView<usize>> =
                 s.find_id("tag-pool").unwrap();
             (*all_tag_view).clear();
             (*all_tag_view).add_all(_light_table.retags());
 
+            // LOG STUFF
             let mut tt: ViewRef<TextView> = s.find_id("text-view").unwrap();
             let mut content = String::new();
-            // we need to get rid of previous immutable ref to lighttable to call retagss
-            // let tmp_tag = _current_tag.clone();
-            // drop(_current_tag);
-            // let mut _light_table = (*repo_ref).borrow_mut();
-            // _light_table.retags();
             let _content = vec![
                 format!("Deleted Tag:\n{:#?}", deleted_tag),
                 // format!("Current Tag:\n{:#?}", _current_tag),
@@ -513,32 +400,10 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
             .iter()
             .for_each(|s| content.push_str(s));
             &tt.set_content(content);
-
-            // let t: Vec<RepoTag> = fetch_all_tags(_light_table)
-            //     // let mut t: &mut Vec<RepoTag> = fetch_all_tags(_light_table)
-            //     .iter()
-            //     .cloned()
-            //     .filter(|rt| rt.name != deleted_tag)
-            //     .collect::<Vec<RepoTag>>();
-            // *fetch_all_tags(_light_table) = t;
-            // _light_table.retags();
-
-            // fetch_all_tags(_light_table)
-            //     .iter()
-            //     .filter(|rt| rt.name != deleted_tag)
-            //     // .for_each(drop);
-            //     .collect::<Vec<&RepoTag>>();
-
-            //     // this.clear();
-            //     if let Some(id) = this.selected_id() {
-            //         let name = this.selection().unwrap();
-            //         let cb = this.remove_item(id);
-            //         cb(s);
-            //     }
         });
 
     // =================================================
-    //  TAKE 2
+    //  TAGS POOL
     // =================================================
     let tags_pool_inner: SelectView<usize> = SelectView::new()
         // .with_all(selectify_strings(&ct))
@@ -550,77 +415,32 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
                 .retags(),
         )
         .on_submit(move |s: &mut Cursive, ss: &usize| {
-            // let all_tags = Rc::clone(&all_tags_ref);
-            // let plain_borrow = (*all_tags_ref).try_borrow().expect("Borrow 2 failed");
-            // debug!("**** - plain_borrow {:#?}", plain_borrow);
-
             let _light_table: &mut LightTable = &mut (*all_tags_ref)
                 .try_borrow_mut()
                 .expect("Mut Borrow 3 failed");
             debug!("**** - _light_table index {:#?}", _light_table);
 
             let _current_repo: usize = _light_table.repo_index;
-            // let _current_repo = plain_borrow.repo_index;
             debug!("**** - current repo index {}", _current_repo);
-
-            // let _current_repo = (*all_tags_ref).borrow().repo_index;
 
             let current_repo: &mut Repo = _light_table
                 .repos
-                // .get(_current_repo)
                 .get_mut(_current_repo)
                 .expect("ERROR - repo index out of bounds");
 
             debug!("**** - current repo {:#?}", current_repo);
 
-            // let dd = &s.find_id()
-
-            // *(*dd.borrow_mut()).borrow_mut().clear();
-            // View::clear(dd);
-            // &dd.
-            // let r = Record{
-            //     level: log::Level::Info,
-            //     time: "27",
-            //     message: format!("Fuck {}", &current_repo.path)};
-            // logger::log(r);
-            // info!("Fuck {}", &current_repo.path);
-
-            // let _current_tag: &Vec<RepoTag> = &(&current_repo)
-            //     .tags;
-
             let _current_tags: &Vec<RepoTag> = &_light_table.tags;
-            let _current_tag = _current_tags
-                .get(*ss)
-                .expect("Couldnt get current tag from repos");
-
-            // let _current_tag: &RepoTag = _current_tags
-            //     .get(*ss)
-            //     .expect("ERROR - tags index out of bounds");
+            let _current_tag: &RepoTag = _current_tags.get(*ss).expect(
+                "Couldnt get current tag from current repos tags vector",
+            );
 
             // note: Cant get our own view without a panic...
+            // this is either because the id view is defined later in the file or we have to call from an `OnEventView` wrapper
             // let mut this: ViewRef<SelectView<usize>> =
             //     s.find_id("tag_pool").expect("Could not find myself");
             // let _current_tag_name = this.get_item(*ss).unwrap().0;
             // let _current_tag = RepoTag::new(_current_tag_name);
-
-            // let _current_tag: &RepoTag = (&current_repo)
-            //     .tags
-            //     .clone()
-            //     .get(*ss)
-            //     .expect("ERROR - tags index out of bounds");
-            // debug!("**** - current_tag {:#?}", _current_tag);
-
-            // let _current_tags = &(*all_tags_ref).borrow().tags;
-            // let _current_tag = _current_tags.get(*ss);
-            // let _current_tag = (&_light_table).tags.get(*ss);
-            // let mut _light_table_two = (*extra_ref).borrow_mut();
-            // let _current_tag = (&_light_table_two).tags.get(*ss)
-            //     .expect("ERROR - repo index out of bounds");
-
-            // let _current_tag = plain_borrow.tags.get(*ss)
-            //     .expect("ERROR - repo index out of bounds");
-
-            // let _current_tag = (*all_tags_ref).borrow().tags.get(*ss);
 
             debug!("**** - current tag  index {}", *ss);
             // debug!("**** - current tag {:#?}", _current_tag);
@@ -630,11 +450,6 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
             }
 
             current_repo.tags.push(_current_tag.clone());
-            // reset all tags
-            // let tags = _light_table.retags();
-            // {
-            //     _light_table.retags();
-            // }
 
             let mut dd: ViewRef<SelectView<usize>> =
                 s.find_id("tag-display").unwrap();
@@ -655,16 +470,6 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
             .iter()
             .for_each(|s| content.push_str(s));
             &tt.set_content(content);
-            // &tt.set_content(&current_repo.path);
-
-            // (*all_tags_ref)
-            //     .borrow_mut()
-            //     .repos
-            //     .get_mut(_current_repo)
-            //     .expect("ERROR - repo index out of bounds")
-            //     .tags
-            //     .push(_current_tag.clone());
-            // (*all_tags).borrow_mut().repos
         });
     // .on_submit(move |s: &mut Cursive, ss: &RepoTag| {
     //     // (*tp_repo).replace_with(|rt| {
@@ -712,22 +517,18 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
             .child(
                 // sel_view
                 Panel::new(
-                    OnEventView::new(
-                        tags_pool, //     .on_event(Event::Key(Key::Escape), |s1| {
-                                  // })
-                    )
-                    .on_event_inner(Event::Key(Key::Esc), |s1, k| {
-                        let cb = Callback::from_fn(|siv: &mut Cursive| {
-                            siv.focus_id("repo-field")
-                                .expect("failed to focus on 'repo-field'");
-                        });
-                        return Some(EventResult::Consumed(Some(cb)));
-                    })
-                    // NOTE: Due to fucking annoying design this has to come
-                    // after/outside `OnEventView` - otherwise we never get to unwrap
-                    // properly
-                    .scrollable(), // .on_event(Event::Key::Del)::with_cb(
-                                   // )
+                    OnEventView::new(tags_pool)
+                        .on_event_inner(Event::Key(Key::Esc), |s1, k| {
+                            let cb = Callback::from_fn(|siv: &mut Cursive| {
+                                siv.focus_id("repo-field")
+                                    .expect("failed to focus on 'repo-field'");
+                            });
+                            return Some(EventResult::Consumed(Some(cb)));
+                        })
+                        // NOTE: Due to fucking annoying design this has to come
+                        // after/outside `OnEventView` - otherwise we never get to unwrap
+                        // properly
+                        .scrollable(),
                 ),
             )
             .child(Panel::new(error_view))
