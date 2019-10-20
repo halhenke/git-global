@@ -20,19 +20,22 @@
     },
     {
       "type": "lldb",
-      "request": "launch",
+      //   "request": "launch",
+      "request": "attach",
       "name": "Debug executable 'git-global-hal'",
-      "cargo": {
-        "args": ["build", "--bin=git-global-hal", "--package=git-global"],
-        "filter": {
-          "name": "git-global-hal",
-          "kind": "bin"
-        }
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "sourceLanguages": ["rust"],
-      "terminal": "external"
+      //   "cargo": {
+      //     "args": ["build", "--bin=git-global-hal", "--package=git-global"],
+      //     "filter": {
+      //       "name": "git-global-hal",
+      //       "kind": "bin"
+      //     }
+      //   },
+      //   "args": [],
+      //   "cwd": "${workspaceFolder}",
+      "program": "${workspaceFolder}/target/debug/git-global-hal",
+      "pid": "${command:pickMyProcess}",
+      "sourceLanguages": ["rust"]
+      //   "terminal": "external"
     },
     {
       "type": "lldb",
