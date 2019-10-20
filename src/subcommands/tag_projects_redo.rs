@@ -514,6 +514,21 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
             .for_each(|s| content.push_str(s));
             &tt.set_content(content);
 
+            // let t: Vec<RepoTag> = fetch_all_tags(_light_table)
+            //     // let mut t: &mut Vec<RepoTag> = fetch_all_tags(_light_table)
+            //     .iter()
+            //     .cloned()
+            //     .filter(|rt| rt.name != deleted_tag)
+            //     .collect::<Vec<RepoTag>>();
+            // *fetch_all_tags(_light_table) = t;
+            // _light_table.retags();
+
+            // fetch_all_tags(_light_table)
+            //     .iter()
+            //     .filter(|rt| rt.name != deleted_tag)
+            //     // .for_each(drop);
+            //     .collect::<Vec<&RepoTag>>();
+
             //     // this.clear();
             //     if let Some(id) = this.selected_id() {
             //         let name = this.selection().unwrap();
@@ -572,11 +587,21 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
 
             // let _current_tag: &Vec<RepoTag> = &(&current_repo)
             //     .tags;
-            let _current_tags: &Vec<RepoTag> = &_light_table.tags;
 
-            let _current_tag: &RepoTag = _current_tags
+            let _current_tags: &Vec<RepoTag> = &_light_table.tags;
+            let _current_tag = _current_tags
                 .get(*ss)
-                .expect("ERROR - tags index out of bounds");
+                .expect("Couldnt get current tag from repos");
+
+            // let _current_tag: &RepoTag = _current_tags
+            //     .get(*ss)
+            //     .expect("ERROR - tags index out of bounds");
+
+            // note: Cant get our own view without a panic...
+            // let mut this: ViewRef<SelectView<usize>> =
+            //     s.find_id("tag_pool").expect("Could not find myself");
+            // let _current_tag_name = this.get_item(*ss).unwrap().0;
+            // let _current_tag = RepoTag::new(_current_tag_name);
 
             // let _current_tag: &RepoTag = (&current_repo)
             //     .tags
@@ -597,11 +622,6 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
 
             // let _current_tag = (*all_tags_ref).borrow().tags.get(*ss);
 
-            let mut tt: ViewRef<TextView> = s.find_id("text-view").unwrap();
-            // &tt.clear();
-            &tt.set_content(format!("{:#?}", _current_tag));
-            // &tt.set_content(&current_repo.path);
-
             debug!("**** - current tag  index {}", *ss);
             // debug!("**** - current tag {:#?}", _current_tag);
 
@@ -610,6 +630,11 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
             }
 
             current_repo.tags.push(_current_tag.clone());
+            // reset all tags
+            // let tags = _light_table.retags();
+            // {
+            //     _light_table.retags();
+            // }
 
             let mut dd: ViewRef<SelectView<usize>> =
                 s.find_id("tag-display").unwrap();
