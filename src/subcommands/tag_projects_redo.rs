@@ -374,54 +374,12 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     // =================================================
     //  TAKE 2
     // =================================================
-    println!("Fuck");
-    debug!("Fuck");
-    ic!("Fuck");
-    // note a pointer
-    // let debug_buffer = vec![];
-    let uc = GitGlobalConfig::new();
-    let mut repos: Vec<Repo> = uc.get_cached_repos();
-    let results = uc.get_cached_results();
-    println!("Fuck 2");
-    let existing_tags: Vec<RepoTag> =
-        results.all_tags().into_iter().cloned().collect();
-    // let fake_tags: dyn IntoIterator<
-    //     Item = &str,
-    //     IntoIter = std::vec::Vec<String>,
-    // > = ["haskell", "ml", "rust"].to_owned().into_iter();
-    println!("Fuck 3");
-    let fake_tags = ["haskell", "ml", "rust"]
-        .to_owned()
-        .into_iter()
-        .map(|&t| RepoTag::new(t))
-        .collect();
-    ic!(4);
-    let all_tags = {
-        if existing_tags.is_empty() {
-            fake_tags
-        } else {
-            existing_tags
-        }
-    };
-    ic!(5);
-    debug!("Before initial repo");
-    let initial_repo = repos[0].clone();
-    debug!("After initial repo");
-    let initial_tags = initial_repo.tags.clone();
-    // let mut globals =
-    //     TagStatus::new_from_rc(repos, all_tags, initial_repo, initial_tags);
-    // let mut_globals = Rc::new(RefCell::new(globals));
-    ic!(6);
-
     trace!("go");
 
     let mut siv = Cursive::default();
     let main_theme = siv.load_theme_file("assets/style.toml").unwrap();
 
     // https://github.com/gyscos/Cursive/issues/179
-
-    // debug!("ADD TAGS: did we get here - 3");
-    let mut new_tags: Vec<String> = Vec::new();
 
     // VIEWS
     let error_view_inner = DebugView::new();
