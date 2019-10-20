@@ -117,6 +117,43 @@ impl LightTable {
         r
     }
 
+    pub fn retags(&mut self) -> Vec<(String, usize)> {
+        self.reset_all_tags();
+        self.tags_as_list()
+    }
+
+    pub fn tags_as_list(&self) -> Vec<(String, usize)> {
+        self.tags
+            .iter()
+            .map(|r| r.name.clone())
+            .enumerate()
+            .map(|(i, t)| (t, i))
+            .collect()
+    }
+
+    pub fn reset_all_tags(&mut self) {
+        // self.tags = self.all_the_tags();
+        let mut _tmp: Vec<(RepoTag)> = self
+            .repos
+            .iter()
+            .flat_map(|r| r.tags.clone())
+            .chain::<Vec<RepoTag>>(
+                vec!["haskell", "ml", "rust", "apple", "web dev"]
+                    .into_iter()
+                    .map(RepoTag::new)
+                    // .map(String::from)
+                    .collect(),
+            )
+            .unique()
+            .collect::<Vec<RepoTag>>();
+        _tmp.sort();
+        self.tags = _tmp;
+        // .iter()
+        // .enumerate()
+        // .map(|(i, t)| (t, i))
+        // .collect::<Vec<(String, usize)>>();
+    }
+
     // pub fn all_tags(&self) -> Vec<(RepoTag, usize)> {
     // pub fn all_tags(&self) -> Vec<(&str, usize)> {
     pub fn all_tags(&self) -> Vec<(String, usize)> {
