@@ -475,8 +475,8 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
             let mut all_tag_view: ViewRef<SelectView<usize>> =
                 s.find_id("tag-pool").unwrap();
             (*all_tag_view).clear();
-            (*all_tag_view).add_all(_light_table.all_the_tags());
-            fetch_all_tags(_light_table).remove(i);
+            (*all_tag_view).add_all(_light_table.retags());
+
             let mut tt: ViewRef<TextView> = s.find_id("text-view").unwrap();
             let mut content = String::new();
             // we need to get rid of previous immutable ref to lighttable to call retagss
@@ -509,9 +509,9 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
         // .with_all((*Rc::clone(&repo_ref)).borrow().selectify_repos())
         .with_all(
             (*Rc::clone(&all_tags_ref))
-                .try_borrow()
+                .try_borrow_mut()
                 .expect("tags pool initial borrow failed")
-                .all_the_tags(),
+                .retags(),
         )
         .on_submit(move |s: &mut Cursive, ss: &usize| {
             // let all_tags = Rc::clone(&all_tags_ref);
