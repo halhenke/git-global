@@ -32,10 +32,6 @@ type RMut = Rc<RefCell<TextContent>>;
 type RcResult = Rc<GitGlobalResult>;
 type RcRcResult = Rc<RefCell<GitGlobalResult>>;
 
-// type RcRepo<'a> = Rc<RefCell<&'a Repo>>;
-// type RcRepoTag<'a> = Rc<RefCell<&'a RepoTag>>;
-// type RcVecRepoTag<'a> = Rc<RefCell<&'a Vec<RepoTag>>>;
-// type RcVecRepo<'a> = Rc<RefCell<&'a Vec<Repo>>>;
 type RcRef<V> = Rc<RefCell<V>>;
 type RcRepo = Rc<RefCell<Repo>>;
 type RcRepoTag = Rc<RefCell<RepoTag>>;
@@ -151,6 +147,19 @@ impl LightTable {
             .enumerate()
             .map(|(i, t)| (t.name, i))
             .collect::<Vec<(String, usize)>>()
+    }
+
+    pub fn add_tag(&mut self, rt: &RepoTag) -> bool {
+        let current_repo = self
+            .repos
+            .get_mut(self.repo_index)
+            .expect("could not get current repo");
+        if current_repo.tags.contains(rt) {
+            return false;
+        }
+        current_repo.tags.push(rt.clone());
+        self.retags();
+        return true;
     }
 }
 
@@ -287,6 +296,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     let mut _g = (*global_table).borrow_mut();
     _g.reset_all_tags();
     drop(_g);
+    let edit_ref = Rc::clone(&global_table);
     let repo_ref = Rc::clone(&global_table);
     let repo_tag_ref = Rc::clone(&global_table);
     let all_tags_ref = Rc::clone(&global_table);
@@ -308,6 +318,35 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     let text_view_inner = TextView::new("Begin...");
     let text_view_id = text_view_inner.with_id("text-view");
     let text_view = text_view_id;
+
+    // =================================================
+    //  NEW TAG EDITOR
+    // =================================================
+    let mut new_tag_inner: EditView =
+        EditView::new().on_submit_mut(move |s, new_text| {
+            let mut light_table = (*edit_ref).borrow_mut();
+            let repo_tags = fetch_all_tags(&mut light_table);
+            let new_tag = RepoTag::new(new_text);
+            if light_table.add_tag(&new_tag) {
+                let mut dd: ViewRef<SelectView<usize>> =
+                    s.find_id("tag-display").unwrap();
+                &dd.clear();
+                &dd.add_all(light_table.selectify_tags(light_table.repo_index));
+
+                let mut ee: ViewRef<SelectView<usize>> =
+                    s.find_id("tag-pool").unwrap();
+                &ee.clear();
+                // &dd.add_all(light_table.selectify_tags(_current_repo));
+                &ee.add_all(light_table.retags());
+
+                let mut s_view: ViewRef<EditView> =
+                    s.find_id("new-tag").expect("Could not find view");
+                // let content = (*s_view).get_content().clone();
+                s_view.set_content("");
+            }
+        });
+    let new_tag_id = (new_tag_inner).with_id("new-tag");
+    let new_tag = new_tag_id.max_height(10);
 
     // =================================================
     //  REPO SELECTOR
@@ -531,7 +570,8 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
                         .scrollable(),
                 ),
             )
-            .child(Panel::new(error_view))
+            // .child(Panel::new(error_view))
+            .child(Panel::new(new_tag))
             .child(Panel::new(text_view)),
     );
     // #[rock]
