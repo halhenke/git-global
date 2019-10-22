@@ -66,11 +66,11 @@ pub fn go() -> WeirdResult<GitGlobalResult> {
 
     // Let's override the `j` and `k` keys for navigation
     let select = OnEventView::new(select)
-        .on_pre_event_inner('k', |s, k| {
+        .on_pre_event_inner('k', |s, _k| {
             s.select_up(1);
             Some(EventResult::Consumed(None))
         })
-        .on_pre_event_inner('j', |s, k| {
+        .on_pre_event_inner('j', |s, _k| {
             s.select_down(1);
             Some(EventResult::Consumed(None))
         });

@@ -68,7 +68,7 @@ pub fn new_find_repos() -> Vec<Repo> {
     let mut repos: Vec<Repo> = Vec::new();
     let user_config = GitGlobalConfig::new();
     let basedir = &user_config.basedir;
-    let mut walker = jwalk::WalkDir::new(basedir)
+    let walker = jwalk::WalkDir::new(basedir)
         .skip_hidden(false)
         // .num_threads(1)
         .process_entries(|v| {
