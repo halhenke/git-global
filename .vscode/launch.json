@@ -22,7 +22,7 @@
       "type": "lldb",
       //   "request": "launch",
       "request": "attach",
-      "name": "Debug executable 'git-global-hal'",
+      "name": "debug-executable-as-process",
       //   "cargo": {
       //     "args": ["build", "--bin=git-global-hal", "--package=git-global"],
       //     "filter": {
@@ -34,6 +34,27 @@
       //   "cwd": "${workspaceFolder}",
       "program": "${workspaceFolder}/target/debug/git-global-hal",
       "pid": "${command:pickMyProcess}",
+      "sourceLanguages": ["rust"]
+      //   "terminal": "external"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "launch new-scan",
+      "expressions": "python",
+      // "internalConsoleOptions": ,
+      "cargo": {
+        "args": ["build", "--bin=git-global-hal", "--package=git-global"],
+        "filter": {
+          "name": "git-global-hal",
+          "kind": "bin"
+        }
+      },
+      "args": ["new-scan"],
+      // "cwd": "${workspaceFolder}",
+      "program": "${workspaceFolder}/target/debug/deps/git_global_hal-e52df587b06cd625",
+      // "program": "${workspaceFolder}/target/debug/git-global-hal",
+      // "pid": "${command:pickMyProcess}",
       "sourceLanguages": ["rust"]
       //   "terminal": "external"
     },
