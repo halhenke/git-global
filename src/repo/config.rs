@@ -62,13 +62,10 @@ impl GitGlobalConfig {
         let (basedir, basedirs, patterns) = match git2::Config::open_default() {
             Ok(config) => {
                 (config.get_string(SETTING_BASEDIR).unwrap_or(home_dir.clone()),
-                //  vec![config.get_string(SETTING_BASEDIR).unwrap_or(home_dir.clone())],
                  config.get_string(SETTING_BASEDIR)
                     .unwrap_or(home_dir.clone())
                     .split(",")
-                    // .by_ref()
                     .map(|p| p.trim().to_string())
-                    // .cloned()
                     .collect(),
                  config.get_string(SETTING_IGNORED)
                      .unwrap_or(String::new())
@@ -203,26 +200,17 @@ impl GitGlobalConfig {
             // exist; app_dir() handles an existing directory just fine.
             match app_dir(AppDataType::UserCache, &APP, "cache") {
                 Ok(_) => {
-                    // panic!("Oh SHIT!");
-                    // self.make_empty_cache();
                     return Err(Error::new(
                         ErrorKind::NotFound,
                         "Cache Directory exists but no Cache file",
                     ));
-                    // return Err("Cache Directory exisits but no Cache file")
                 }
-                // Ok(_) => (),
                 Err(e) => {
-                    // panic!("OH SNAP!");
-                    // return Err("No Cache Directory found");
                     return Err(Error::new(
                         ErrorKind::NotFound,
                         "No Cache Directory exists",
                     ));
-                    // return Ok(vec!());
-                    // return Err(Error::new(ErrorKind::Other, "No Cache Directory found"));
-                    // return Error::new(ErrorKind::Other, "No Cache Directory found");
-                } // Err(e) => panic!("Could not create cache directory: {}", e),
+                }
             }
         }
         let mut f =
@@ -234,7 +222,6 @@ impl GitGlobalConfig {
             serde_json::from_slice(reader).expect("Could not deserialize");
 
         let _tags: &Vec<RepoTag> = &_temp.tags;
-        // let _repos: &Vec<Repo> = serialized.0;
         let tags = _tags.to_vec();
         debug!("Tags are {:?}", &tags);
         Ok(tags)
@@ -287,10 +274,6 @@ impl GitGlobalConfig {
         let mut f = File::create(&self.cache_file)
             .expect("Could not create cache file.");
 
-        // type RepoTagTuple<'a> = (&'a Vec<Repo>, &'a Vec<RepoTag>);
-
-        // let _thing: RepoTagTuple = (&repos, &self.tags);
-
         let rt: RepoTagCache = RepoTagCache::new(repos, &self.tags);
         let serialized = serde_json::to_string(&rt).unwrap();
 
@@ -309,9 +292,6 @@ impl GitGlobalConfig {
             let mut f = File::open(&self.cache_file)
                 .expect("Could not open cache file.");
 
-            // let serialized = serde_json::to_string(&repos).unwrap();
-
-            // let reader = &mut BufReader::new(f);
             let reader = &mut Vec::new();
             f.read_to_end(reader).expect("Couldnt read ");
             debug!(
