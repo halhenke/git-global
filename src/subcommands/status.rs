@@ -23,7 +23,7 @@ pub fn get_results(
     let n_repos = repos.len();
     let mut result = GitGlobalResult::new(&repos);
     result.pad_repo_output();
-    // TOOD: limit number of threads, perhaps with mpsc::sync_channel(n)?
+    // TODO: limit number of threads, perhaps with mpsc::sync_channel(n)?
     let (tx, rx): (
         std::sync::mpsc::Sender<(String, Vec<String>)>,
         std::sync::mpsc::Receiver<(_, _)>,
@@ -39,7 +39,6 @@ pub fn get_results(
                 .show(git2::StatusShow::IndexAndWorkdir)
                 .include_untracked(include_untracked)
                 .include_ignored(false);
-            // let lines = get_status_lines(status_opts);
             let mut lines = repo.get_status_lines(status_opts);
 
             if ignore_untracked {
@@ -48,10 +47,6 @@ pub fn get_results(
                     .filter(|l| !l.starts_with("??"))
                     .collect();
             }
-
-            // let path = repo.path().to_string();
-            // let lines = repo.get_status_lines();
-            // let lines = get_status_lines(repo);
             tx.send((path, lines)).unwrap();
         });
     }

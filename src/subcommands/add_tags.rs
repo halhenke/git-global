@@ -1,3 +1,4 @@
+use crossbeam_channel::SendError;
 use std::cell::RefCell;
 use std::ops::Deref;
 use std::rc::Rc;
@@ -109,7 +110,9 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
                     .content(e_view)
                     .button("q", move |s: &mut Cursive| {
                         debug!("q was called...");
-                        save_tags_and_quit(s, &m4_con);
+                        save_tags_and_quit(s, &m4_con).expect(
+                            "There was a problem with saving tags ¯\\(°_o)/¯",
+                        );
                         // save_tags_and_quit(s, &mut user_config, &m4_con);
                     })
                     .button("Ok", move |s: &mut Cursive| {
@@ -148,7 +151,10 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     Ok(GitGlobalResult::new(&vec![]))
 }
 
-fn save_tags_and_quit(s: &mut Cursive, tags: &RMut) {
+fn save_tags_and_quit(
+    s: &mut Cursive,
+    tags: &RMut,
+) -> Result<(), SendError<Box<dyn FnOnce(&mut Cursive) + Send>>> {
     // fn save_tags_and_quit(s: &mut Cursive, user_config: &mut GitGlobalConfig, tags: &RMut) {
     let mut user_config = GitGlobalConfig::new();
     trace!("save_tags_and_quit");
@@ -176,7 +182,7 @@ fn save_tags_and_quit(s: &mut Cursive, tags: &RMut) {
     // );
     user_config.replace_tags(tag_list_list);
     user_config.write_tags();
-    s.cb_sink().send(Box::new(|siv: &mut Cursive| siv.quit()));
+    s.cb_sink().send(Box::new(|siv: &mut Cursive| siv.quit()))
 }
 
 fn show_next_screen(s: &mut Cursive, name: &str, c: &mut TextContent) {

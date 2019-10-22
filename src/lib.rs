@@ -72,6 +72,7 @@ pub mod macros;
 
 extern crate take_mut;
 
+extern crate crossbeam_channel;
 extern crate cursive;
 extern crate jwalk;
 
