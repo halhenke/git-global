@@ -143,14 +143,14 @@ pub fn new_find_repos() -> Vec<Repo> {
         basedir.green()
     );
 
-    debug!("You went through {} paths", walker.by_ref().count());
-    debug!(
-        "You set {} content_specs to zero",
-        walker
-            .by_ref()
-            .filter(|d| d.as_ref().unwrap().content_spec.is_none())
-            .count()
-    );
+    // debug!("You went through {} paths", walker.by_ref().count());
+    // debug!(
+    //     "You set {} content_specs to zero",
+    //     walker
+    //         .by_ref()
+    //         .filter(|d| d.as_ref().unwrap().content_spec.is_none())
+    //         .count()
+    // );
 
     for entry in walker {
         match entry {
