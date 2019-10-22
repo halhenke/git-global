@@ -114,7 +114,7 @@ pub fn new_find_repos() -> Vec<Repo> {
     // let basedir = "/Users/hal/code/purescipt";
     let mut walker = jwalk::WalkDir::new(basedir)
         .skip_hidden(false)
-        .num_threads(1)
+        // .num_threads(1)
         .process_entries(|v| {
             v.into_iter().for_each(|de| {
                 // debug!("In the map ");
