@@ -40,7 +40,7 @@
     {
       "type": "lldb",
       "request": "launch",
-      "name": "launch new-scan",
+      "name": "launch scan",
       "expressions": "python",
       // "internalConsoleOptions": ,
       "cargo": {
@@ -50,7 +50,7 @@
           "kind": "bin"
         }
       },
-      "args": ["new-scan"],
+      "args": ["scan"],
       // "cwd": "${workspaceFolder}",
       "program": "${workspaceFolder}/target/debug/deps/git_global_hal-e52df587b06cd625",
       // "program": "${workspaceFolder}/target/debug/git-global-hal",
