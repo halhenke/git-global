@@ -9,7 +9,6 @@ pub mod list_tags;
 pub mod new_scan;
 pub mod prompt;
 pub mod prompt_cursive;
-pub mod scan;
 pub mod status;
 pub mod tag;
 pub mod tag_projects_redo;

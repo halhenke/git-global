@@ -85,11 +85,7 @@ pub fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
                 .arg(Arg::with_name("tags").short("t").takes_value(true)),
         )
         .subcommand(
-            SubCommand::with_name("scan")
-                .about("update cache of git repos on your machine"),
-        )
-        .subcommand(
-            SubCommand::with_name("new-scan").about("...trying to jwalk"),
+            SubCommand::with_name("new-scan").about("update cache of git repos on your machine"),
         )
         .subcommand(
             SubCommand::with_name("status")
@@ -158,7 +154,6 @@ pub fn run_from_command_line() -> i32 {
             subcommands::filter::get_results(pat, tags)
         }
         Some("clean") => subcommands::clean::cache_clear(),
-        Some("scan") => subcommands::scan::get_results(),
         Some("new-scan") => subcommands::new_scan::get_results(),
         Some("prompt") => subcommands::prompt::go(),
         Some("prompt-cursive") => subcommands::prompt_cursive::go(),

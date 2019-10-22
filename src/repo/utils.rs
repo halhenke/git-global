@@ -44,11 +44,6 @@ pub fn repo_filter(
 fn is_a_git(entry: &std::fs::DirEntry) -> bool {
     entry.path().is_dir() && entry.file_name() == ".git"
 }
-// fn is_a_git<D>(entry: &D) -> bool {
-//     entry.file_type().is_dir() && entry.file_name() == ".git"
-// fn is_a_git(entry: &DirEntry) -> bool {
-//     entry.file_type().is_dir() && entry.file_name() == ".git"
-// }
 
 /// Is this the path of a git repository?
 fn new_is_a_repo(entry: &jwalk::DirEntry) -> bool {
@@ -56,29 +51,11 @@ fn new_is_a_repo(entry: &jwalk::DirEntry) -> bool {
     entry.file_type.as_ref().unwrap().is_dir()
         && entry.path().read_dir().expect("read dir failed").any(|f| {
             let ff = f.expect("works");
-            // ff.file_type().unwrap().is_dir() && ff.file_name() == ".git"
-            is_a_git(&ff)
-        })
-}
-/// Is this the path of a git repository?
-fn is_a_repo(entry: &DirEntry) -> bool {
-    // debug!("entry is {}", entry.path().to_str().unwrap());
-    entry.file_type().is_dir()
-        && entry.path().read_dir().expect("read dir failed").any(|f| {
-            let ff = f.expect("works");
-            // ff.file_type().unwrap().is_dir() && ff.file_name() == ".git"
             is_a_git(&ff)
         })
 }
 
 /// Add repos to the list of repos
-fn my_repo_check(repos: &mut Vec<Repo>, entry: DirEntry) -> () {
-    if is_a_repo(&entry) {
-        debug!("A REPO IS {}", entry.path().to_str().unwrap());
-        repos.push(Repo::new(entry.path().to_str().unwrap().to_string()));
-    }
-}
-
 fn my_new_repo_check(repos: &mut Vec<Repo>, entry: jwalk::DirEntry) -> () {
     if new_is_a_repo(&entry) {
         debug!("A REPO IS {}", entry.path().to_str().unwrap());
@@ -86,32 +63,11 @@ fn my_new_repo_check(repos: &mut Vec<Repo>, entry: jwalk::DirEntry) -> () {
     }
 }
 
-/// Does this list of repos contain an ancestor of the current path?
-fn repos_contains_ancestor(entry: &DirEntry, repos: &Vec<Repo>) -> bool {
-    repos.into_iter().any(|r| entry.path().starts_with(&r.path))
-}
-
-/// Does this list of repos contain an ancestor of the current path?
-fn new_repos_contains_ancestor(
-    entry: &jwalk::DirEntry,
-    repos: &Vec<Repo>,
-) -> bool {
-    repos.into_iter().any(|r| entry.path().starts_with(&r.path))
-}
-
-/// Should we
-/// 1) Do Something with this path
-/// 2) Recurse into any contents of this path
-fn walk_here(entry: &DirEntry, uc: &GitGlobalConfig) -> bool {
-    uc.filter(entry)
-}
-
 /// Walks the configured base directory, looking for git repos.
 pub fn new_find_repos() -> Vec<Repo> {
     let mut repos: Vec<Repo> = Vec::new();
     let user_config = GitGlobalConfig::new();
     let basedir = &user_config.basedir;
-    // let basedir = "/Users/hal/code/purescipt";
     let mut walker = jwalk::WalkDir::new(basedir)
         .skip_hidden(false)
         // .num_threads(1)
@@ -165,33 +121,6 @@ pub fn new_find_repos() -> Vec<Repo> {
     repos
 }
 
-/// Walks the configured base directory, looking for git repos.
-/// Am trying out the jwalk crate rather than walkdir...s
-pub fn find_repos() -> Vec<Repo> {
-    let mut repos: Vec<Repo> = Vec::new();
-    let user_config = GitGlobalConfig::new();
-    let basedir = &user_config.basedir;
-    let walker = WalkDir::new(basedir).into_iter();
-    format!(
-        "{}, {}",
-        "Scanning for git repos under {}; this may take a while...",
-        basedir.green()
-    );
-
-    for entry in walker.filter_entry(|e| walk_here(&e, &user_config)) {
-        match entry {
-            Ok(entry) => {
-                if !repos_contains_ancestor(&entry, &repos) {
-                    my_repo_check(&mut repos, entry);
-                }
-            }
-            Err(_) => (),
-        }
-    }
-    repos.sort_by(|a, b| a.path().cmp(&b.path()));
-    repos
-}
-
 /// Caches repo list to disk, in the XDG cache directory for git-global.
 pub fn cache_repos(repos: &Vec<Repo>) {
     let user_config = GitGlobalConfig::new();
@@ -230,7 +159,7 @@ pub fn get_repos() -> Vec<Repo> {
 
     if !user_config.has_cache() {
         println!("{}", "You have no cached repos yet...".yellow());
-        let repos = find_repos();
+        let repos = new_find_repos();
         cache_repos(&repos);
         repos
     } else {
