@@ -52,8 +52,7 @@ fn is_a_git(entry: &std::fs::DirEntry) -> bool {
 
 /// Is this the path of a git repository?
 fn new_is_a_repo(entry: &jwalk::DirEntry) -> bool {
-    // fn is_a_repo<T>(entry: &T) -> bool {
-    debug!("entry is {}", entry.path().to_str().unwrap());
+    // debug!("entry is {}", entry.path().to_str().unwrap());
     entry.file_type.as_ref().unwrap().is_dir()
         && entry.path().read_dir().expect("read dir failed").any(|f| {
             let ff = f.expect("works");
@@ -63,7 +62,7 @@ fn new_is_a_repo(entry: &jwalk::DirEntry) -> bool {
 }
 /// Is this the path of a git repository?
 fn is_a_repo(entry: &DirEntry) -> bool {
-    debug!("entry is {}", entry.path().to_str().unwrap());
+    // debug!("entry is {}", entry.path().to_str().unwrap());
     entry.file_type().is_dir()
         && entry.path().read_dir().expect("read dir failed").any(|f| {
             let ff = f.expect("works");
@@ -115,24 +114,21 @@ pub fn new_find_repos() -> Vec<Repo> {
     // let basedir = "/Users/hal/code/purescipt";
     let mut walker = jwalk::WalkDir::new(basedir)
         .skip_hidden(false)
+        .num_threads(1)
         .process_entries(|v| {
-            debug!(
-                "Out the map {:#?}",
-                v.iter().nth(1).unwrap().as_ref().unwrap()
-            );
             v.into_iter().for_each(|de| {
-                debug!("In the map ");
+                // debug!("In the map ");
                 let mut d: &mut jwalk::DirEntry = de.as_mut().unwrap();
                 if d.file_type.as_ref().unwrap().is_dir()
                     && d.path().read_dir().unwrap().any(|f| {
                         let ff = f.unwrap();
-                        debug!(".git path is {}", ff.path().display());
+                        // debug!(".git path is {}", ff.path().display());
                         ff.file_name() == ".git"
                     })
                 {
                     debug!("A match! {}", d.path().display());
                     d.content_spec = None;
-                    debug!("d.content_spec {:?}", d.content_spec);
+                    // debug!("d.content_spec {:?}", d.content_spec);
                 }
             });
         })
@@ -223,14 +219,14 @@ pub fn get_tagged_repos(tags: &Vec<RepoTag>) -> Vec<Repo> {
 
 /// Returns all known git repos, populating the cache first, if necessary.
 pub fn get_repos() -> Vec<Repo> {
-    debug!("get repos");
+    // debug!("get repos");
     let user_config = GitGlobalConfig::new();
-    debug!("got config");
+    // debug!("got config");
 
     // Convert the Point to a JSON string.
     let serialized = serde_json::to_string(&user_config).unwrap();
     // Prints serialized = {"x":1,"y":2}
-    debug!("serialized = {}", serialized);
+    // debug!("serialized = {}", serialized);
 
     if !user_config.has_cache() {
         println!("{}", "You have no cached repos yet...".yellow());
