@@ -33,6 +33,15 @@ To add patterns to exclude while walking directories:
 git config --global global.ignore .cargo,.vim,Library
 ```
 
+## TODO
+- [ ] filter `tag-projects` by path, status, prepopulate a list of potential new tags
+- [ ] Better message suggesting "use list or status"
+- [ ] Filter list by regex showing coloured text output
+- [ ] Some tests?
+- [ ] Some assertions
+- [ ] reconcile `add_tags` and `tag_projects_redo`
+- [ ] have a negative filter option for status also (things to exclude)
+
 ## Ideas
 
 * [ ] `git global unstaged`: show all repos that have unstaged changes
