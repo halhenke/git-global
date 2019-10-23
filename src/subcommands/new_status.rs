@@ -25,7 +25,7 @@ pub fn get_results(
     let mut result = GitGlobalResult::new(&repos);
     result.pad_repo_output();
 
-    let (s, r) = bounded(2);
+    // let (s, r) = bounded(2);
     // let (s, r) = unbounded();
 
     // TODO: limit number of threads, perhaps with mpsc::sync_channel(n)?
@@ -37,30 +37,28 @@ pub fn get_results(
 
     for repo in repos {
         // let tx = tx.clone();
-        let s = s.clone();
-        let repo = Arc::new(repo);
-        thread::spawn(move || {
-            let path = repo.path().to_string();
-            let mut status_opts = git2::StatusOptions::new();
-            status_opts
-                .show(git2::StatusShow::IndexAndWorkdir)
-                .include_untracked(include_untracked)
-                .include_ignored(false);
-            let mut lines = repo.get_status_lines(status_opts);
+        // let s = s.clone();
+        // let repo = Arc::new(repo);
+        // thread::spawn(move || {
+        let path = repo.path().to_string();
+        let mut status_opts = git2::StatusOptions::new();
+        status_opts
+            .show(git2::StatusShow::IndexAndWorkdir)
+            .include_untracked(include_untracked)
+            .include_ignored(false);
+        let mut lines = repo.get_status_lines(status_opts);
 
-            if ignore_untracked {
-                lines = lines
-                    .into_iter()
-                    .filter(|l| !l.starts_with("??"))
-                    .collect();
-            }
-            // tx.send((path, lines)).unwrap();
-            s.send((path, lines)).unwrap();
-        });
-    }
-    for _ in 0..n_repos {
-        // let (path, lines) = rx.recv().unwrap();
-        let (path, lines) = r.recv().unwrap();
+        if ignore_untracked {
+            lines =
+                lines.into_iter().filter(|l| !l.starts_with("??")).collect();
+        }
+        // tx.send((path, lines)).unwrap();
+        //         s.send((path, lines)).unwrap();
+        //     });
+        // }
+        // for _ in 0..n_repos {
+        //     // let (path, lines) = rx.recv().unwrap();
+        //     let (path, lines) = r.recv().unwrap();
 
         if let Some(path_filter) = path_filter {
             if !path.contains(path_filter) {
