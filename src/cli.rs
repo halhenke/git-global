@@ -110,6 +110,29 @@ pub fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
                         .required(false),
                 ),
         )
+        .subcommand(
+            SubCommand::with_name("new-status")
+                .about("shows status of all git repos")
+                .arg(
+                    Arg::with_name("path_filter")
+                        .short("p")
+                        .long("paths")
+                        .takes_value(true)
+                        .required(false),
+                )
+                .arg(
+                    Arg::with_name("modified")
+                        .short("m")
+                        .long("modified-only")
+                        .required(false),
+                )
+                .arg(
+                    Arg::with_name("ignore_untracked")
+                        .short("i")
+                        .long("ignore-untracked")
+                        .required(false),
+                ),
+        )
         .subcommand(SubCommand::with_name("completions").about("outputs zsh specific completion commands and writes them to a file - `_git-global-hal` that can then be copied across to your fpath"))
 }
 
@@ -138,8 +161,6 @@ pub fn run_from_command_line() -> i32 {
                 .subcommand_matches("info")
                 .unwrap()
                 .is_present("raw");
-            // .value_of("raw");
-            // .expect("raw panic");
             subcommands::info::get_results(raw_info)
         }
         Some("list") => subcommands::list::get_results(),
@@ -163,14 +184,9 @@ pub fn run_from_command_line() -> i32 {
             let tag = sub_com.values_of("tag_arg").unwrap().collect();
             subcommands::tag::get_results(tag)
         }
-        // Some("tag-projects") => subcommands::tag_projects::go(),
-        // Some("tag-projects") => subcommands::tag_projects_two::go(),
         Some("tag-projects") => subcommands::tag_projects_redo::go(),
-        // Some("tag-projects") => subcommands::tag_projects_2019::go(),
-        // Some("tag-projects") => subcommands::tag_projects_nova::go(),
-        // Some("tag-projects") => subcommands::tag_projects_simple::go(),
-        // Some("tag-projects") => subcommands::tag_projects_lazy::go(),
         Some("status") => get_status(matches),
+        Some("new-status") => get_new_status(matches),
         Some("completions") => {
             let mut file = std::fs::File::create("_git-global-hal")
                 .expect("Could not write completions file");
@@ -204,6 +220,28 @@ fn get_status(matches: clap::ArgMatches) -> errors::Result<GitGlobalResult> {
         .unwrap()
         .is_present("ignore_untracked");
     subcommands::status::get_results(modified, ignore_untracked, path_filter)
+}
+
+fn get_new_status(
+    matches: clap::ArgMatches,
+) -> errors::Result<GitGlobalResult> {
+    let modified = matches
+        .subcommand_matches("new-status")
+        .unwrap()
+        .is_present("modified");
+    let path_filter = matches
+        .subcommand_matches("new-status")
+        .unwrap()
+        .value_of("path_filter");
+    let ignore_untracked = matches
+        .subcommand_matches("new-status")
+        .unwrap()
+        .is_present("ignore_untracked");
+    subcommands::new_status::get_results(
+        modified,
+        ignore_untracked,
+        path_filter,
+    )
 }
 
 /// Writes results to STDOUT, as either text or JSON, and returns `0`.
