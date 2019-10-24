@@ -4,19 +4,21 @@ extern crate colored;
 use self::colored::*;
 // use std::io::{stderr, Write};
 use crossbeam_channel::{bounded, unbounded};
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::thread;
 
 use git2;
 
 use repo::errors::Result;
-use repo::{get_repos, GitGlobalResult, Repo};
+use repo::{get_repos, GitGlobalError, GitGlobalResult, Repo};
 
 /// Gathers `git status -s` for all known repos.
 pub fn get_results(
     only_modified: bool,
     ignore_untracked: bool,
-    path_filter: Option<&str>,
+    // path_filter: Option<&str>,
+    path_filter: Option<String>,
+    // path_filter: Option<&'static str>,
 ) -> Result<GitGlobalResult> {
     let include_untracked = true;
     // let include_untracked = config.show_untracked;
@@ -24,9 +26,11 @@ pub fn get_results(
     let n_repos = repos.len();
     let mut result = GitGlobalResult::new(&repos);
     result.pad_repo_output();
+    // let mut result =
+    //     Arc::new(Mutex::new(GitGlobalResult::new(&repos).pad_repo_output()));
 
-    let (s, r) = bounded(2);
-    // let (s, r) = unbounded();
+    // let (s, r) = bounded(2);
+    let (s, r) = unbounded();
 
     // TODO: limit number of threads, perhaps with mpsc::sync_channel(n)?
     // let (tx, rx): (
@@ -36,7 +40,6 @@ pub fn get_results(
     // let (tx, rx) = mpsc::channel();
 
     for repo in repos {
-        // let tx = tx.clone();
         let s = s.clone();
         let repo = Arc::new(repo);
         thread::spawn(move || {
@@ -54,37 +57,78 @@ pub fn get_results(
                     .filter(|l| !l.starts_with("??"))
                     .collect();
             }
-            // tx.send((path, lines)).unwrap();
             s.send((path, lines)).unwrap();
         });
     }
-    for _ in 0..n_repos {
-        // let (path, lines) = rx.recv().unwrap();
-        let (path, lines) = r.recv().unwrap();
+    // r.iter().for_each(|(path, lines)| {
+    // });
+    let mut resvec: Vec<GitGlobalResult> = vec![];
+    let pf = Arc::new(path_filter);
+    let result: Arc<Mutex<GitGlobalResult>> = Arc::new(Mutex::new(result));
 
-        if let Some(path_filter) = path_filter {
-            if !path.contains(path_filter) {
-                continue;
+    for _ in 0..2 {
+        // let r = Arc::clone(&r);
+        // let pf = Arc::clone(&pf);
+        // let result = Arc::clone(&result);
+        let r = r.clone();
+        let pf = pf.clone();
+        let result = result.clone();
+
+        // let pf: &'static str = path_filter.unwrap().clone();
+        // println!("i is {}", i);
+        let j = thread::spawn(move || {
+            for _ in 0..(n_repos / 2) {
+                let out = r.recv().unwrap();
+                let (path, lines): (String, Vec<String>) = out;
+                // let (path: String, lines: Vec<String>) = r.recv().unwrap();
+
+                // debug!("We are in {}\n", path);
+
+                if let Some(pf) = &(*pf) {
+                    if !path.contains(pf) {
+                        continue;
+                        // return;
+                    }
+                }
+                // let mut result = result.lock().unwrap();
+                let mut result = result.lock().unwrap();
+                // let result: &mut GitGlobalResult =
+                //     Arc::get_mut(&mut result).unwrap();
+                // let pre_res = result.get_mut();
+                // let result: &mut GitGlobalResult = (result.get_mut()).unwrap();
+
+                let repo = Repo::new(path.to_string());
+
+                let ss = format!(
+                    "{} {}",
+                    "Status for".blue(),
+                    repo.path().green().underline()
+                );
+                if lines.is_empty() {
+                    if !only_modified {
+                        (*result)
+                            .add_repo_message(&repo, ss.dimmed().to_string());
+                    }
+                } else {
+                    (*result).add_repo_message(&repo, ss.to_string());
+                }
+                for line in lines {
+                    (*result).add_repo_message(&repo, line);
+                }
             }
-        }
-
-        let repo = Repo::new(path.to_string());
-
-        let ss = format!(
-            "{} {}",
-            "Status for".blue(),
-            repo.path().green().underline()
-        );
-        if lines.is_empty() {
-            if !only_modified {
-                result.add_repo_message(&repo, ss.dimmed().to_string());
-            }
-        } else {
-            result.add_repo_message(&repo, ss.to_string());
-        }
-        for line in lines {
-            result.add_repo_message(&repo, line);
-        }
+            return result;
+        });
+        let ac: Arc<Mutex<GitGlobalResult>> =
+            j.join().expect("Arc unwrap failure!");
+        let acb: GitGlobalResult = Arc::try_unwrap(ac)
+            .expect("preCommand failed")
+            .into_inner()
+            .expect("Mutex unwrap failure!");
+        resvec.push(acb);
+        // resvec.push(j.join().unwrap().into_inner().unwrap().clone());
+        // vec![]
     }
-    Ok(result)
+    // Err(GitGlobalError::BadSubcommand("whoops".to_string()))
+    Ok(resvec.remove(0))
+    // Ok((*result).into_inner().unwrap())
 }

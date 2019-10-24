@@ -4,7 +4,7 @@ use std::collections::HashMap;
 /// The result of a git-global subcommand.
 ///
 /// Contains overall messages, per-repo messages, and a list of repos.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct GitGlobalResult {
     messages: Vec<String>,
     pub repos: Vec<Repo>,
@@ -93,8 +93,23 @@ impl GitGlobalResult {
         println!("{:#}", json);
     }
 
+    /// prob a bad idea but want to be able to merge results for purposes of threads and results
+    pub fn merge_ggr(&mut self, mut ggr: GitGlobalResult) {
+        // GitGlobalResult::new(repos: &Vec<Repo>)
+        self.messages.append(&mut ggr.messages);
+        self.repos.append(&mut ggr.repos);
+        self.repo_messages.extend(ggr.repo_messages);
+        // *self
+        // GitGlobalResult {
+        //     messages: self.messages,
+        //     repos: self.repos,
+        //     repo_messages: self.repo_messages,
+        //     flag_pad_repo_output: false,
+        // }
+    }
+
     /**
-       When we need to get all the tags from the current tags
+               When we need to get all the tags from the current tags
     */
     pub fn all_tags(&self) -> Vec<&RepoTag> {
         // self.repos

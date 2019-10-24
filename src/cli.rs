@@ -1,6 +1,6 @@
 //! The command line interface for git-global.
 
-use clap::{App, Arg, Shell, SubCommand};
+use clap::{App, Arg, ArgMatches, Shell, SubCommand};
 use std::io::{stderr, Write};
 
 use repo::errors;
@@ -142,7 +142,7 @@ pub fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
 /// `STDOUT` and returns an exit code.
 pub fn run_from_command_line() -> i32 {
     let clap_app = get_clap_app();
-    let matches = clap_app.get_matches();
+    let matches: ArgMatches<'static> = clap_app.get_matches();
     let use_json = matches.is_present("json");
 
     // if matches.is_present("generate-zsh-completions") {
@@ -223,16 +223,21 @@ fn get_status(matches: clap::ArgMatches) -> errors::Result<GitGlobalResult> {
 }
 
 fn get_new_status(
-    matches: clap::ArgMatches,
+    matches: clap::ArgMatches<>,
+    // matches: clap::ArgMatches<'static>,
 ) -> errors::Result<GitGlobalResult> {
     let modified = matches
         .subcommand_matches("new-status")
         .unwrap()
         .is_present("modified");
+    // let path_filter: Option<&'static str> = matches
     let path_filter = matches
         .subcommand_matches("new-status")
         .unwrap()
-        .value_of("path_filter");
+        // .value_of("path_filter").map(|s| s.clone());
+        .value_of("path_filter")
+        // .cloned();
+        .map(|s| String::from(s));
     let ignore_untracked = matches
         .subcommand_matches("new-status")
         .unwrap()
@@ -240,7 +245,8 @@ fn get_new_status(
     subcommands::new_status::get_results(
         modified,
         ignore_untracked,
-        path_filter,
+        path_filter
+        // (path_filter as Option<&'static str>),
     )
 }
 
