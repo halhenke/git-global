@@ -20,7 +20,8 @@ use self::cursive::{Printer, XY};
 use itertools::Itertools;
 use repo::errors::Result as WeirdResult;
 use repo::{
-    save_repos_and_tags, GitGlobalConfig, GitGlobalResult, Repo, RepoTag,
+    light_table::LightTable, save_repos_and_tags, GitGlobalConfig,
+    GitGlobalResult, Repo, RepoTag,
 };
 use std::borrow::BorrowMut;
 use std::cell::Ref;
@@ -37,131 +38,6 @@ type RcRepo = Rc<RefCell<Repo>>;
 type RcRepoTag = Rc<RefCell<RepoTag>>;
 type RcVecRepoTag = Rc<RefCell<Vec<RepoTag>>>;
 type RcVecRepo = Rc<RefCell<Vec<Repo>>>;
-
-#[derive(PartialEq, Eq, Clone, Debug)]
-struct LightTable {
-    repos: Vec<Repo>,
-    repo_index: usize,
-    tag_index: usize,
-    tags: Vec<RepoTag>,
-}
-
-impl LightTable {
-    pub fn new(
-        repos: Vec<Repo>,
-        repo_index: usize,
-        tag_index: usize,
-        tags: Vec<RepoTag>,
-    ) -> LightTable {
-        LightTable {
-            repos,
-            repo_index,
-            tag_index,
-            tags,
-        }
-    }
-    pub fn new_from_rc(
-        repos: Vec<Repo>,
-        repo_index: usize,
-        tag_index: usize,
-        tags: Vec<RepoTag>,
-    ) -> Rc<RefCell<LightTable>> {
-        Rc::new(RefCell::new(Self::new(repos, repo_index, tag_index, tags)))
-    }
-
-    pub fn selectify_repos(&self) -> Vec<(&str, usize)> {
-        self.repos
-            .iter()
-            .enumerate()
-            .map(|(i, r)| (r.path.as_str(), i))
-            .collect::<Vec<(&str, usize)>>()
-    }
-
-    pub fn selectify_tags(&self, index: usize) -> Vec<(&str, usize)> {
-        self.repos
-            .iter()
-            .nth(index)
-            .expect("ERROR - index requested outside of repos bounds")
-            .tags
-            .iter()
-            .enumerate()
-            .map(|(i, t)| (t.name.as_str(), i))
-            .collect::<Vec<(&str, usize)>>()
-    }
-
-    pub fn all_the_tags(&self) -> Vec<(String, usize)> {
-        let mut r = self
-            .repos
-            .iter()
-            .flat_map(|r| r.tags.iter().map(|t| t.name.clone()))
-            .chain::<Vec<String>>(
-                vec!["haskell", "ml", "rust", "apple", "web dev"]
-                    .into_iter()
-                    .map(String::from)
-                    .collect(),
-            )
-            .unique()
-            .enumerate()
-            .map(|(i, t)| (t, i))
-            .collect::<Vec<(String, usize)>>();
-        r.sort();
-        r
-    }
-
-    pub fn retags(&mut self) -> Vec<(String, usize)> {
-        self.reset_all_tags();
-        self.tags_as_list()
-    }
-
-    pub fn tags_as_list(&self) -> Vec<(String, usize)> {
-        self.tags
-            .iter()
-            .map(|r| r.name.clone())
-            .enumerate()
-            .map(|(i, t)| (t, i))
-            .collect()
-    }
-
-    pub fn reset_all_tags(&mut self) {
-        let mut _tmp: Vec<(RepoTag)> = self
-            .repos
-            .iter()
-            .flat_map(|r| r.tags.clone())
-            .chain::<Vec<RepoTag>>(
-                vec!["haskell", "ml", "rust", "apple", "web dev"]
-                    .into_iter()
-                    .map(RepoTag::new)
-                    // .map(String::from)
-                    .collect(),
-            )
-            .unique()
-            .collect::<Vec<RepoTag>>();
-        _tmp.sort();
-        self.tags = _tmp;
-    }
-
-    pub fn all_tags(&self) -> Vec<(String, usize)> {
-        vec!["haskell", "ml", "rust", "apple", "web dev"]
-            .iter()
-            .map(|t| RepoTag::new(t))
-            .enumerate()
-            .map(|(i, t)| (t.name, i))
-            .collect::<Vec<(String, usize)>>()
-    }
-
-    pub fn add_tag(&mut self, rt: &RepoTag) -> bool {
-        let current_repo = self
-            .repos
-            .get_mut(self.repo_index)
-            .expect("could not get current repo");
-        if current_repo.tags.contains(rt) {
-            return false;
-        }
-        current_repo.tags.push(rt.clone());
-        self.retags();
-        return true;
-    }
-}
 
 fn fetch_all_tags<'a>(light_table: &'a mut LightTable) -> &mut Vec<RepoTag> {
     let _current_repo: usize = light_table.repo_index;
@@ -285,7 +161,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     // logger::init();
 
     let gc = GitGlobalConfig::new();
-    let mut reps: Vec<Repo> = gc.get_cached_repos();
+    let reps: Vec<Repo> = gc.get_cached_repos();
     let mut fake_more_tags: Vec<RepoTag> =
         ["haskell", "ml", "rust", "apple", "web dev"]
             .to_owned()

@@ -1,11 +1,9 @@
 //! The command line interface for git-global.
 
 use clap::{App, Arg, ArgMatches, Shell, SubCommand};
+use repo::{errors, light_table::LightTable, GitGlobalError, GitGlobalResult};
 use std::io::{stderr, Write};
 
-use repo::errors;
-use repo::GitGlobalError;
-use repo::GitGlobalResult;
 use subcommands;
 
 // use dirs::home_dir;
@@ -223,20 +221,16 @@ fn get_status(matches: clap::ArgMatches) -> errors::Result<GitGlobalResult> {
 }
 
 fn get_new_status(
-    matches: clap::ArgMatches<>,
-    // matches: clap::ArgMatches<'static>,
+    matches: clap::ArgMatches,
 ) -> errors::Result<GitGlobalResult> {
     let modified = matches
         .subcommand_matches("new-status")
         .unwrap()
         .is_present("modified");
-    // let path_filter: Option<&'static str> = matches
     let path_filter = matches
         .subcommand_matches("new-status")
         .unwrap()
-        // .value_of("path_filter").map(|s| s.clone());
         .value_of("path_filter")
-        // .cloned();
         .map(|s| String::from(s));
     let ignore_untracked = matches
         .subcommand_matches("new-status")
@@ -245,19 +239,15 @@ fn get_new_status(
     subcommands::new_status::get_results(
         modified,
         ignore_untracked,
-        path_filter
-        // (path_filter as Option<&'static str>),
+        path_filter,
     )
 }
 
 /// Writes results to STDOUT, as either text or JSON, and returns `0`.
 fn show_results(results: GitGlobalResult, use_json: bool) -> i32 {
-    // println!("SHOW RESULTS");
     if use_json {
-        // println!("SHOW RESULTS - json");
         results.print_json();
     } else {
-        // println!("SHOW RESULTS - no json");
         results.print();
     }
     0
