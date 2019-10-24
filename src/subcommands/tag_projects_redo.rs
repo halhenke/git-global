@@ -20,24 +20,14 @@ use self::cursive::{Printer, XY};
 use itertools::Itertools;
 use repo::errors::Result as WeirdResult;
 use repo::{
-    light_table::LightTable, save_repos_and_tags, GitGlobalConfig,
-    GitGlobalResult, Repo, RepoTag,
+    light_table::{LightTable, RcVecRepo, RcVecRepoTag},
+    save_repos_and_tags, GitGlobalConfig, GitGlobalResult, Repo, RepoTag,
 };
 use std::borrow::BorrowMut;
 use std::cell::Ref;
 
 // use std::vec::IntoIter;
 use std::iter::{IntoIterator, Iterator};
-
-type RMut = Rc<RefCell<TextContent>>;
-type RcResult = Rc<GitGlobalResult>;
-type RcRcResult = Rc<RefCell<GitGlobalResult>>;
-
-type RcRef<V> = Rc<RefCell<V>>;
-type RcRepo = Rc<RefCell<Repo>>;
-type RcRepoTag = Rc<RefCell<RepoTag>>;
-type RcVecRepoTag = Rc<RefCell<Vec<RepoTag>>>;
-type RcVecRepo = Rc<RefCell<Vec<Repo>>>;
 
 fn fetch_all_tags<'a>(light_table: &'a mut LightTable) -> &mut Vec<RepoTag> {
     let _current_repo: usize = light_table.repo_index;
@@ -50,111 +40,6 @@ fn fetch_all_tags<'a>(light_table: &'a mut LightTable) -> &mut Vec<RepoTag> {
 
 pub fn repo_2_name<'a>(s: &'a str) -> &'a str {
     s.rsplit("/").collect::<Vec<&str>>().first().unwrap()
-}
-
-#[allow(dead_code)]
-type SelRepoList<'a> =
-    std::iter::Zip<std::vec::IntoIter<&'a str>, std::vec::IntoIter<Repo>>;
-
-#[allow(dead_code)]
-type SelRepoList2 = std::iter::Zip<String, Repo>;
-
-type SelTagList<'a> =
-    std::iter::Zip<std::vec::IntoIter<&'a str>, std::vec::IntoIter<String>>;
-
-fn selectify_strings<'a>(tags_1: &'a Vec<String>) -> SelTagList<'a> {
-    let tags_2: Vec<&'a str> = tags_1.iter().map(AsRef::as_ref).collect();
-    return tags_2.into_iter().zip(tags_1.to_vec());
-}
-
-fn selectify_rc_tags<'a>(rctags: &'a RcVecRepoTag) -> Vec<String> {
-    return rc_borr!(rctags)
-        .iter()
-        .map(|r| r.name.clone())
-        .collect::<Vec<String>>();
-}
-
-fn selectify_repos(repos: &RcVecRepo) -> Vec<(String, Repo)> {
-    return RefCell::borrow_mut(&repos)
-        .clone()
-        .into_iter()
-        .map(|r| (r.path.clone(), r))
-        .collect();
-}
-
-/// General selectifier for RC types
-fn selectify_rc_things<R>(
-    // fn selectify_rc_things<R, T>(
-    things: &Rc<RefCell<Vec<R>>>,
-    map_fn: impl Fn(R) -> (String, R), // note: This gives a Sized error when used with `dyn` instead of `impl`
-) -> Vec<(String, R)>
-where
-    R: Clone,
-    // T: IntoIterator<
-    //     Item = (String, R),
-    //     // IntoIter = ::std::vec::IntoIter<(String, R)>,
-    // >,
-{
-    return RefCell::borrow_mut(&things)
-        .clone()
-        .into_iter()
-        .map(map_fn)
-        // .collect::<T>();
-        .collect();
-    // let strs: Vec<String> = RefCell::borrow_mut(things.deref())
-    //     .iter()
-    //     .map(|f| format!("{:?}", f))
-    //     .collect();
-    // return strs.into_iter().zip(things.into_iter()).collect();
-}
-
-fn selectify_rc_things_backwards<R>(
-    things: &Rc<RefCell<Vec<R>>>,
-    map_fn: impl Fn(R) -> (R, String), // note: This gives a Sized error when used with `dyn` instead of `impl`
-) -> Vec<(R, String)>
-where
-    R: Clone,
-{
-    return RefCell::borrow_mut(&things)
-        .clone()
-        .into_iter()
-        .map(map_fn)
-        .collect();
-    // let strs: Vec<String> = RefCell::borrow_mut(things.deref())
-    //     .iter()
-    //     .map(|f| format!("{:?}", f))
-    //     .collect();
-    // return strs.into_iter().zip(things.into_iter()).collect();
-}
-
-fn selectify_things_two<T>(
-    things: Vec<T>,
-    map_fn: impl Fn(T) -> (String, T),
-) -> Vec<(String, T)>
-where
-    T: std::fmt::Debug,
-{
-    // let strs: Vec<String> = things.into_iter().map(map_fn).collect();
-    let strs = things.into_iter().map(map_fn).collect();
-    // let strs: Vec<String> = things.iter().map(|f| format!("{:?}", f)).collect();
-    // return strs.into_iter().zip(things.into_iter()).collect();
-    return strs;
-}
-
-fn selectify_things<T>(things: Vec<T>) -> Vec<(String, T)>
-where
-    T: std::fmt::Debug,
-{
-    let strs: Vec<String> = things.iter().map(|f| format!("{:?}", f)).collect();
-    return strs.into_iter().zip(things.into_iter()).collect();
-    // return things.into_iter().zip(strs.iter()).collect();
-
-    // return RefCell::borrow_mut(&repos)
-    //     .clone()
-    //     .into_iter()
-    //     .map(|r| (r.path.clone(), r))
-    //     // .map(|r| (r.path.clone(), Rc::new(RefCell::new(r))))
-    //     .collect();
 }
 
 pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
