@@ -62,7 +62,9 @@ pub fn get_results(
     }
     // r.iter().for_each(|(path, lines)| {
     // });
-    let mut resvec: Vec<GitGlobalResult> = vec![];
+    type ArMuGgr = Arc<Mutex<GitGlobalResult>>;
+    let mut resvec: Vec<ArMuGgr> = vec![];
+    // let mut resvec: Vec<GitGlobalResult> = vec![];
     let pf = Arc::new(path_filter);
     let result: Arc<Mutex<GitGlobalResult>> = Arc::new(Mutex::new(result));
 
@@ -118,17 +120,32 @@ pub fn get_results(
             }
             return result;
         });
+        // let ac: Arc<Mutex<GitGlobalResult>> =
+        //     j.join().expect("Arc unwrap failure!");
         let ac: Arc<Mutex<GitGlobalResult>> =
             j.join().expect("Arc unwrap failure!");
-        let acb: GitGlobalResult = Arc::try_unwrap(ac)
-            .expect("preCommand failed")
-            .into_inner()
-            .expect("Mutex unwrap failure!");
-        resvec.push(acb);
+        // let acb: GitGlobalResult = Arc::try_unwrap(ac)
+        //     .expect("preCommand failed")
+        //     .into_inner()
+        //     .expect("Mutex unwrap failure!");
+        // resvec.push(ac);
+        // resvec.push(acb);
         // resvec.push(j.join().unwrap().into_inner().unwrap().clone());
         // vec![]
     }
+
+    // let ac: Arc<Mutex<GitGlobalResult>> =
+    //     j.join().expect("Arc unwrap failure!");
+    // let acb: GitGlobalResult = Arc::try_unwrap(resvec.remove(0))
+    //     .expect("preCommand failed")
+    //     .into_inner()
+    //     .expect("Mutex unwrap failure!");
+
     // Err(GitGlobalError::BadSubcommand("whoops".to_string()))
-    Ok(resvec.remove(0))
+    Ok(Arc::try_unwrap(result)
+        .expect("preCommand failed")
+        .into_inner()
+        .expect("Mutex unwrap failure!"))
+    // Ok(resvec.remove(0))
     // Ok((*result).into_inner().unwrap())
 }
