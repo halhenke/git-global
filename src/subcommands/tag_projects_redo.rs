@@ -47,7 +47,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
 
     let gc = GitGlobalConfig::new();
     let reps: Vec<Repo> = gc.get_cached_repos();
-    let mut fake_more_tags: Vec<RepoTag> =
+    let fake_more_tags: Vec<RepoTag> =
         ["haskell", "ml", "rust", "apple", "web dev"]
             .to_owned()
             .into_iter()
@@ -61,6 +61,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     let repo_ref = Rc::clone(&global_table);
     let repo_tag_ref = Rc::clone(&global_table);
     let all_tags_ref = Rc::clone(&global_table);
+    let final_ref = Rc::clone(&global_table);
     // =================================================
     //  TAKE 2
     // =================================================
@@ -337,11 +338,17 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     );
     // #[rock]
     siv.add_global_callback('q', move |s1| {
-        s1.quit();
+        // s1.quit();
         trace!("agg1");
         // let more_reps = rreps.clone();
         // let more_tags = config_tags.clone();
+        let lighttable = (*final_ref)
+            .try_borrow_mut()
+            .expect("final lighttable failed");
+        let more_reps = lighttable.repos.clone();
+        let more_tags = lighttable.tags.clone();
         // save_repos_and_quit(s1, more_reps, more_tags);
+        save_repos_and_quit(s1, more_reps, more_tags);
         trace!("agg2");
     });
     // debug_buffer.append_elements(["hey"]);
@@ -392,27 +399,30 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     /// Final behaviour - for some reason this only works inside this block
     fn save_repos_and_quit(
         s: &mut Cursive,
-        reps: RcVecRepo,
-        tags: RcVecRepoTag,
+        reps: Vec<Repo>,
+        tags: Vec<RepoTag>,
     ) {
         // fn save_repos_and_quit(s: &mut Cursive, reps: RcVecRepo, tags: RcVecRepoTag, repsmo: *const Vec<Repo>) {
 
-        trace!("srq1: {}", Rc::strong_count(&reps));
+        // trace!("srq1: {}", Rc::strong_count(&reps));
         // let ireps = Rc::try_unwrap(reps).expect("we have the repos");
         // let itags = Rc::try_unwrap(tags).expect("we have the tags");
-        trace!("srq2");
+        // trace!("srq2");
 
         // let tmp = &ireps.clone();
-        trace!("srq3");
-        let irepst = RefCell::borrow(&reps);
-        let ireps = irepst.deref();
-        let itagst = RefCell::borrow(&tags);
-        // borrow(&tags);
-        let itags = itagst.deref();
+        // trace!("srq3");
         // save_repos_and_tags(ireps.into_inner(), itags.into_inner());
-        save_repos_and_tags(ireps.clone(), itags.clone());
+
+        // save_repos_and_tags(ireps.clone(), itags.clone());
 
         // s.quit();
+        debug_write_file(
+            reps.into_iter()
+                .filter(|f| !f.tags.is_empty())
+                .map(|s| s.path)
+                .collect(),
+            "tmp_out",
+        );
         s.cb_sink()
             .send(Box::new(|siv: &mut Cursive| siv.quit()))
             .expect("thread send failed");
