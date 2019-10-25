@@ -414,15 +414,9 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
         // save_repos_and_tags(ireps.into_inner(), itags.into_inner());
 
         // save_repos_and_tags(ireps.clone(), itags.clone());
+        save_repos_and_tags(reps, tags);
 
         // s.quit();
-        debug_write_file(
-            reps.into_iter()
-                .filter(|f| !f.tags.is_empty())
-                .map(|s| s.path)
-                .collect(),
-            "tmp_out",
-        );
         s.cb_sink()
             .send(Box::new(|siv: &mut Cursive| siv.quit()))
             .expect("thread send failed");
