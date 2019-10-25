@@ -53,7 +53,14 @@ pub fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
         )
         .subcommand(
             SubCommand::with_name("list")
-                .about("lists all git repos on your machine [the default]"),
+                .about("lists all git repos on your machine [the default]")
+                .arg(
+                    Arg::with_name("path_filter")
+                        .short("p")
+                        .long("paths")
+                        .takes_value(true)
+                        .required(false),
+                ),
         )
         .subcommand(
             SubCommand::with_name("list-tags")
@@ -161,7 +168,14 @@ pub fn run_from_command_line() -> i32 {
                 .is_present("raw");
             subcommands::info::get_results(raw_info)
         }
-        Some("list") => subcommands::list::get_results(),
+        // Some("list") => subcommands::list::get_results(),
+        Some("list") => {
+            let path_filter = matches
+                .subcommand_matches("list")
+                .unwrap()
+                .value_of("path_filter");
+            subcommands::list::get_results(path_filter)
+        }
         Some("list-tags") => subcommands::list_tags::get_results(),
         Some("add-tags") => subcommands::add_tags::go(),
         Some("filter") => {
