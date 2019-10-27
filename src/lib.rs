@@ -75,6 +75,8 @@ extern crate take_mut;
 extern crate crossbeam_channel;
 extern crate cursive;
 extern crate jwalk;
+#[macro_use]
+extern crate ring_queue;
 
 mod cli;
 pub mod repo;

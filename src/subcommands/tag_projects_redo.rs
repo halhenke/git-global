@@ -1,21 +1,28 @@
+#![feature(trait_alias)]
+
 use std;
+use std::any::Any;
 use std::cell::RefCell;
 use std::ops::Deref;
 use std::rc::Rc;
 extern crate cursive;
 
+use ring_queue::Ring;
 use std::fs::OpenOptions;
 use std::io::Write;
 
-use self::cursive::event::{Callback, Event, EventResult, Key};
+use self::cursive::event::{Callback, Event, EventResult, EventTrigger, Key};
 use self::cursive::logger;
 use self::cursive::logger::{log, Record};
 use self::cursive::traits::*;
-use self::cursive::views::{
-    BoxView, DebugView, EditView, IdView, LinearLayout, OnEventView, Panel,
-    SelectView, TextContent, TextView, ViewRef,
-};
 use self::cursive::Cursive;
+use self::cursive::{
+    view::ViewWrapper,
+    views::{
+        BoxView, CircularFocus, DebugView, EditView, IdView, LinearLayout,
+        OnEventView, Panel, SelectView, TextContent, TextView, ViewRef,
+    },
+};
 use self::cursive::{Printer, XY};
 use itertools::Itertools;
 use repo::errors::Result as WeirdResult;
@@ -47,13 +54,14 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
 
     let gc = GitGlobalConfig::new();
     let reps: Vec<Repo> = gc.get_cached_repos();
-    let fake_more_tags: Vec<RepoTag> =
-        ["haskell", "ml", "rust", "apple", "web dev"]
-            .to_owned()
-            .into_iter()
-            .map(|&t| RepoTag::new(t))
-            .collect();
-    let global_table = LightTable::new_from_rc(reps, 0, 0, fake_more_tags);
+    // let fake_more_tags: Vec<RepoTag> =
+    //     ["haskell", "ml", "rust", "apple", "web dev"]
+    //         .to_owned()
+    //         .into_iter()
+    //         .map(|&t| RepoTag::new(t))
+    //         .collect();
+    let global_table =
+        LightTable::new_from_rc(reps, 0, 0, vec![] as Vec<RepoTag>);
     let mut _g = (*global_table).borrow_mut();
     _g.reset_all_tags();
     drop(_g);
@@ -68,13 +76,86 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     trace!("go");
 
     let mut siv = Cursive::default();
-    let main_theme = siv.load_theme_file("assets/style.toml").unwrap();
+    let _main_theme = siv.load_theme_file("assets/style.toml").unwrap();
+
+    const DEBUG_VIEW: &str = "debug-view";
+    const TEXT_VIEW: &str = "text-view";
+    const REPO_FIELD: &str = "repo-field";
+    const TAG_DISPLAY: &str = "tag-display";
+    const TAG_POOL: &str = "tag-pool";
+    const NEW_TAG: &str = "new-tag";
+
+    let mut focus_ring: Ring<&str> =
+        ring![REPO_FIELD, TAG_DISPLAY, TAG_POOL, NEW_TAG];
+
+    struct Foci<'a> {
+        ring: Ring<&'a str>,
+    }
+
+    impl<'a> Foci<'a> {
+        pub fn new(ring: Ring<&str>) -> Foci {
+            Foci { ring }
+        }
+
+        pub fn make_event_layer<S, T, E, M>(
+            &mut self,
+            s: &mut Cursive,
+            e: Event,
+            // from: impl View,
+            from: T,
+            cb: M, // from: Box<S>,
+                   // ) -> ()
+        ) -> OnEventView<T>
+        where
+            S: View,
+            // S: Box<dyn View>,
+            T: ViewWrapper,
+            E: Into<EventTrigger>,
+            M: 'static + Fn(&mut Cursive),
+        {
+            //     // let f: dyn (Fn(OnEventView<_>) -> OnEventView<_>) =
+            //     // trait FF = Fn(&'static mut Cursive);
+            //     // type FFF = Box<(dyn FF) + 'static>;
+            //     // trait F = 'static + Fn(&mut Cursive);
+            //     // type H = dyn |s| {self.focus_change(s, e)};
+            //     trait G: Fn(&mut Cursive) {}
+            //     // impl G for
+            //     type F = dyn 'static + Fn(&mut Cursive);
+            //     // type F = dyn 'static + G;
+            //     // type F = dyn 'static + G;
+            //     // let f: Box<G> = Box::new(|s| self.focus_change(s, e));
+            //     // let f: FF = Box::new(|s| self.focus_change(s, e));
+            //     static ff: Box<Fn(&mut Cursive)> =
+            //         Box::new(|s| self.focus_change(s, e));
+            //     // let f: Box<F> = Box::new(|s| self.focus_change(s, e));
+            OnEventView::new(from)
+                // .on_event(e, f)
+                // .on_event(e, move |s| self.focus_change(s, e))
+                .on_event(e, cb)
+        }
+
+        pub fn focus_change<'b>(&mut self, s: &mut Cursive, e: Event) -> () {
+            match e {
+                Event::Key(Key::Right) => s.focus_id((self.ring).rotate(1)[0]),
+                Event::Key(Key::Left) => s.focus_id((self.ring).rotate(-1)[0]),
+                _ => Ok(()),
+            }
+            .unwrap()
+        }
+
+        pub fn get_view<T>(&self, s: &mut Cursive, id: &str) -> ViewRef<T>
+        where
+            T: View + Any,
+        {
+            s.find_id(id).unwrap()
+        }
+    }
 
     // https://github.com/gyscos/Cursive/issues/179
 
     // VIEWS
     let error_view_inner = DebugView::new();
-    let error_view_id = error_view_inner.with_id("debug-view");
+    let error_view_id = error_view_inner.with_id(DEBUG_VIEW);
     let error_view = error_view_id.max_height(20);
 
     let text_view_inner = TextView::new("Begin...");
@@ -91,23 +172,23 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
             let new_tag = RepoTag::new(new_text);
             if light_table.add_tag(&new_tag) {
                 let mut dd: ViewRef<SelectView<usize>> =
-                    s.find_id("tag-display").unwrap();
+                    s.find_id(TAG_DISPLAY).unwrap();
                 &dd.clear();
                 &dd.add_all(light_table.selectify_tags(light_table.repo_index));
 
                 let mut ee: ViewRef<SelectView<usize>> =
-                    s.find_id("tag-pool").unwrap();
+                    s.find_id(TAG_POOL).unwrap();
                 &ee.clear();
                 // &dd.add_all(light_table.selectify_tags(_current_repo));
                 &ee.add_all(light_table.retags());
 
                 let mut s_view: ViewRef<EditView> =
-                    s.find_id("new-tag").expect("Could not find view");
+                    s.find_id(NEW_TAG).expect("Could not find view");
                 // let content = (*s_view).get_content().clone();
                 s_view.set_content("");
             }
         });
-    let new_tag_id = (new_tag_inner).with_id("new-tag");
+    let new_tag_id = (new_tag_inner).with_id(NEW_TAG);
     let new_tag = new_tag_id.max_height(10);
 
     // =================================================
@@ -119,22 +200,22 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
             (*repo_ref).borrow_mut().repo_index = *ss;
 
             let mut dd: ViewRef<SelectView<usize>> =
-                s.find_id("tag-display").unwrap();
+                s.find_id(TAG_DISPLAY).unwrap();
             &dd.clear();
             &dd.add_all((*repo_ref).borrow().selectify_tags(*ss));
 
-            let mut tt: ViewRef<TextView> = s.find_id("text-view").unwrap();
-            let mut content = String::new();
+            // let mut tt: ViewRef<TextView> = s.find_id("text-view").unwrap();
+            // let mut content = String::new();
             let mut _light_table = (*repo_ref).borrow_mut();
             _light_table.retags();
-            let _content =
-                vec![format!("Current Tags:\n{:#?}", _light_table.tags)]
-                    .iter()
-                    .for_each(|s| content.push_str(s));
-            &tt.set_content(content);
+            // let _content =
+            //     vec![format!("Current Tags:\n{:#?}", _light_table.tags)]
+            //         .iter()
+            //         .for_each(|s| content.push_str(s));
+            // &tt.set_content(content);
         });
 
-    let repo_selector_id = repo_selector_inner.with_id("repo-field");
+    let repo_selector_id = repo_selector_inner.with_id(REPO_FIELD);
     let repo_selector =
         repo_selector_id.scrollable().min_width(20).max_height(10);
 
@@ -146,16 +227,16 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
         let _current_repo = (*rr).borrow().repo_index;
         (*rr).borrow().selectify_tags(_current_repo)
     });
-    let tags_displayer_id = tags_displayer_inner.with_id("tag-display");
+    let tags_displayer_id = tags_displayer_inner.with_id(TAG_DISPLAY);
     let tags_displayer_outer = tags_displayer_id.min_width(20).max_height(10);
     let tags_displayer = OnEventView::new(tags_displayer_outer)
         .on_event(Event::Key(Key::Esc), |s| {
-            s.focus_id("repo-field").expect("...")
+            s.focus_id(REPO_FIELD).expect("...")
         })
         .on_event(Event::Key(Key::Backspace), move |s| {
             // note: we can find our own view here but maybe because we are wrapped in an `OnEventView`
             let mut this: ViewRef<SelectView<usize>> =
-                s.find_id("tag-display").unwrap();
+                s.find_id(TAG_DISPLAY).unwrap();
             let i: usize = this.selected_id().expect("Couldnt get selected id");
             let deleted_tag: String = String::from(
                 (*this)
@@ -186,21 +267,21 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
 
             // UPDATE ALL TAGS
             let mut all_tag_view: ViewRef<SelectView<usize>> =
-                s.find_id("tag-pool").unwrap();
+                s.find_id(TAG_POOL).unwrap();
             (*all_tag_view).clear();
             (*all_tag_view).add_all(_light_table.retags());
 
             // LOG STUFF
-            let mut tt: ViewRef<TextView> = s.find_id("text-view").unwrap();
-            let mut content = String::new();
-            let _content = vec![
-                format!("Deleted Tag:\n{:#?}", deleted_tag),
-                // format!("Current Tag:\n{:#?}", _current_tag),
-                format!("Current Tags:\n{:#?}", _light_table.tags),
-            ]
-            .iter()
-            .for_each(|s| content.push_str(s));
-            &tt.set_content(content);
+            // let mut tt: ViewRef<TextView> = s.find_id("text-view").unwrap();
+            // let mut content = String::new();
+            // let _content = vec![
+            //     format!("Deleted Tag:\n{:#?}", deleted_tag),
+            //     // format!("Current Tag:\n{:#?}", _current_tag),
+            //     format!("Current Tags:\n{:#?}", _light_table.tags),
+            // ]
+            // .iter()
+            // .for_each(|s| content.push_str(s));
+            // &tt.set_content(content);
         });
 
     // =================================================
@@ -253,24 +334,24 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
             current_repo.tags.push(_current_tag.clone());
 
             let mut dd: ViewRef<SelectView<usize>> =
-                s.find_id("tag-display").unwrap();
+                s.find_id(TAG_DISPLAY).unwrap();
             &dd.clear();
             &dd.add_all(_light_table.selectify_tags(_current_repo));
 
-            let mut tt: ViewRef<TextView> = s.find_id("text-view").unwrap();
-            let mut content = String::new();
-            // we need to get rid of previous immutable ref to lighttable to call retagss
-            let tmp_tag = _current_tag.clone();
-            drop(_current_tag);
-            _light_table.retags();
-            let _content = vec![
-                format!("Current Tag:\n{:#?}", tmp_tag),
-                // format!("Current Tag:\n{:#?}", _current_tag),
-                format!("Current Tags:\n{:#?}", _light_table.tags),
-            ]
-            .iter()
-            .for_each(|s| content.push_str(s));
-            &tt.set_content(content);
+            // let mut tt: ViewRef<TextView> = s.find_id("text-view").unwrap();
+            // let mut content = String::new();
+            // // we need to get rid of previous immutable ref to lighttable to call retagss
+            // let tmp_tag = _current_tag.clone();
+            // drop(_current_tag);
+            // _light_table.retags();
+            // let _content = vec![
+            //     format!("Current Tag:\n{:#?}", tmp_tag),
+            //     // format!("Current Tag:\n{:#?}", _current_tag),
+            //     format!("Current Tags:\n{:#?}", _light_table.tags),
+            // ]
+            // .iter()
+            // .for_each(|s| content.push_str(s));
+            // &tt.set_content(content);
         });
     // .on_submit(move |s: &mut Cursive, ss: &RepoTag| {
     //     // (*tp_repo).replace_with(|rt| {
@@ -304,38 +385,40 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     //     );
     //     updated_display_tags(s, &((*tp_repo).borrow().deref()))
     // });
-    let tags_pool = tags_pool_inner.with_id("tag-pool");
+    let tags_pool = tags_pool_inner.with_id(TAG_POOL);
+
+    let top_layout = LinearLayout::horizontal()
+        .child(Panel::new(repo_selector))
+        .child(Panel::new(tags_displayer));
+    // .child(Panel::new(tags_displayer)),
+    //
+
+    let first_layer = LinearLayout::vertical()
+        .child(top_layout)
+        .child(
+            // sel_view
+            Panel::new(
+                OnEventView::new(tags_pool)
+                    .on_event_inner(Event::Key(Key::Esc), |s1, k| {
+                        let cb = Callback::from_fn(|siv: &mut Cursive| {
+                            siv.focus_id(REPO_FIELD)
+                                .expect("failed to focus on 'repo-field'");
+                        });
+                        return Some(EventResult::Consumed(Some(cb)));
+                    })
+                    // NOTE: Due to fucking annoying design this has to come
+                    // after/outside `OnEventView` - otherwise we never get to unwrap
+                    // properly
+                    .scrollable(),
+            ),
+        )
+        .child(Panel::new(new_tag));
+    // .child(Panel::new(error_view))
+    // .child(Panel::new(text_view)),
 
     // Main Window
-    siv.add_layer(
-        LinearLayout::vertical()
-            .child(
-                LinearLayout::horizontal()
-                    .child(Panel::new(repo_selector))
-                    .child(Panel::new(tags_displayer)),
-                // .child(Panel::new(tags_displayer)),
-            )
-            .child(
-                // sel_view
-                Panel::new(
-                    OnEventView::new(tags_pool)
-                        .on_event_inner(Event::Key(Key::Esc), |s1, k| {
-                            let cb = Callback::from_fn(|siv: &mut Cursive| {
-                                siv.focus_id("repo-field")
-                                    .expect("failed to focus on 'repo-field'");
-                            });
-                            return Some(EventResult::Consumed(Some(cb)));
-                        })
-                        // NOTE: Due to fucking annoying design this has to come
-                        // after/outside `OnEventView` - otherwise we never get to unwrap
-                        // properly
-                        .scrollable(),
-                ),
-            )
-            // .child(Panel::new(error_view))
-            .child(Panel::new(new_tag))
-            .child(Panel::new(text_view)),
-    );
+    siv.add_layer(first_layer);
+    // siv.add_layer(CircularFocus::new(first_layer, false, true));
     // #[rock]
     siv.add_global_callback('q', move |s1| {
         // s1.quit();
@@ -368,7 +451,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     //     // );
 
     //     let mut dd: ViewRef<SelectView<RepoTag>> =
-    //         siv.find_id("tag-display").unwrap();
+    //         siv.find_id(TAG_DISPLAY).unwrap();
     //     &dd.clear();
     //     // &dd.add_all(selectify_rc_things(&rs_tags, |t| (t.name.clone(), t)));
     //     // let t_tags: Vec<RepoTag> = r.get_tags();
@@ -402,21 +485,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
         reps: Vec<Repo>,
         tags: Vec<RepoTag>,
     ) {
-        // fn save_repos_and_quit(s: &mut Cursive, reps: RcVecRepo, tags: RcVecRepoTag, repsmo: *const Vec<Repo>) {
-
-        // trace!("srq1: {}", Rc::strong_count(&reps));
-        // let ireps = Rc::try_unwrap(reps).expect("we have the repos");
-        // let itags = Rc::try_unwrap(tags).expect("we have the tags");
-        // trace!("srq2");
-
-        // let tmp = &ireps.clone();
-        // trace!("srq3");
-        // save_repos_and_tags(ireps.into_inner(), itags.into_inner());
-
-        // save_repos_and_tags(ireps.clone(), itags.clone());
         save_repos_and_tags(reps, tags);
-
-        // s.quit();
         s.cb_sink()
             .send(Box::new(|siv: &mut Cursive| siv.quit()))
             .expect("thread send failed");
