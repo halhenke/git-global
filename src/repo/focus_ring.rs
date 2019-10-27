@@ -6,25 +6,46 @@ use cursive::{
 };
 use ring_queue::Ring;
 use std::any::Any;
+use std::cell::RefCell;
+use std::rc::Rc;
 
-pub const DEBUG_VIEW: &str = "debug-view";
-pub const TEXT_VIEW: &str = "text-view";
-pub const REPO_FIELD: &str = "repo-field";
-pub const TAG_DISPLAY: &str = "tag-display";
-pub const TAG_POOL: &str = "tag-pool";
-pub const NEW_TAG: &str = "new-tag";
+// pub DEBUG_VIEW: String = String::from("debug-view");
+// pub TEXT_VIEW: String = String::from("text-view");
+// pub REPO_FIELD: String = String::from("repo-field");
+// pub TAG_DISPLAY: String = String::from("tag-display");
+// pub TAG_POOL: String = String::from("tag-pool");
+// pub NEW_TAG: String = String::from("new-tag");
+// pub const DEBUG_VIEW: &str = "debug-view";
+// pub const TEXT_VIEW: &str = "text-view";
+// pub const REPO_FIELD: &str = "repo-field";
+// pub const TAG_DISPLAY: &str = "tag-display";
+// pub const TAG_POOL: &str = "tag-pool";
+// pub const NEW_TAG: &str = "new-tag";
 
-pub struct Foci<'a> {
-    ring: Ring<&'a str>,
+pub struct Foci {
+    ring: Ring<String>,
+    // ring: Ring<&'a str>,
 }
 
-impl<'a> Foci<'a> {
-    pub fn new(ring: Ring<&str>) -> Foci {
+impl Foci {
+    // impl<'a> Foci<'a> {
+    // pub const DEBUG_VIEW: String = String::from("debug-view");
+    // pub const TEXT_VIEW: String = String::from("text-view");
+    // pub const REPO_FIELD: String = String::from("repo-field");
+    // pub const TAG_DISPLAY: String = String::from("tag-display");
+    // pub const TAG_POOL: String = String::from("tag-pool");
+    // pub const NEW_TAG: String = String::from("new-tag");
+
+    pub fn new(ring: Ring<String>) -> Foci {
         Foci { ring }
     }
+    // pub fn new(ring: Ring<&str>) -> Foci {
+    //     Foci { ring }
+    // }
 
     pub fn make_event_layer<S, T, E, M>(
-        &mut self,
+        self,
+        // &mut self,
         s: &mut Cursive,
         e: Event,
         // from: impl View,
@@ -57,11 +78,14 @@ impl<'a> Foci<'a> {
         OnEventView::new(from)
             // .on_event(e, f)
             // .on_event(e, move |s| self.focus_change(s, e))
-            .on_event(e, cb)
+            .on_event(e.clone(), self.focus_change(s, e))
+        // .on_event(e, cb)
     }
 
-    pub fn focus_change<'b: 'a, T>(
-        &mut self,
+    pub fn focus_change(
+        // pub fn focus_change<'b: 'a, T>(
+        self,
+        // &mut self,
         s: &mut Cursive,
         e: Event,
     ) -> Box<dyn Fn(&mut Cursive) + 'static>
@@ -71,14 +95,23 @@ impl<'a> Foci<'a> {
     // where
         // T: dyn<Fn(&mut Cursive) + 'static>,
     {
-        Box::new(|s: &mut Cursive| {
-            s;
-            // match e {
-            //     Event::Key(Key::Right) => s.focus_id((self.ring).rotate(1)[0]),
-            //     Event::Key(Key::Left) => s.focus_id((self.ring).rotate(-1)[0]),
-            //     _ => Ok(()),
-            // }
-            // .unwrap();
+        // let s2 = Rc::new(RefCell::new(self.ring));
+        // let s2: Rc<RefCell<Ring<&str>>> = Rc::new(RefCell::new(self.ring));
+        let s2: Rc<RefCell<Ring<String>>> = Rc::new(RefCell::new(self.ring));
+        let e2: Rc<Event> = Rc::new(e);
+        // let e2: Rc<RefCell<Event>> = Rc::new(RefCell::new(e));
+        Box::new(move |s: &mut Cursive| {
+            // s;
+            match *e2 {
+                Event::Key(Key::Right) => {
+                    s.focus_id((s2.borrow_mut()).rotate(1)[0].as_str())
+                }
+                Event::Key(Key::Left) => {
+                    s.focus_id((s2.borrow_mut()).rotate(-1)[0].as_str())
+                }
+                _ => Ok(()),
+            }
+            .unwrap();
         })
     }
 

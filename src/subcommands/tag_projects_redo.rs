@@ -9,9 +9,9 @@ extern crate cursive;
 
 // use repo::Foci;
 use repo::focus_ring::Foci;
-use repo::focus_ring::{
-    DEBUG_VIEW, NEW_TAG, REPO_FIELD, TAG_DISPLAY, TAG_POOL, TEXT_VIEW,
-};
+// use repo::focus_ring::{
+//     DEBUG_VIEW, NEW_TAG, REPO_FIELD, TAG_DISPLAY, TAG_POOL, TEXT_VIEW,
+// };
 use ring_queue::Ring;
 use std::fs::OpenOptions;
 use std::io::Write;
@@ -57,8 +57,21 @@ pub fn repo_2_name<'a>(s: &'a str) -> &'a str {
 pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     // logger::init();
 
-    let mut focus_ring: Ring<&str> =
-        ring![REPO_FIELD, TAG_DISPLAY, TAG_POOL, NEW_TAG];
+    let DEBUG_VIEW: String = String::from("debug-view");
+    let TEXT_VIEW: String = String::from("text-view");
+    let REPO_FIELD: String = String::from("repo-field");
+    let TAG_DISPLAY: String = String::from("tag-display");
+    let TAG_POOL: String = String::from("tag-pool");
+    let NEW_TAG: String = String::from("new-tag");
+
+    let mut focus_ring: Ring<String> = ring![
+        REPO_FIELD.clone(),
+        TAG_DISPLAY.clone(),
+        TAG_POOL.clone(),
+        NEW_TAG.clone()
+    ];
+    // let mut focus_ring: Ring<&str> =
+    //     ring![REPO_FIELD, TAG_DISPLAY, TAG_POOL, NEW_TAG];
     let foci = Foci::new(focus_ring);
 
     let gc = GitGlobalConfig::new();
@@ -95,6 +108,9 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     // =================================================
     //  NEW TAG EDITOR
     // =================================================
+    let td = TAG_DISPLAY.clone();
+    let tp = TAG_POOL.clone();
+    let nt = NEW_TAG.clone();
     let mut new_tag_inner: EditView =
         EditView::new().on_submit_mut(move |s, new_text| {
             let mut light_table = (*edit_ref).borrow_mut();
@@ -102,35 +118,37 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
             let new_tag = RepoTag::new(new_text);
             if light_table.add_tag(&new_tag) {
                 let mut dd: ViewRef<SelectView<usize>> =
-                    s.find_id(TAG_DISPLAY).unwrap();
+                    s.find_id(&td).unwrap();
                 &dd.clear();
                 &dd.add_all(light_table.selectify_tags(light_table.repo_index));
 
                 let mut ee: ViewRef<SelectView<usize>> =
-                    s.find_id(TAG_POOL).unwrap();
+                    s.find_id(&tp).unwrap();
                 &ee.clear();
                 // &dd.add_all(light_table.selectify_tags(_current_repo));
                 &ee.add_all(light_table.retags());
 
                 let mut s_view: ViewRef<EditView> =
-                    s.find_id(NEW_TAG).expect("Could not find view");
+                    s.find_id(&nt).expect("Could not find view");
                 // let content = (*s_view).get_content().clone();
                 s_view.set_content("");
             }
         });
-    let new_tag_id = (new_tag_inner).with_id(NEW_TAG);
+    let nt = NEW_TAG.clone();
+    let new_tag_id = (new_tag_inner).with_id(&nt);
     let new_tag = new_tag_id.max_height(10);
 
     // =================================================
     //  REPO SELECTOR
     // =================================================
+    let rp = REPO_FIELD.clone();
+    let td = TAG_DISPLAY.clone();
     let repo_selector_inner: SelectView<usize> = SelectView::new()
         .with_all((*Rc::clone(&repo_ref)).borrow().selectify_repos())
         .on_select(move |s: &mut Cursive, ss: &usize| {
             (*repo_ref).borrow_mut().repo_index = *ss;
 
-            let mut dd: ViewRef<SelectView<usize>> =
-                s.find_id(TAG_DISPLAY).unwrap();
+            let mut dd: ViewRef<SelectView<usize>> = s.find_id(&td).unwrap();
             &dd.clear();
             &dd.add_all((*repo_ref).borrow().selectify_tags(*ss));
 
@@ -145,7 +163,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
             // &tt.set_content(content);
         });
 
-    let repo_selector_id = repo_selector_inner.with_id(REPO_FIELD);
+    let repo_selector_id = repo_selector_inner.with_id(&rp);
     let repo_selector =
         repo_selector_id.scrollable().min_width(20).max_height(10);
 
@@ -153,20 +171,22 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     //  TAGS DISPLAYER
     // =================================================
     let rr = Rc::clone(&repo_tag_ref);
+    let td = TAG_DISPLAY.clone();
+    let tp = TAG_POOL.clone();
     let tags_displayer_inner: SelectView<usize> = SelectView::new().with_all({
         let _current_repo = (*rr).borrow().repo_index;
         (*rr).borrow().selectify_tags(_current_repo)
     });
-    let tags_displayer_id = tags_displayer_inner.with_id(TAG_DISPLAY);
+    let tags_displayer_id = tags_displayer_inner.with_id(&td);
     let tags_displayer_outer = tags_displayer_id.min_width(20).max_height(10);
+    let rf = REPO_FIELD.clone();
     let tags_displayer = OnEventView::new(tags_displayer_outer)
         .on_event(Event::Key(Key::Esc), |s| {
-            s.focus_id(REPO_FIELD).expect("...")
+            s.focus_id("repo-field").expect("...")
         })
         .on_event(Event::Key(Key::Backspace), move |s| {
             // note: we can find our own view here but maybe because we are wrapped in an `OnEventView`
-            let mut this: ViewRef<SelectView<usize>> =
-                s.find_id(TAG_DISPLAY).unwrap();
+            let mut this: ViewRef<SelectView<usize>> = s.find_id(&td).unwrap();
             let i: usize = this.selected_id().expect("Couldnt get selected id");
             let deleted_tag: String = String::from(
                 (*this)
@@ -197,7 +217,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
 
             // UPDATE ALL TAGS
             let mut all_tag_view: ViewRef<SelectView<usize>> =
-                s.find_id(TAG_POOL).unwrap();
+                s.find_id(&tp).unwrap();
             (*all_tag_view).clear();
             (*all_tag_view).add_all(_light_table.retags());
 
@@ -217,6 +237,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     // =================================================
     //  TAGS POOL
     // =================================================
+    let td = TAG_DISPLAY.clone();
     let tags_pool_inner: SelectView<usize> = SelectView::new()
         // .with_all(selectify_strings(&ct))
         // .with_all((*Rc::clone(&repo_ref)).borrow().selectify_repos())
@@ -263,8 +284,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
 
             current_repo.tags.push(_current_tag.clone());
 
-            let mut dd: ViewRef<SelectView<usize>> =
-                s.find_id(TAG_DISPLAY).unwrap();
+            let mut dd: ViewRef<SelectView<usize>> = s.find_id(&td).unwrap();
             &dd.clear();
             &dd.add_all(_light_table.selectify_tags(_current_repo));
 
@@ -315,7 +335,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     //     );
     //     updated_display_tags(s, &((*tp_repo).borrow().deref()))
     // });
-    let tags_pool = tags_pool_inner.with_id(TAG_POOL);
+    let tags_pool = tags_pool_inner.with_id(&(&TAG_POOL).clone());
 
     let top_layout = LinearLayout::horizontal()
         .child(Panel::new(repo_selector))
@@ -323,6 +343,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     // .child(Panel::new(tags_displayer)),
     //
 
+    // let rp = REPO_FIELD.clone().as_str();
     let first_layer = LinearLayout::vertical()
         .child(top_layout)
         .child(
@@ -331,7 +352,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
                 OnEventView::new(tags_pool)
                     .on_event_inner(Event::Key(Key::Esc), |s1, k| {
                         let cb = Callback::from_fn(|siv: &mut Cursive| {
-                            siv.focus_id(REPO_FIELD)
+                            siv.focus_id("repo-field")
                                 .expect("failed to focus on 'repo-field'");
                         });
                         return Some(EventResult::Consumed(Some(cb)));
