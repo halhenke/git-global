@@ -60,14 +60,36 @@ impl<'a> Foci<'a> {
             .on_event(e, cb)
     }
 
-    pub fn focus_change<'b>(&mut self, s: &mut Cursive, e: Event) -> () {
-        match e {
-            Event::Key(Key::Right) => s.focus_id((self.ring).rotate(1)[0]),
-            Event::Key(Key::Left) => s.focus_id((self.ring).rotate(-1)[0]),
-            _ => Ok(()),
-        }
-        .unwrap()
+    pub fn focus_change<'b: 'a, T>(
+        &mut self,
+        s: &mut Cursive,
+        e: Event,
+    ) -> Box<dyn Fn(&mut Cursive) + 'static>
+// ) -> Box<dyn Fn(&'b mut Cursive) + 'static>
+// ) -> Box<(dyn for<'r> Fn(&'r mut cursive::Cursive) + 'static)>
+// ) -> Box<T>
+    // where
+        // T: dyn<Fn(&mut Cursive) + 'static>,
+    {
+        Box::new(|s: &mut Cursive| {
+            s;
+            // match e {
+            //     Event::Key(Key::Right) => s.focus_id((self.ring).rotate(1)[0]),
+            //     Event::Key(Key::Left) => s.focus_id((self.ring).rotate(-1)[0]),
+            //     _ => Ok(()),
+            // }
+            // .unwrap();
+        })
     }
+
+    // pub fn focus_change<'b>(&mut self, s: &mut Cursive, e: Event) -> () {
+    //     match e {
+    //         Event::Key(Key::Right) => s.focus_id((self.ring).rotate(1)[0]),
+    //         Event::Key(Key::Left) => s.focus_id((self.ring).rotate(-1)[0]),
+    //         _ => Ok(()),
+    //     }
+    //     .unwrap()
+    // }
 
     pub fn get_view<T>(&self, s: &mut Cursive, id: &str) -> ViewRef<T>
     where

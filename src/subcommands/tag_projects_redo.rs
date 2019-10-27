@@ -63,12 +63,6 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
 
     let gc = GitGlobalConfig::new();
     let reps: Vec<Repo> = gc.get_cached_repos();
-    // let fake_more_tags: Vec<RepoTag> =
-    //     ["haskell", "ml", "rust", "apple", "web dev"]
-    //         .to_owned()
-    //         .into_iter()
-    //         .map(|&t| RepoTag::new(t))
-    //         .collect();
     let global_table =
         LightTable::new_from_rc(reps, 0, 0, vec![] as Vec<RepoTag>);
     let mut _g = (*global_table).borrow_mut();
