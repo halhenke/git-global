@@ -26,3 +26,9 @@ borders = "simple"  # Alternatives are "none" and "outset"
     # Lower precision values can use only 3 digits.
     highlight          = "#F00"
     highlight_inactive = "#5555FF"
+
+[tag_box]
+    background = "white"
+    foreground = "black"
+
+
