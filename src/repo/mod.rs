@@ -1,5 +1,6 @@
 pub mod config;
 pub mod errors;
+pub mod focus_ring;
 pub mod light_table;
 pub mod repo;
 pub mod result;
