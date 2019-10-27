@@ -162,10 +162,20 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
             //         .for_each(|s| content.push_str(s));
             // &tt.set_content(content);
         });
-
+    // trait Arrow {}
+    // impl Arrow
     let repo_selector_id = repo_selector_inner.with_id(&rp);
+    let repo_selector_tmp = foci.make_event_layer(
+        &mut siv,
+        vec![Event::Key(Key::Left), Event::Key(Key::Right)],
+        // EventTrigger::arrows(),
+        // EventTrigger::from(Key::Right).or(Key::Left),
+        // Key::Right,
+        repo_selector_id,
+    );
     let repo_selector =
-        repo_selector_id.scrollable().min_width(20).max_height(10);
+        repo_selector_tmp.scrollable().min_width(20).max_height(10);
+    // repo_selector_id.scrollable().min_width(20).max_height(10);
 
     // =================================================
     //  TAGS DISPLAYER

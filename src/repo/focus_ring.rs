@@ -22,6 +22,7 @@ use std::rc::Rc;
 // pub const TAG_POOL: &str = "tag-pool";
 // pub const NEW_TAG: &str = "new-tag";
 
+#[derive(PartialEq, Eq, Clone)]
 pub struct Foci {
     ring: Ring<String>,
     // ring: Ring<&'a str>,
@@ -43,22 +44,28 @@ impl Foci {
     //     Foci { ring }
     // }
 
-    pub fn make_event_layer<S, T, E, M>(
+    pub fn make_event_layer<T>(
         self,
+        // &self,
         // &mut self,
         s: &mut Cursive,
-        e: Event,
+        // e: Event,
+        mut e: Vec<Event>,
+        // e: Key,
+        // e: EventTrigger,
+        // e: E,
         // from: impl View,
         from: T,
-        cb: M, // from: Box<S>,
-               // ) -> ()
+        // cb: M, // from: Box<S>,
+        // ) -> ()
     ) -> OnEventView<T>
     where
-        S: View,
+        // S: View,
         // S: Box<dyn View>,
         T: ViewWrapper,
-        E: Into<EventTrigger>,
-        M: 'static + Fn(&mut Cursive),
+        // E: Into<EventTrigger>,
+        // E: Key,
+        // M: 'static + Fn(&mut Cursive),
     {
         //     // let f: dyn (Fn(OnEventView<_>) -> OnEventView<_>) =
         //     // trait FF = Fn(&'static mut Cursive);
@@ -75,10 +82,25 @@ impl Foci {
         //     static ff: Box<Fn(&mut Cursive)> =
         //         Box::new(|s| self.focus_change(s, e));
         //     // let f: Box<F> = Box::new(|s| self.focus_change(s, e));
+        // let e2: Event = Event::from(e);
+        // let e2: EventTrigger = EventTrigger::from_fn(|e| )
+        // let e2 = EventTrigger::arrows();
+        // let e3: Key = EventTrigger::inßto(e);
+        let e1 = e.pop().unwrap();
+        assert_eq!(e1, Event::Key(Key::Right));
+        let e2 = e.pop().unwrap();
+        assert_eq!(e2, Event::Key(Key::Left));
+        let sel1 = self.clone();
+        let sel2 = self.clone();
+        // let sel1 = Rc::new(self);
+        // let sel2 = Rc::clone(&sel1);
         OnEventView::new(from)
             // .on_event(e, f)
             // .on_event(e, move |s| self.focus_change(s, e))
-            .on_event(e.clone(), self.focus_change(s, e))
+            // .on_event(e, self.focus_change(s, Event::Key(e3)))
+            // .on_event(e, self.focus_change(s, EventTrigger::Into(Key)(e)))
+            .on_event(e1.clone(), sel1.focus_change(s, e1))
+            .on_event(e2.clone(), sel2.focus_change(s, e2))
         // .on_event(e, cb)
     }
 
