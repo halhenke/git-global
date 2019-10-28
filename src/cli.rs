@@ -72,7 +72,21 @@ pub fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
         )
         .subcommand(
             SubCommand::with_name("tag-projects")
-                .about("edit the association between tags and projects"),
+                .about("edit the association between tags and projects")
+                .arg(
+                    Arg::with_name("path_filter")
+                        .short("p")
+                        .long("paths")
+                        .takes_value(true)
+                        .required(false),
+                )
+                .arg(
+                    Arg::with_name("tag_filter")
+                        .short("t")
+                        .long("tags")
+                        .takes_value(true)
+                        .required(false),
+                )
         )
         .subcommand(
             SubCommand::with_name("tag")
@@ -196,7 +210,10 @@ pub fn run_from_command_line() -> i32 {
             let tag = sub_com.values_of("tag_arg").unwrap().collect();
             subcommands::tag::get_results(tag)
         }
-        Some("tag-projects") => subcommands::tag_projects_redo::go(),
+        Some("tag-projects") => {
+            let pf = get_path_filter(&matches);
+            subcommands::tag_projects::go(pf)
+        }
         Some("status") => get_status(matches),
         Some("new-status") => get_new_status(matches),
         Some("completions") => {
@@ -241,11 +258,7 @@ fn get_new_status(
         .subcommand_matches("new-status")
         .unwrap()
         .is_present("modified");
-    let path_filter = matches
-        .subcommand_matches("new-status")
-        .unwrap()
-        .value_of("path_filter")
-        .map(|s| String::from(s));
+    let path_filter = get_path_filter(&matches);
     let ignore_untracked = matches
         .subcommand_matches("new-status")
         .unwrap()
@@ -255,6 +268,14 @@ fn get_new_status(
         ignore_untracked,
         path_filter,
     )
+}
+
+fn get_path_filter(matches: &ArgMatches) -> Option<String> {
+    matches
+        .subcommand_matches("new-status")
+        .unwrap()
+        .value_of("path_filter")
+        .map(|s| String::from(s))
 }
 
 /// Writes results to STDOUT, as either text or JSON, and returns `0`.

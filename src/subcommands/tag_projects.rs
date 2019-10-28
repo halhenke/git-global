@@ -55,7 +55,7 @@ pub fn repo_2_name<'a>(s: &'a str) -> &'a str {
     s.rsplit("/").collect::<Vec<&str>>().first().unwrap()
 }
 
-pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
+pub fn go<'a>(path_filter: Option<String>) -> WeirdResult<GitGlobalResult> {
     // logger::init();
 
     let DEBUG_VIEW: String = String::from("debug-view");
@@ -77,10 +77,19 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     let foci1 = Rc::new(foci);
     let foci2 = Rc::clone(&foci1);
     let foci3 = Rc::clone(&foci1);
-    let foci4 = Rc::clone(&foci1);
 
     let gc = GitGlobalConfig::new();
-    let reps: Vec<Repo> = gc.get_cached_repos();
+
+    // let reps: Vec<Repo> = if path_filter.is_none() {
+
+    let reps: Vec<Repo> = if let Some(pf) = path_filter {
+        gc.get_cached_repos()
+            .into_iter()
+            .filter(|r| r.path.contains(&pf))
+            .collect()
+    } else {
+        gc.get_cached_repos()
+    };
     let global_table =
         LightTable::new_from_rc(reps, 0, 0, vec![] as Vec<RepoTag>);
     let mut _g = (*global_table).borrow_mut();
