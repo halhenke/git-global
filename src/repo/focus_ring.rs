@@ -1,7 +1,7 @@
 use cursive::{
     event::{Event, EventResult, EventTrigger, Key},
     view::{View, ViewWrapper},
-    views::{OnEventView, ViewRef},
+    views::{OnEventView, TextView, ViewRef},
     Cursive,
 };
 use ring_queue::Ring;
@@ -164,12 +164,30 @@ impl<'a> Foci {
             // s;
             match *e2 {
                 Event::Key(Key::Right) => {
-                    s.focus_id((s2.borrow_mut()).rotate(1)[0].as_str())
+                    let mut tt: ViewRef<TextView> =
+                        s.find_id("text-view").unwrap();
+                    let mut content = format!(
+                        "From {:?} to {:?}",
+                        s2.borrow().peek(0),
+                        s2.borrow().peek(1)
+                    );
+                    &tt.set_content(content);
+
+                    s.focus_id((s2.borrow_mut()).rotate(-1)[0].as_str())
                     // s.focus_id((*self).ring.rotate(1)[0].as_str())
                 }
                 Event::Key(Key::Left) => {
+                    let mut tt: ViewRef<TextView> =
+                        s.find_id("text-view").unwrap();
+                    let mut content = format!(
+                        "From {:?} to {:?}",
+                        s2.borrow().peek(0),
+                        s2.borrow().peek(-1)
+                    );
+                    &tt.set_content(content);
+
                     // s.focus_id((*self).ring.rotate(-1)[0].as_str())
-                    s.focus_id((s2.borrow_mut()).rotate(-1)[0].as_str())
+                    s.focus_id((s2.borrow_mut()).rotate(1)[0].as_str())
                 }
                 _ => Ok(()),
             }

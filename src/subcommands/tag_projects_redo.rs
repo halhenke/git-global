@@ -408,9 +408,9 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
                 //     .scrollable(),
             ),
         )
-        .child(Panel::new(new_tag));
-    // .child(Panel::new(error_view))
-    // .child(Panel::new(text_view)),
+        .child(Panel::new(new_tag))
+        // .child(Panel::new(error_view))
+        .child(Panel::new(text_view));
 
     // Main Window
     siv.add_layer(first_layer);
