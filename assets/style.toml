@@ -28,7 +28,7 @@ borders = "simple"  # Alternatives are "none" and "outset"
     highlight_inactive = "#5555FF"
 
 [tag_box]
-    background = "white"
+    background = "red"
     foreground = "black"
 
 

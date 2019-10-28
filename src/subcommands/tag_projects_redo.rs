@@ -22,6 +22,7 @@ use self::cursive::logger::{log, Record};
 use self::cursive::traits::*;
 use self::cursive::Cursive;
 use self::cursive::{
+    theme::{Color, ColorStyle},
     view::ViewWrapper,
     views::{
         BoxView, CircularFocus, DebugView, EditView, IdView, LinearLayout,
@@ -73,11 +74,6 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     // let mut focus_ring: Ring<&str> =
     //     ring![REPO_FIELD, TAG_DISPLAY, TAG_POOL, NEW_TAG];
     let foci: Foci = Foci::new(focus_ring);
-    // let foci: Foci = Foci::new(focus_ring);
-    // let foci1 = foci.clone();
-    // let foci2 = foci.clone();
-    // let foci3 = foci.clone();
-    // let foci4 = foci.clone();
     let foci1 = Rc::new(foci);
     let foci2 = Rc::clone(&foci1);
     let foci3 = Rc::clone(&foci1);
@@ -143,8 +139,12 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
                 s_view.set_content("");
             }
         });
+    let new_tag_style = new_tag_inner.style(ColorStyle::new(
+        Color::parse("#FFF").unwrap(),
+        Color::parse("#444").unwrap(),
+    ));
     let nt = NEW_TAG.clone();
-    let new_tag_id = (new_tag_inner).with_id(&nt);
+    let new_tag_id = (new_tag_style).with_id(&nt);
     let new_tag = new_tag_id.max_height(10);
 
     // =================================================
