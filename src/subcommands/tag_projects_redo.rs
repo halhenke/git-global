@@ -72,7 +72,16 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     ];
     // let mut focus_ring: Ring<&str> =
     //     ring![REPO_FIELD, TAG_DISPLAY, TAG_POOL, NEW_TAG];
-    let foci = Foci::new(focus_ring);
+    let foci: Foci = Foci::new(focus_ring);
+    // let foci: Foci = Foci::new(focus_ring);
+    // let foci1 = foci.clone();
+    // let foci2 = foci.clone();
+    // let foci3 = foci.clone();
+    // let foci4 = foci.clone();
+    let foci1 = Rc::new(foci);
+    let foci2 = Rc::clone(&foci1);
+    let foci3 = Rc::clone(&foci1);
+    let foci4 = Rc::clone(&foci1);
 
     let gc = GitGlobalConfig::new();
     let reps: Vec<Repo> = gc.get_cached_repos();
@@ -165,7 +174,7 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     // trait Arrow {}
     // impl Arrow
     let repo_selector_id = repo_selector_inner.with_id(&rp);
-    let repo_selector_tmp = foci.make_event_layer(
+    let repo_selector_tmp = foci1.make_event_layer(
         &mut siv,
         vec![Event::Key(Key::Left), Event::Key(Key::Right)],
         // EventTrigger::arrows(),
@@ -176,11 +185,12 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     let repo_selector =
         repo_selector_tmp.scrollable().min_width(20).max_height(10);
     // repo_selector_id.scrollable().min_width(20).max_height(10);
-
+    // drop(repo_selector_tmp);
     // =================================================
     //  TAGS DISPLAYER
     // =================================================
     let rr = Rc::clone(&repo_tag_ref);
+    let rf = REPO_FIELD.clone();
     let td = TAG_DISPLAY.clone();
     let tp = TAG_POOL.clone();
     let tags_displayer_inner: SelectView<usize> = SelectView::new().with_all({
@@ -188,8 +198,15 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
         (*rr).borrow().selectify_tags(_current_repo)
     });
     let tags_displayer_id = tags_displayer_inner.with_id(&td);
-    let tags_displayer_outer = tags_displayer_id.min_width(20).max_height(10);
-    let rf = REPO_FIELD.clone();
+    let tags_displayer_tmp = foci2.make_event_layer(
+        &mut siv,
+        vec![Event::Key(Key::Left), Event::Key(Key::Right)],
+        // EventTrigger::arrows(),
+        // EventTrigger::from(Key::Right).or(Key::Left),
+        // Key::Right,
+        tags_displayer_id,
+    );
+    let tags_displayer_outer = tags_displayer_tmp.min_width(20).max_height(10);
     let tags_displayer = OnEventView::new(tags_displayer_outer)
         .on_event(Event::Key(Key::Esc), |s| {
             s.focus_id("repo-field").expect("...")
@@ -345,7 +362,24 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
     //     );
     //     updated_display_tags(s, &((*tp_repo).borrow().deref()))
     // });
-    let tags_pool = tags_pool_inner.with_id(&(&TAG_POOL).clone());
+    let tags_pool_id = tags_pool_inner.with_id(&(&TAG_POOL).clone());
+    let tags_pool_tmp = foci3.make_event_layer(
+        &mut siv,
+        vec![Event::Key(Key::Left), Event::Key(Key::Right)],
+        // EventTrigger::arrows(),
+        // EventTrigger::from(Key::Right).or(Key::Left),
+        // Key::Right,
+        tags_pool_id,
+    );
+    let tags_pool = tags_pool_tmp
+        .on_event_inner(Event::Key(Key::Esc), |s1, k| {
+            let cb = Callback::from_fn(|siv: &mut Cursive| {
+                siv.focus_id("repo-field")
+                    .expect("failed to focus on 'repo-field'");
+            });
+            return Some(EventResult::Consumed(Some(cb)));
+        })
+        .scrollable();
 
     let top_layout = LinearLayout::horizontal()
         .child(Panel::new(repo_selector))
@@ -359,18 +393,19 @@ pub fn go<'a>() -> WeirdResult<GitGlobalResult> {
         .child(
             // sel_view
             Panel::new(
-                OnEventView::new(tags_pool)
-                    .on_event_inner(Event::Key(Key::Esc), |s1, k| {
-                        let cb = Callback::from_fn(|siv: &mut Cursive| {
-                            siv.focus_id("repo-field")
-                                .expect("failed to focus on 'repo-field'");
-                        });
-                        return Some(EventResult::Consumed(Some(cb)));
-                    })
-                    // NOTE: Due to fucking annoying design this has to come
-                    // after/outside `OnEventView` - otherwise we never get to unwrap
-                    // properly
-                    .scrollable(),
+                tags_pool
+                // OnEventView::new(tags_pool)
+                //     .on_event_inner(Event::Key(Key::Esc), |s1, k| {
+                //         let cb = Callback::from_fn(|siv: &mut Cursive| {
+                //             siv.focus_id("repo-field")
+                //                 .expect("failed to focus on 'repo-field'");
+                //         });
+                //         return Some(EventResult::Consumed(Some(cb)));
+                //     })
+                //     // NOTE: Due to fucking annoying design this has to come
+                //     // after/outside `OnEventView` - otherwise we never get to unwrap
+                //     // properly
+                //     .scrollable(),
             ),
         )
         .child(Panel::new(new_tag));

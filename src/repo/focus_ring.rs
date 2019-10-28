@@ -7,6 +7,7 @@ use cursive::{
 use ring_queue::Ring;
 use std::any::Any;
 use std::cell::RefCell;
+use std::marker::PhantomData;
 use std::rc::Rc;
 
 // pub DEBUG_VIEW: String = String::from("debug-view");
@@ -22,13 +23,33 @@ use std::rc::Rc;
 // pub const TAG_POOL: &str = "tag-pool";
 // pub const NEW_TAG: &str = "new-tag";
 
+// #[derive(PartialEq, Eq, Clone)]
+// pub struct Foci<'a> {
+//     ring: Ring<String>,
+//     pt: PhantomData<&'a i32>, // ring: Ring<&'a str>,
+// }
+
+// trait Focal: Clone {}
+// impl<'a> Focal for Foci<'a> {}
+
+// impl<'a> From<Focal> for Foci<'a> {
+//     fn from(f: Focal) -> Self {
+//         Foci {
+//             ring: f.ring,
+//             pt: f.pt,
+//         }
+//     }
+// }
+
+// impl From
+
 #[derive(PartialEq, Eq, Clone)]
 pub struct Foci {
-    ring: Ring<String>,
-    // ring: Ring<&'a str>,
+    ring: Rc<RefCell<Ring<String>>>,
 }
 
-impl Foci {
+// impl<'a> Foci<'a> {
+impl<'a> Foci {
     // impl<'a> Foci<'a> {
     // pub const DEBUG_VIEW: String = String::from("debug-view");
     // pub const TEXT_VIEW: String = String::from("text-view");
@@ -37,15 +58,30 @@ impl Foci {
     // pub const TAG_POOL: String = String::from("tag-pool");
     // pub const NEW_TAG: String = String::from("new-tag");
 
-    pub fn new(ring: Ring<String>) -> Foci {
-        Foci { ring }
-    }
+    // pub fn new<'b>(ring: Ring<String>) -> impl Focal + 'static {
+    //     Foci {
+    //         ring,
+    //         pt: PhantomData,
+    //     }
+    // }
     // pub fn new(ring: Ring<&str>) -> Foci {
     //     Foci { ring }
     // }
+    pub fn new(ring: Ring<String>) -> Foci {
+        Foci {
+            ring: Rc::new(RefCell::new(ring)),
+        }
+        // Foci { ring }
+    }
+
+    pub fn rcrf_ring<'b>(&self) -> Rc<RefCell<Ring<String>>> {
+        // Rc::new(RefCell::new(self.ring))
+        Rc::clone(&self.ring)
+    }
 
     pub fn make_event_layer<T>(
-        self,
+        // &mut self,
+        &self,
         // &self,
         // &mut self,
         s: &mut Cursive,
@@ -90,23 +126,24 @@ impl Foci {
         assert_eq!(e1, Event::Key(Key::Right));
         let e2 = e.pop().unwrap();
         assert_eq!(e2, Event::Key(Key::Left));
-        let sel1 = self.clone();
-        let sel2 = self.clone();
-        // let sel1 = Rc::new(self);
-        // let sel2 = Rc::clone(&sel1);
+        // let sel1 = self.clone();
+        // let sel2 = self.clone();
         OnEventView::new(from)
             // .on_event(e, f)
             // .on_event(e, move |s| self.focus_change(s, e))
             // .on_event(e, self.focus_change(s, Event::Key(e3)))
             // .on_event(e, self.focus_change(s, EventTrigger::Into(Key)(e)))
-            .on_event(e1.clone(), sel1.focus_change(s, e1))
-            .on_event(e2.clone(), sel2.focus_change(s, e2))
+            // .on_event(e1.clone(), self.focus_change(s, e1))
+            // .on_event(e2.clone(), self.focus_change(s, e2))
+            .on_event(e1.clone(), self.focus_change(s, e1))
+            .on_event(e2.clone(), self.focus_change(s, e2))
         // .on_event(e, cb)
     }
 
     pub fn focus_change(
         // pub fn focus_change<'b: 'a, T>(
-        self,
+        // self,
+        &self,
         // &mut self,
         s: &mut Cursive,
         e: Event,
@@ -119,7 +156,8 @@ impl Foci {
     {
         // let s2 = Rc::new(RefCell::new(self.ring));
         // let s2: Rc<RefCell<Ring<&str>>> = Rc::new(RefCell::new(self.ring));
-        let s2: Rc<RefCell<Ring<String>>> = Rc::new(RefCell::new(self.ring));
+        let s2: Rc<RefCell<Ring<String>>> = self.rcrf_ring();
+        // let s2: Rc<RefCell<Ring<String>>> = Rc::new(RefCell::new(self.ring));
         let e2: Rc<Event> = Rc::new(e);
         // let e2: Rc<RefCell<Event>> = Rc::new(RefCell::new(e));
         Box::new(move |s: &mut Cursive| {
@@ -127,8 +165,10 @@ impl Foci {
             match *e2 {
                 Event::Key(Key::Right) => {
                     s.focus_id((s2.borrow_mut()).rotate(1)[0].as_str())
+                    // s.focus_id((*self).ring.rotate(1)[0].as_str())
                 }
                 Event::Key(Key::Left) => {
+                    // s.focus_id((*self).ring.rotate(-1)[0].as_str())
                     s.focus_id((s2.borrow_mut()).rotate(-1)[0].as_str())
                 }
                 _ => Ok(()),
