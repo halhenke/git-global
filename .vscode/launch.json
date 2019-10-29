@@ -42,7 +42,6 @@
       "request": "launch",
       "name": "launch scan",
       "expressions": "python",
-      // "internalConsoleOptions": ,
       "cargo": {
         "args": ["build", "--bin=git-global-hal", "--package=git-global"],
         "filter": {
@@ -51,10 +50,25 @@
         }
       },
       "args": ["scan"],
-      // "cwd": "${workspaceFolder}",
-      "program": "${workspaceFolder}/target/debug/deps/git_global_hal-e52df587b06cd625",
-      // "program": "${workspaceFolder}/target/debug/git-global-hal",
-      // "pid": "${command:pickMyProcess}",
+      "program": "${workspaceFolder}/target/debug/git-global-hal",
+      "sourceLanguages": ["rust"]
+      //   "terminal": "external"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "launch tag_projects --path",
+      "expressions": "python",
+      "cargo": {
+        "args": ["build", "--bin=git-global-hal", "--package=git-global"],
+        "filter": {
+          "name": "git-global-hal",
+          "kind": "bin"
+        }
+      },
+      "args": ["tag-projects", "-p", "haskell"],
+      "program": "${workspaceFolder}/target/debug/git-global-hal",
+      "stopOnEntry": true,
       "sourceLanguages": ["rust"]
       //   "terminal": "external"
     },
