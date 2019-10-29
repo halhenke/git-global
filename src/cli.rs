@@ -211,7 +211,7 @@ pub fn run_from_command_line() -> i32 {
             subcommands::tag::get_results(tag)
         }
         Some("tag-projects") => {
-            let pf = get_path_filter(&matches);
+            let pf = get_path_filter(&matches, "tag-projects");
             subcommands::tag_projects::go(pf)
         }
         Some("status") => get_status(matches),
@@ -240,10 +240,7 @@ fn get_status(matches: clap::ArgMatches) -> errors::Result<GitGlobalResult> {
         .subcommand_matches("status")
         .unwrap()
         .is_present("modified");
-    let path_filter = matches
-        .subcommand_matches("status")
-        .unwrap()
-        .value_of("path_filter");
+    let path_filter = get_path_filter(&matches, "status");
     let ignore_untracked = matches
         .subcommand_matches("status")
         .unwrap()
@@ -258,7 +255,7 @@ fn get_new_status(
         .subcommand_matches("new-status")
         .unwrap()
         .is_present("modified");
-    let path_filter = get_path_filter(&matches);
+    let path_filter = get_path_filter(&matches, "new-status");
     let ignore_untracked = matches
         .subcommand_matches("new-status")
         .unwrap()
@@ -270,9 +267,9 @@ fn get_new_status(
     )
 }
 
-fn get_path_filter(matches: &ArgMatches) -> Option<String> {
+fn get_path_filter(matches: &ArgMatches, subcommand: &str) -> Option<String> {
     matches
-        .subcommand_matches("new-status")
+        .subcommand_matches(subcommand)
         .unwrap()
         .value_of("path_filter")
         .map(|s| String::from(s))

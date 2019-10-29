@@ -15,7 +15,7 @@ use repo::{get_repos, GitGlobalResult, Repo};
 pub fn get_results(
     only_modified: bool,
     ignore_untracked: bool,
-    path_filter: Option<&str>,
+    path_filter: Option<String>,
 ) -> Result<GitGlobalResult> {
     let include_untracked = true;
     // let include_untracked = config.show_untracked;
@@ -53,7 +53,7 @@ pub fn get_results(
     for _ in 0..n_repos {
         let (path, lines) = rx.recv().unwrap();
 
-        if let Some(path_filter) = path_filter {
+        if let Some(path_filter) = &path_filter {
             if !path.contains(path_filter) {
                 continue;
             }
