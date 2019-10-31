@@ -310,6 +310,19 @@ impl GitGlobalConfig {
         repos
     }
 
+    pub fn clear_tags(&self) -> Result<&str> {
+        let repos: Vec<Repo> = self
+            .get_cached_repos()
+            .into_iter()
+            .map(|mut r| {
+                r.tags.clear();
+                r
+            })
+            .collect();
+        save_repos_and_tags(repos, vec![]);
+        Ok("cool")
+    }
+
     pub fn get_cached_results(&self) -> GitGlobalResult {
         GitGlobalResult::new(&self.get_cached_repos())
     }

@@ -9,6 +9,8 @@ use std::result;
 #[derive(Debug)]
 pub enum GitGlobalError {
     BadSubcommand(String),
+    // MissingSubcommand(String),
+    MissingSubcommand(Vec<String>),
     Generic,
 }
 
@@ -22,6 +24,11 @@ impl fmt::Display for GitGlobalError {
             GitGlobalError::BadSubcommand(ref cmd) => {
                 write!(f, "Unknown subcommand, {}.", cmd)
             }
+            GitGlobalError::MissingSubcommand(possibles) => write!(
+                f,
+                "Was expecting one of the following subcommands: {:?}",
+                possibles
+            ),
             _generic => write!(f, "An error occured :(."),
         }
     }
