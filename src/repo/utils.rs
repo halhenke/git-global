@@ -5,8 +5,8 @@
 
 use colored::*;
 pub use repo::config::GitGlobalConfig;
-pub use repo::repo::{Repo, RepoTag};
 pub use repo::result::GitGlobalResult;
+pub use repo::{Repo, RepoTag};
 // use std::fmt;
 use std::sync::Arc;
 

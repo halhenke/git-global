@@ -1,6 +1,7 @@
 use git2;
 use std::fmt;
 // use std::iter::FromIterator;
+use repo::repo_tag::RepoTag;
 use std::path::Path;
 
 /// A git repository, represented by the full path to its base directory.
@@ -146,53 +147,4 @@ impl fmt::Display for Repo {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.path)
     }
-}
-
-#[derive(
-    Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Debug,
-)]
-pub struct RepoTag {
-    pub name: String,
-}
-
-/// Basically a wrapper around a string ¯\_(ツ)_/¯
-impl RepoTag {
-    pub fn new(name: &str) -> RepoTag {
-        RepoTag {
-            name: name.to_string(),
-        }
-    }
-}
-
-impl fmt::Display for RepoTag {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "RepoTag: {}", self.name)
-    }
-}
-
-// impl fmt::Display for Vec<RepoTag> {
-//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-//         // write!(f, "RepoTag: {}", self.name)
-//         // unimplemented!()
-//     }
-// }
-
-/// RepoTag is basically a wrapper around a string
-impl From<String> for RepoTag {
-    fn from(name: String) -> RepoTag {
-        Self { name }
-    }
-}
-
-impl From<RepoTag> for String {
-    fn from(repo: RepoTag) -> String {
-        repo.name
-    }
-}
-
-pub fn does_this_work(reps: Vec<RepoTag>) -> Vec<String> {
-    // return reps.into();
-    reps.into_iter()
-        .map(|x| x.into()) //make use of from implementation...
-        .collect()
 }

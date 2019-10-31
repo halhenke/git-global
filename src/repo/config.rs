@@ -10,8 +10,10 @@ use std::path::{Path, PathBuf};
 use walkdir::DirEntry;
 
 use repo::{
-    repo::{Repo, RepoTag},
     result::GitGlobalResult,
+    // repo::{Repo, RepoTag},
+    Repo,
+    RepoTag,
 };
 
 const APP: AppInfo = AppInfo {

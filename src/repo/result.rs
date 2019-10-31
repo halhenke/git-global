@@ -1,4 +1,4 @@
-use repo::repo::{Repo, RepoTag};
+use repo::{Repo, RepoTag};
 use std::collections::HashMap;
 
 /// The result of a git-global subcommand.
