@@ -2,6 +2,7 @@
 // use std::env;
 use app_dirs::{app_dir, get_app_dir, AppDataType, AppInfo};
 use git2;
+use repo::action::Action;
 use std::fs::{remove_file, File};
 use std::io::{Error, ErrorKind};
 use std::io::{Read, Result, Write};
@@ -24,9 +25,6 @@ const CACHE_FILE: &'static str = "repos.txt";
 const TAG_CACHE_FILE: &'static str = "tags.txt";
 const SETTING_BASEDIR: &'static str = "global.basedir";
 const SETTING_IGNORED: &'static str = "global.ignore";
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct Action(String);
 
 /// A container for git-global configuration options.
 

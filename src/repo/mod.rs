@@ -1,3 +1,4 @@
+pub mod action;
 pub mod config;
 pub mod errors;
 pub mod focus_ring;
@@ -6,6 +7,7 @@ pub mod repo;
 pub mod repo_tag;
 pub mod result;
 pub mod utils;
+pub use self::action::*;
 pub use self::config::*;
 pub use self::errors::*;
 pub use self::repo::*;
