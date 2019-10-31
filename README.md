@@ -37,13 +37,18 @@ git config --global global.ignore .cargo,.vim,Library
 ## TODO
 
 - [ ] filter `tag-projects` by path, status, prepopulate a list of potential new tags
+- [x] Option to strip all tags
+- [ ] An option to run an action on groups of repos/directories
 - [ ] Better message suggesting "use list or status"
-- [ ] Filter list by regex showing coloured text output
+- [ ] Filter list
+  - [x] by regex
+  - [ ] by tag
+  - [x] showing coloured text output
 - [ ] Some tests?
 - [ ] Some assertions
 - [ ] reconcile `add_tags` and `tag_projects_redo`
 - [ ] have a negative filter option for status also (things to exclude)
-- [ ] Replace mpsc with crossbeam in `status` command
+- [x] Replace mpsc with crossbeam in `status` command
 
 ## Ideas
 
