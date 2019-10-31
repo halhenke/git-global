@@ -42,10 +42,22 @@ pub fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
             SubCommand::with_name("bullshit")
                 .about("Just mucking around with stuff"),
         )
-        .subcommand(SubCommand::with_name("clean").about("Clear the cache"))
+        .subcommand(SubCommand::with_name("clean").about("Clear the cache")
+            .arg(
+                Arg::with_name("tags")
+                    .help("Remove all tags")
+                    .takes_value(false)
+                    .required(false)
+            )
+            .arg(
+                Arg::with_name("all")
+                    .help("Remove all cached repos and tags")
+                    .takes_value(false)
+                    .required(false)
+        ))
         .subcommand(
             SubCommand::with_name("prompt")
-                .about("demo the TUI Terminal UI library"),
+                .about("demo the TUI Terminal UI library")
         )
         .subcommand(
             SubCommand::with_name("prompt-cursive")
@@ -200,7 +212,21 @@ pub fn run_from_command_line() -> i32 {
             let tags = sub_com.values_of("tags").unwrap().collect();
             subcommands::filter::get_results(pat, tags)
         }
-        Some("clean") => subcommands::clean::cache_clear(),
+        Some("clean") => {
+            let sub_com =
+                matches.subcommand_matches("clean").expect("clean panic");
+            // if let Some(result) = sub_com.subcommand_name() {
+            //     subcommands::clean::cache_clear(result)
+            // }
+            // subcommands::clean::cache_clear(sub_com.subcommand_name().unwrap())
+            // let result = match sub_com.subcommand_name() {
+            match sub_com.subcommand_name() {
+                Some(n) => subcommands::clean::cache_clear(n),
+                None => Err(GitGlobalError::MissingSubcommand(
+                    vec!["tags", "all"].into_iter().map(String::from).collect(),
+                )),
+            }
+        }
         Some("scan") => subcommands::scan::get_results(),
         Some("prompt") => subcommands::prompt::go(),
         Some("prompt-cursive") => subcommands::prompt_cursive::go(),
