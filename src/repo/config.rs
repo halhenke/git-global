@@ -25,6 +25,9 @@ const TAG_CACHE_FILE: &'static str = "tags.txt";
 const SETTING_BASEDIR: &'static str = "global.basedir";
 const SETTING_IGNORED: &'static str = "global.ignore";
 
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct Action(String);
+
 /// A container for git-global configuration options.
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -34,6 +37,7 @@ pub struct GitGlobalConfig {
     pub basedirs: Vec<String>,
     pub ignored_patterns: Vec<String>,
     pub tags: Vec<RepoTag>,
+    pub actions: Vec<Action>,
     pub cache_file: PathBuf,
     pub tags_file: PathBuf,
 }
@@ -111,7 +115,7 @@ impl GitGlobalConfig {
             basedir: basedir,
             basedirs: basedirs,
             tags: vec![],
-            // tags: vec![],
+            actions: vec![],
             ignored_patterns: patterns,
             cache_file: cache_file,
             tags_file,
