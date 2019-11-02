@@ -1,5 +1,106 @@
 use repo::Repo;
+use subprocess::{Exec, Popen};
 
+/// Trying out a nested/weird enum to see how felxible they are
+enum ActionType {
+    RepoAction {
+        GitAction: String,
+        NotGitAction: String,
+        // Other(String)
+    },
+    Gumball(
+        String,
+        i32,
+        // Box::<enum Adder>
+        // Noon(String)
+    ),
+    // Nonsense {
+    //     obj: String
+    // }),
+    // GumboAction {
+    //     Nando: Thwack(i32)
+    // }
+    GeneralAction,
+}
+
+// enum RepoActionType {
+//     GitAction,
+//     NotGitAction,
+// }
+
+// enum ActionType {
+//     RepoAction(RepoActionType),
+//     GlobalAction,
+// }
+
+type RepoPath = String;
+type CommandName = String;
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub enum RepoAction {
+    GitAction(RepoPath, CommandName, Vec<String>),
+    NonGitAction(CommandName, Vec<String>),
+}
+
+pub enum RepoActionError {
+    ActionFailed,
+}
+
+type ActionResult<T> = Result<T, RepoActionError>;
+
+impl RepoAction {
+    pub fn perform_action_for_repo(&self) -> ActionResult<(String)> {
+        match self {
+            RepoAction::GitAction(path, name, cmds) => {
+                let r = {
+                    Exec::shell(format!(
+                        "cd {:?}",
+                        path // (self as RepoAction::GitAction).0
+                    )) | Exec::shell("pwd")
+                }
+                .capture()
+                .unwrap()
+                .stdout_str();
+                Ok(r)
+
+                // Ok("Yo")
+            }
+            NonGitAction => Ok("No".to_owned()),
+            // GitAction => println!("Yo"),
+            // NonGitAction => println!("No"),
+        }
+        // return format!("Performing action {} for Repo {}", self.0, repo.path);
+        // // println!("Performing action {} for Repo :{}", self.0, repo.path);
+    }
+}
+
+#[cfg(test)]
+mod repoaction_tests {
+    use super::*;
+
+    #[test]
+    pub fn enum_rep() {
+        let ga = RepoAction::GitAction(
+            "/usr/local".to_owned(),
+            "nob".to_owned(),
+            vec![],
+        );
+        ga.perform_action_for_repo();
+        if let RepoAction::GitAction(path, _, _) = ga {
+            assert_eq!(format!("{:?}", path), "");
+        }
+    }
+}
+
+// impl RepoAction::GitAction {
+//     pub fn perform_action_for_repo(&self) {
+
+//     }
+// }
+
+/// Represents an Action - intended to be used in a repo
+/// - possibly should be split into repo/path independent
+/// actions and ones that take place in a specific Repo
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Action(String, Vec<String>);
 
