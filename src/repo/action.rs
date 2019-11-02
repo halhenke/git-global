@@ -35,11 +35,12 @@ enum ActionType {
 
 type RepoPath = String;
 type CommandName = String;
+type Command = String;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum RepoAction {
-    GitAction(RepoPath, CommandName, Vec<String>),
-    NonGitAction(CommandName, Vec<String>),
+    GitAction(RepoPath, CommandName, Command, Vec<String>),
+    NonGitAction(CommandName, Command, Vec<String>),
 }
 
 pub enum RepoActionError {
@@ -51,21 +52,24 @@ type ActionResult<T> = Result<T, RepoActionError>;
 impl RepoAction {
     pub fn perform_action_for_repo(&self) -> ActionResult<(String)> {
         match self {
-            RepoAction::GitAction(path, name, cmds) => {
-                let r = {
-                    Exec::shell(format!(
-                        "cd {:?}",
-                        path // (self as RepoAction::GitAction).0
-                    )) | Exec::shell("pwd")
-                }
-                .capture()
-                .unwrap()
-                .stdout_str();
+            RepoAction::GitAction(path, name, cmd, args) => {
+                // let r = {
+                //     Exec::shell(format!(
+                //         "cd {:?}",
+                //         path // (self as RepoAction::GitAction).0
+                //     )) | Exec::shell("pwd")
+                // }
+                let r =
+                    Exec::shell(cmd).args(args).cwd(path).capture().unwrap().stdout_str();
                 Ok(r)
 
                 // Ok("Yo")
             }
-            NonGitAction => Ok("No".to_owned()),
+            RepoAction::NonGitAction(name, cmd, args) => {
+                let r = Exec::shell(cmd).args(args).capture().unwrap().stdout_str();
+                Ok(r)
+                // Ok("No".to_owned())
+            }
             // GitAction => println!("Yo"),
             // NonGitAction => println!("No"),
         }
@@ -83,10 +87,11 @@ mod repoaction_tests {
         let ga = RepoAction::GitAction(
             "/usr/local".to_owned(),
             "nob".to_owned(),
+            "pwd".to_owned(),
             vec![],
         );
         ga.perform_action_for_repo();
-        if let RepoAction::GitAction(path, _, _) = ga {
+        if let RepoAction::GitAction(path, _, _, _) = ga {
             assert_eq!(format!("{:?}", path), "");
         }
     }
