@@ -77,6 +77,7 @@ extern crate cursive;
 extern crate jwalk;
 #[macro_use]
 extern crate ring_queue;
+extern crate subprocess;
 
 mod cli;
 pub mod repo;
