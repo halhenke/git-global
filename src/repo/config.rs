@@ -2,7 +2,6 @@
 // use std::env;
 use app_dirs::{app_dir, get_app_dir, AppDataType, AppInfo};
 use git2;
-use repo::action::Action;
 use std::fs::{remove_file, File};
 use std::io::{Error, ErrorKind};
 use std::io::{Read, Result, Write};
@@ -11,6 +10,7 @@ use std::path::{Path, PathBuf};
 use walkdir::DirEntry;
 
 use repo::{
+    action::Action,
     result::GitGlobalResult,
     // repo::{Repo, RepoTag},
     Repo,
@@ -25,6 +25,8 @@ const CACHE_FILE: &'static str = "repos.txt";
 const TAG_CACHE_FILE: &'static str = "tags.txt";
 const SETTING_BASEDIR: &'static str = "global.basedir";
 const SETTING_IGNORED: &'static str = "global.ignore";
+const SETTINGS_DEFAULT_TAGS: &'static str = "default-tags";
+const SETTINGS_DEFAULT_GIT_ACTIONS: &'static str = "default-git-actions";
 
 /// A container for git-global configuration options.
 
@@ -56,14 +58,19 @@ impl RepoTagCache {
 }
 
 impl GitGlobalConfig {
-    // pub fn new() -> Result<GitGlobalConfig, Error> {
+    /// Create a new Git Configuration Settings Object
+    /// - has both
+    ///     - a set of default tags
+    ///     - a set of default actions
+    /// if they are defined in the global .gitconfig file
     pub fn new() -> GitGlobalConfig {
         let home_dir = dirs::home_dir()
             .expect("Could not determine home directory.")
             .to_str()
             .expect("Could not convert home directory path to string.")
             .to_string();
-        let (basedir, basedirs, patterns) = match git2::Config::open_default() {
+        let (basedir, basedirs, patterns, default_tags, default_actions) =
+            match git2::Config::open_default() {
             Ok(config) => {
                 (config.get_string(SETTING_BASEDIR).unwrap_or(home_dir.clone()),
                  config.get_string(SETTING_BASEDIR)
@@ -75,7 +82,21 @@ impl GitGlobalConfig {
                      .unwrap_or(String::new())
                      .split(",")
                      .map(|p| p.trim().to_string())
-                     .collect())
+                     .collect(),
+                 config.get_string(SETTINGS_DEFAULT_TAGS)
+                     .unwrap_or(String::new())
+                     .split(",")
+                     .map(|p| p.trim().to_string())
+                     .map(|rt| RepoTag::new(&rt))
+                    //  .map(|rt| RepoTag::new(&rt.to_owned()))
+                     .collect::<Vec<RepoTag>>(),
+                 config.get_string(SETTINGS_DEFAULT_GIT_ACTIONS)
+                     .unwrap_or(String::new())
+                     .split(",")
+                     .map(|p| p.trim().to_string())
+                     .map(|ga| Action::PathAction(ga.to_owned(), ga.clone(), vec![]))
+                     .collect::<Vec<Action>>()
+                )
             }
             Err(_) => {
                 println!("Hey - you need to setup your git config so I can find stuff");
@@ -112,14 +133,32 @@ impl GitGlobalConfig {
         let mut ggc = GitGlobalConfig {
             basedir: basedir,
             basedirs: basedirs,
-            tags: vec![],
-            actions: vec![],
+            tags: default_tags,
+            actions: default_actions,
             ignored_patterns: patterns,
             cache_file: cache_file,
             tags_file,
         };
         ggc.tags = ggc.read_tags().unwrap_or(vec![]);
         ggc
+    }
+
+    /// A version that prepopulates some set of tags and/or actions
+    pub fn new_with_defaults(tags: Vec<RepoTag>, actions: Vec<Action>) -> Self {
+        let mut gcc = Self::new();
+        gcc.tags = tags;
+        gcc.actions = actions;
+        gcc
+    }
+
+    pub fn with_tags(&mut self, tags: Vec<RepoTag>) -> &mut Self {
+        self.tags = tags;
+        self
+    }
+
+    pub fn with_actions(&mut self, actions: Vec<Action>) -> &mut Self {
+        self.actions = actions;
+        self
     }
 
     /// Returns `true` if this directory entry should be included in scans.
@@ -132,6 +171,7 @@ impl GitGlobalConfig {
                 .any(|pat| entry_path.contains(pat))
     }
 
+    /// Append Vec of Strings as tags
     pub fn append_tags(&mut self, tags: Vec<String>) -> () {
         let new_repos = &mut tags
             .into_iter()
