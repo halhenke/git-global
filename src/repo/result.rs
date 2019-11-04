@@ -128,4 +128,13 @@ impl GitGlobalResult {
             .flatten()
             .collect::<Vec<&RepoTag>>()
     }
+
+    /// Return the list of repos filtered by those that include one of a set of tags
+    pub fn filter_repos_by_tags(&self, tags: Vec<RepoTag>) -> Vec<Repo> {
+        self.repos
+            .clone()
+            .into_iter()
+            .filter(|r| r.tags.iter().any(|rt| tags.contains(rt)))
+            .collect()
+    }
 }

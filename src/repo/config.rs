@@ -161,6 +161,7 @@ impl GitGlobalConfig {
         self
     }
 
+    /// set actions field as true
     pub fn with_actions(&mut self, actions: Vec<Action>) -> &mut Self {
         self.actions = actions;
         self
