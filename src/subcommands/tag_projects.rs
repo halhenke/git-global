@@ -79,19 +79,7 @@ pub fn go<'a>(path_filter: Option<String>) -> WeirdResult<GitGlobalResult> {
     let foci3 = Rc::clone(&foci1);
 
     let gc = GitGlobalConfig::new();
-
-    // let reps: Vec<Repo> = if path_filter.is_none() {
-
-    let reps: Vec<Repo> = if let Some(pf) = path_filter {
-        gc.get_cached_repos()
-            .into_iter()
-            .filter(|r| r.path.contains(&pf))
-            .collect()
-    } else {
-        gc.get_cached_repos()
-    };
-    let global_table =
-        LightTable::new_from_rc(reps, 0, 0, vec![], vec![] as Vec<RepoTag>);
+    let global_table = LightTable::new_from_ggc(gc, path_filter);
     let mut _g = (*global_table).borrow_mut();
     _g.reset_all_tags();
     drop(_g);

@@ -63,7 +63,7 @@ impl LightTable {
         } else {
             gc.get_cached_repos()
         };
-        Self::new_from_rc(reps, 0, 0, vec![], gc.tags)
+        Self::new_from_rc(reps, 0, 0, vec![], gc.default_tags)
     }
 
     /// chainable function to apply a simple filter to the [`Repo`] paths so that the `tags` field
@@ -191,7 +191,7 @@ use std::convert::From;
 
 impl From<GitGlobalConfig> for LightTable {
     fn from(gc: GitGlobalConfig) -> Self {
-        LightTable::new(gc.get_cached_repos(), 0, 0, vec![], gc.tags)
+        LightTable::new(gc.get_cached_repos(), 0, 0, gc.tags, gc.default_tags)
     }
 }
 

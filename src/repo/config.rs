@@ -25,8 +25,8 @@ const CACHE_FILE: &'static str = "repos.txt";
 const TAG_CACHE_FILE: &'static str = "tags.txt";
 const SETTING_BASEDIR: &'static str = "global.basedir";
 const SETTING_IGNORED: &'static str = "global.ignore";
-const SETTINGS_DEFAULT_TAGS: &'static str = "default-tags";
-const SETTINGS_DEFAULT_GIT_ACTIONS: &'static str = "default-git-actions";
+const SETTINGS_DEFAULT_TAGS: &'static str = "global.default-tags";
+const SETTINGS_DEFAULT_GIT_ACTIONS: &'static str = "global.default-git-actions";
 
 /// A container for git-global configuration options.
 #[derive(Serialize, Deserialize, Debug)]
@@ -36,6 +36,7 @@ pub struct GitGlobalConfig {
     pub basedirs: Vec<String>,
     pub ignored_patterns: Vec<String>,
     pub tags: Vec<RepoTag>,
+    pub default_tags: Vec<RepoTag>,
     pub actions: Vec<Action>,
     pub cache_file: PathBuf,
     pub tags_file: PathBuf,
@@ -104,7 +105,11 @@ impl GitGlobalConfig {
             // Err(_) => (home_dir.clone(), vec![home_dir.clone()], Vec::new()),
             // Err(_) => (home_dir, vec![&home_dir], Vec::new()),
         };
-        // assert!(Path::exists(Path::new(&basedir)), "Your provided basedir: {} does not exist", basedir);
+        assert!(
+            Path::exists(Path::new(&basedir)),
+            "Your provided basedir: {} does not exist",
+            basedir
+        );
         if !Path::exists(Path::new(&basedir)) {
             panic!("Your provided basedir: {} does not exist", basedir);
         }
@@ -132,7 +137,8 @@ impl GitGlobalConfig {
         let mut ggc = GitGlobalConfig {
             basedir: basedir,
             basedirs: basedirs,
-            tags: default_tags,
+            tags: vec![],
+            default_tags,
             actions: default_actions,
             ignored_patterns: patterns,
             cache_file: cache_file,
