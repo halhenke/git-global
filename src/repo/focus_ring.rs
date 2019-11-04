@@ -1,3 +1,5 @@
+//! Used in trying to easily cycle focus around the different cursive views with arrow keys
+
 use cursive::{
     event::{Event, EventResult, EventTrigger, Key},
     view::{View, ViewWrapper},
@@ -43,6 +45,7 @@ use std::rc::Rc;
 
 // impl From
 
+/// An `<Rc<RefCell<_>>` wrapped [`Ring`](../../../ring_queue/struct.Ring.html) structure
 #[derive(PartialEq, Eq, Clone)]
 pub struct Foci {
     ring: Rc<RefCell<Ring<String>>>,
@@ -74,11 +77,13 @@ impl<'a> Foci {
         // Foci { ring }
     }
 
+    /// returns another `Rc` reference to the Focus Ring
     pub fn rcrf_ring<'b>(&self) -> Rc<RefCell<Ring<String>>> {
         // Rc::new(RefCell::new(self.ring))
         Rc::clone(&self.ring)
     }
 
+    /// A function which takes a View layer and wraps it in an [`OnEventView`] layer with the callback from [`focus_change`]
     pub fn make_event_layer<T>(
         // &mut self,
         &self,
@@ -140,6 +145,7 @@ impl<'a> Foci {
         // .on_event(e, cb)
     }
 
+    /// Returns a callback that will respond to `left` `right` arrow keys by changing focus in the view and updating the FocusRing state
     pub fn focus_change(
         // pub fn focus_change<'b: 'a, T>(
         // self,
