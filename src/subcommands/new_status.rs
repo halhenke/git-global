@@ -13,6 +13,7 @@ use repo::errors::Result;
 use repo::{get_repos, GitGlobalError, GitGlobalResult, Repo};
 
 /// Gathers `git status -s` for all known repos.
+/// This is a reimplementation of `status` command using `crossbeam
 pub fn get_results(
     only_modified: bool,
     ignore_untracked: bool,

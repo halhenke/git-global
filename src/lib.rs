@@ -35,11 +35,18 @@
 //!
 //! All git-global subcommands are implemented in the [`subcommands`] module.
 //!
-//! [`Repo`]: struct.Repo.html
-//! [`GitGlobalConfig`]: struct.GitGlobalConfig.html
-//! [`GitGlobalResult`]: struct.GitGlobalResult.html
+//! Most mportant Data Structures are defined in the [`repo`](repo/index.html) module
+//!
+
+//! [`GitGlobalConfig`]: repo/config/struct.GitGlobalConfig.html
+//! [`GitGlobalResult`]: repo/result/struct.GitGlobalResult.html
+//! [`Repo`]: repo/repo/struct.Repo.html
+//! [`LightTable`]: repo/light_table/struct.LightTable.html
 //! [`get_repos()`]: fn.get_repos.html
 //! [`subcommands`]: subcommands/index.html
+//! [`repo`]: repo/index.html
+//! [`cli`]: repo/index.html
+//! [`queries`]: queries/index.html
 
 extern crate app_dirs;
 extern crate chrono;

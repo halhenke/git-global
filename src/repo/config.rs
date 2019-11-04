@@ -29,7 +29,6 @@ const SETTINGS_DEFAULT_TAGS: &'static str = "default-tags";
 const SETTINGS_DEFAULT_GIT_ACTIONS: &'static str = "default-git-actions";
 
 /// A container for git-global configuration options.
-
 #[derive(Serialize, Deserialize, Debug)]
 pub struct GitGlobalConfig {
     pub basedir: String,

@@ -1,4 +1,4 @@
-//! The `list` subcommand: lists all repos known to git-global.
+//! Cant remember what this does...
 
 extern crate github_rs;
 extern crate serde_json;
