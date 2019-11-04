@@ -91,7 +91,7 @@ pub fn go<'a>(path_filter: Option<String>) -> WeirdResult<GitGlobalResult> {
         gc.get_cached_repos()
     };
     let global_table =
-        LightTable::new_from_rc(reps, 0, 0, vec![] as Vec<RepoTag>);
+        LightTable::new_from_rc(reps, 0, 0, vec![], vec![] as Vec<RepoTag>);
     let mut _g = (*global_table).borrow_mut();
     _g.reset_all_tags();
     drop(_g);

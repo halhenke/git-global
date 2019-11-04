@@ -1,5 +1,9 @@
+//! [`SelectView`]: ../../../cursive/views/select_view/struct.SelectView.html
+
 use itertools::Itertools;
-use repo::{errors, GitGlobalError, GitGlobalResult, Repo, RepoTag};
+use repo::{
+    errors, GitGlobalConfig, GitGlobalError, GitGlobalResult, Repo, RepoTag,
+};
 use std::ops::Deref;
 use std::{cell::RefCell, rc::Rc};
 
@@ -9,6 +13,7 @@ pub struct LightTable {
     pub repo_index: usize,
     pub tag_index: usize,
     pub tags: Vec<RepoTag>,
+    pub default_tags: Vec<RepoTag>,
 }
 
 impl LightTable {
@@ -17,23 +22,65 @@ impl LightTable {
         repo_index: usize,
         tag_index: usize,
         tags: Vec<RepoTag>,
+        default_tags: Vec<RepoTag>,
     ) -> LightTable {
         LightTable {
             repos,
             repo_index,
             tag_index,
             tags,
+            default_tags,
         }
     }
+
+    /// Returns a LightTable wrapped in an <Rc<RefCell>>
     pub fn new_from_rc(
         repos: Vec<Repo>,
         repo_index: usize,
         tag_index: usize,
         tags: Vec<RepoTag>,
+        default_tags: Vec<RepoTag>,
     ) -> Rc<RefCell<LightTable>> {
-        Rc::new(RefCell::new(Self::new(repos, repo_index, tag_index, tags)))
+        Rc::new(RefCell::new(Self::new(
+            repos,
+            repo_index,
+            tag_index,
+            tags,
+            default_tags,
+        )))
     }
 
+    /// Construct a LightTable from a [`GitGlobalConfig`] (LightTable is probably slightly superfluous as a new data structure actually...)
+    pub fn new_from_ggc(
+        gc: GitGlobalConfig,
+        path_filter: Option<String>,
+    ) -> Rc<RefCell<LightTable>> {
+        let reps: Vec<Repo> = if let Some(pf) = path_filter {
+            gc.get_cached_repos()
+                .into_iter()
+                .filter(|r| r.path.contains(&pf))
+                .collect()
+        } else {
+            gc.get_cached_repos()
+        };
+        Self::new_from_rc(reps, 0, 0, vec![], gc.tags)
+    }
+
+    /// chainable function to apply a simple filter to the [`Repo`] paths so that the `tags` field
+    /// now contains only those repos tht match
+    pub fn filter_repos(&mut self, path_filter: String) -> &mut Self {
+        self.repos = self
+            .repos
+            .clone()
+            .into_iter()
+            .filter(|r| r.path.contains(&path_filter))
+            .collect();
+        self
+    }
+
+    /// Helper function for the Cursive [`SelectView`](../../../cursive/views/select_view/struct.SelectView.html).
+    ///
+    /// Return the `repos` field as a [`Vec`] of label, index tuples suitable for input to a [`SelectView`](../../../cursive/views/select_view/struct.SelectView.html) in `Cursive`
     pub fn selectify_repos(&self) -> Vec<(&str, usize)> {
         self.repos
             .iter()
@@ -42,6 +89,9 @@ impl LightTable {
             .collect::<Vec<(&str, usize)>>()
     }
 
+    /// Helper function for the Cursive [`SelectView`](../../../cursive/views/select_view/struct.SelectView.html)
+    ///
+    /// Return a `Vec` of (label, index) pairs from the tags associated with the currently selected [`Repo`]
     pub fn selectify_tags(&self, index: usize) -> Vec<(&str, usize)> {
         self.repos
             .iter()
@@ -54,15 +104,22 @@ impl LightTable {
             .collect::<Vec<(&str, usize)>>()
     }
 
+    /// Helper function for the Cursive `SelectView`.
+    ///
+    /// Returns a [`Vec`] of (label, index) pairs from all the tags currently assigned to one or more Repos *plus* the set of `default_tags` that are globally assigned by [`GitGlobalConfig`]
     pub fn all_the_tags(&self) -> Vec<(String, usize)> {
         let mut r = self
             .repos
             .iter()
             .flat_map(|r| r.tags.iter().map(|t| t.name.clone()))
             .chain::<Vec<String>>(
-                vec!["haskell", "ml", "rust", "apple", "web dev"]
-                    .into_iter()
-                    .map(String::from)
+                self.default_tags
+                    // vec!["haskell", "ml", "rust", "apple", "web dev"]
+                    .iter()
+                    // .clone()
+                    .map(|r| r.name.clone())
+                    // .map(String::from)
+                    // .map(RepoTag::new)
                     .collect(),
             )
             .unique()
@@ -73,11 +130,14 @@ impl LightTable {
         r
     }
 
+    /// Running this will both "refresh/recalculate" the list of
+    /// tags and return them in a form you can use with a [`SelectView`](../../../cursive/views/select_view/struct.SelectView.html)
     pub fn retags(&mut self) -> Vec<(String, usize)> {
         self.reset_all_tags();
         self.tags_as_list()
     }
 
+    /// Take our current list of tags and put them into the form of a `Vec` of (tag name, index) pairs.
     pub fn tags_as_list(&self) -> Vec<(String, usize)> {
         self.tags
             .iter()
@@ -87,24 +147,22 @@ impl LightTable {
             .collect()
     }
 
+    /// Helper function for the Cursive [`SelectView`](../../../cursive/views/select_view/struct.SelectView.html).
+    ///
+    /// Recalculate the list of tags available to choose from based on the list of `repos` and the prepopulated `default_tags`
     pub fn reset_all_tags(&mut self) {
         let mut _tmp: Vec<(RepoTag)> = self
             .repos
             .iter()
             .flat_map(|r| r.tags.clone())
-            .chain::<Vec<RepoTag>>(
-                vec!["haskell", "ml", "rust", "apple", "web dev"]
-                    .into_iter()
-                    .map(RepoTag::new)
-                    // .map(String::from)
-                    .collect(),
-            )
+            .chain::<Vec<RepoTag>>(self.default_tags.clone())
             .unique()
             .collect::<Vec<RepoTag>>();
         _tmp.sort();
         self.tags = _tmp;
     }
 
+    /// This should go - it just returns a bunch of fake tags
     pub fn all_tags(&self) -> Vec<(String, usize)> {
         vec!["haskell", "ml", "rust", "apple", "web dev"]
             .iter()
@@ -114,6 +172,7 @@ impl LightTable {
             .collect::<Vec<(String, usize)>>()
     }
 
+    /// Will add a tag to the current_repo *only if it is not already there*, and will recalculate the total tag list.
     pub fn add_tag(&mut self, rt: &RepoTag) -> bool {
         let current_repo = self
             .repos
@@ -125,6 +184,14 @@ impl LightTable {
         current_repo.tags.push(rt.clone());
         self.retags();
         return true;
+    }
+}
+
+use std::convert::From;
+
+impl From<GitGlobalConfig> for LightTable {
+    fn from(gc: GitGlobalConfig) -> Self {
+        LightTable::new(gc.get_cached_repos(), 0, 0, vec![], gc.tags)
     }
 }
 
