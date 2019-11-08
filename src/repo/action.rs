@@ -1,4 +1,5 @@
 use repo::Repo;
+use std::fmt::{Display, Error};
 use subprocess::{Exec, Popen};
 
 /// Trying out a nested/weird enum to see how felxible they are
@@ -53,6 +54,16 @@ pub enum ActionError {
 }
 
 type ActionResult<T> = Result<T, ActionError>;
+
+impl Display for Action {
+    // fn fmt(&self, &mut std::fmt::Formatter<'_>) -> String {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), Error> {
+        // return String::from("Booyah");
+        // *f = String::from("Booyah");
+        f.write_str("ooyah");
+        Ok(())
+    }
+}
 
 impl Action {
     pub fn perform_action_for_repo(&self) -> ActionResult<(String)> {
