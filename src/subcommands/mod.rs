@@ -1,4 +1,5 @@
 //! Subcommand implementations.
+pub mod actions;
 pub mod add_tags;
 pub mod bullshit;
 pub mod clean;

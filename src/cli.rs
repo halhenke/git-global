@@ -42,6 +42,31 @@ pub fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
             SubCommand::with_name("bullshit")
                 .about("Just mucking around with stuff"),
         )
+        .subcommand(
+            SubCommand::with_name("action")
+                .subcommand(
+                    SubCommand::with_name("perform")
+                        .arg(
+                            Arg::with_name("action")
+                                .help("perform this action")
+                                .takes_value(true)
+                                .required(true))
+                        .arg(
+                            Arg::with_name("tags")
+                                .help("on repos with these tags")
+                                .takes_value(true))
+                                // .required(true)
+                        .arg(
+                            Arg::with_name("path")
+                                .help("on repos which match this path")
+                                .takes_value(true))
+                                // .required(true)
+                        )
+                .subcommand(
+                    SubCommand::with_name("list")
+                        .about("list available actions")
+                )
+        )
         .subcommand(SubCommand::with_name("clean").about("Clear the cache")
             .arg(
                 Arg::with_name("tags")
@@ -203,6 +228,17 @@ pub fn run_from_command_line() -> i32 {
             subcommands::list::get_results(path_filter)
         }
         Some("list-tags") => subcommands::list_tags::get_results(),
+        Some("action") => match matches
+            .subcommand_matches("action")
+            .unwrap()
+            .subcommand_name()
+        {
+            Some("perform") => subcommands::actions::perform(),
+            Some("list") => subcommands::actions::list(),
+            _ => Err(GitGlobalError::BadSubcommand(String::from(
+                "bad action subcommand",
+            ))),
+        },
         Some("add-tags") => subcommands::add_tags::go(),
         Some("filter") => {
             let sub_com =
