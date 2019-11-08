@@ -64,6 +64,7 @@ fn my_new_repo_check(repos: &mut Vec<Repo>, entry: jwalk::DirEntry) -> () {
 }
 
 /// Walks the configured base directory, looking for git repos.
+/// TODO: Shouldnt this be a method on GitGlobalConfig?
 pub fn new_find_repos() -> Vec<Repo> {
     let mut repos: Vec<Repo> = Vec::new();
     let user_config = GitGlobalConfig::new();
@@ -122,11 +123,13 @@ pub fn new_find_repos() -> Vec<Repo> {
 }
 
 /// Caches repo list to disk, in the XDG cache directory for git-global.
+/// TODO: Shouldnt this be a method on GitGlobalConfig?
 pub fn cache_repos(repos: &Vec<Repo>) {
     let user_config = GitGlobalConfig::new();
     user_config.cache_repos(repos);
 }
 
+// TODO: using this?
 pub fn get_tagged_repos(tags: &Vec<RepoTag>) -> Vec<Repo> {
     if tags.len() == 0 {
         // println!("NO TAGS");
@@ -147,15 +150,11 @@ pub fn get_tagged_repos(tags: &Vec<RepoTag>) -> Vec<Repo> {
 }
 
 /// Returns all known git repos, populating the cache first, if necessary.
+/// TODO: Shouldnt this be a method on GitGlobalConfig?
 pub fn get_repos() -> Vec<Repo> {
     // debug!("get repos");
     let user_config = GitGlobalConfig::new();
     // debug!("got config");
-
-    // Convert the Point to a JSON string.
-    let serialized = serde_json::to_string(&user_config).unwrap();
-    // Prints serialized = {"x":1,"y":2}
-    // debug!("serialized = {}", serialized);
 
     if !user_config.has_cache() {
         println!("{}", "You have no cached repos yet...".yellow());

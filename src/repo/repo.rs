@@ -148,3 +148,10 @@ impl fmt::Display for Repo {
         write!(f, "{}", self.path)
     }
 }
+
+// /// Because I use this everywhere
+// impl Vec<Repo> {
+//     pub fn filter_by_path(&self, path_filter: String) -> Vec<Repo> {
+//         self.clone()
+//     }
+// }

@@ -1,3 +1,11 @@
+/*!
+    Defines the [`GitGlobalResult`] struct
+    At the moment this data structure contains
+        - a list of Repos
+        - a list of Global Messages
+        - a list of messages per [`Repo`]
+    Its designed to be the result of any particular command - not sure it fits anymore - or at least we might want a different data structure for other stuff
+*/
 use repo::{Repo, RepoTag};
 use std::collections::HashMap;
 

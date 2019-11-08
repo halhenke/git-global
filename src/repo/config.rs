@@ -1,3 +1,14 @@
+/*!
+    Defines the [`GitGlobalConfig`] struct
+    At the moment this data structure contains
+        - a basedir
+        - a list of basedirs
+        - a list of [`Tag`]s
+        - a list of default_tags
+        - a list of actions
+
+
+*/
 // use colored::*;
 // use std::env;
 use app_dirs::{app_dir, get_app_dir, AppDataType, AppInfo};
@@ -29,6 +40,8 @@ const SETTINGS_DEFAULT_TAGS: &'static str = "global.default-tags";
 const SETTINGS_DEFAULT_GIT_ACTIONS: &'static str = "global.default-git-actions";
 
 /// A container for git-global configuration options.
+/// By Default these options are gathered from the global `.gitconfig`
+/// file and cached repos/tags are retrieved/stored on disk
 #[derive(Serialize, Deserialize, Debug)]
 pub struct GitGlobalConfig {
     pub basedir: String,
@@ -156,12 +169,13 @@ impl GitGlobalConfig {
         gcc
     }
 
+    /// Add tags to the [`GitGlobalConfig`] object - Chainable
     pub fn with_tags(&mut self, tags: Vec<RepoTag>) -> &mut Self {
         self.tags = tags;
         self
     }
 
-    /// set actions field as true
+    /// set actions field as true - Chainable
     pub fn with_actions(&mut self, actions: Vec<Action>) -> &mut Self {
         self.actions = actions;
         self
@@ -192,6 +206,7 @@ impl GitGlobalConfig {
         });
     }
 
+    /// Replace current tags with [`Vec<RepoTag>`] given a [`Vec`] of [`String`]s as input
     pub fn replace_tags(&mut self, tags: Vec<String>) -> () {
         let new_tags = tags.into_iter().map(|t| t.into()).collect();
         self.tags = new_tags;
@@ -202,6 +217,7 @@ impl GitGlobalConfig {
         &self.tags
     }
 
+    /// Return tags as a [`Vec`] of [`String`]s
     pub fn tag_names(&self) -> Vec<&str> {
         // pub fn tag_names(&self) -> &Vec<&str> {
         self.tags.iter().map(|g| g.name.as_str()).collect()
