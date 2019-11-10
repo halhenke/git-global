@@ -36,9 +36,8 @@ git config --global global.ignore .cargo,.vim,Library
 
 ## TODO
 
-- [ ] filter `tag-projects` by path, status, prepopulate a list of potential new tags
+- [x] filter `tag-projects` by path, status, prepopulate a list of potential new tags
 - [x] Option to strip all tags
-- [ ] An option to run an action on groups of repos/directories
 - [ ] Better message suggesting "use list or status"
 - [ ] Filter list
   - [x] by regex
@@ -49,6 +48,14 @@ git config --global global.ignore .cargo,.vim,Library
 - [ ] reconcile `add_tags` and `tag_projects_redo`
 - [ ] have a negative filter option for status also (things to exclude)
 - [x] Replace mpsc with crossbeam in `status` command
+
+### Actions
+
+- [ ] An option to run an action on groups of repos/directories
+- [ ] A whitelist or blacklist of commands
+  - i.e. dont run `rm` or `mv` without a prompt
+- [ ] A dangerous flag?
+- [ ] Perhaps a more complex input format/source than a comma separated list of strings
 
 ## Ideas
 
