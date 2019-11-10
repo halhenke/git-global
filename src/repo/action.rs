@@ -7,7 +7,6 @@ enum ActionType {
     RepoAction {
         GitAction: String,
         NotGitAction: String,
-        // Other(String)
     },
     Gumball(
         String,
@@ -16,8 +15,10 @@ enum ActionType {
         // Noon(String)
     ),
     // Nonsense {
-    //     obj: String
-    // }),
+    //     nested: {
+    //         no: bool
+    //     }
+    // },
     // GumboAction {
     //     Nando: Thwack(i32)
     // }
@@ -43,9 +44,10 @@ type Command = String;
 /// actions and ones that take place in a specific Repo
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum Action {
-    GitAction(RepoPath, CommandName, Command, Vec<String>),
-    PathAction(CommandName, Command, Vec<String>),
-    NonGitAction(CommandName, Command, Vec<String>),
+    // GitAction(RepoPath, CommandName, Command, Vec<String>),
+    PathAction(RepoPath, CommandName, Command, Vec<String>),
+    NeedsAPathAction(CommandName, Command, Vec<String>),
+    NonPathAction(CommandName, Command, Vec<String>),
 }
 
 pub enum ActionError {
@@ -95,14 +97,16 @@ mod action_tests {
 
     #[test]
     pub fn enum_rep() {
-        let ga = Action::GitAction(
+        let ga = Action::PathAction(
+            // let ga = Action::GitAction(
             "/usr/local".to_owned(),
             "nob".to_owned(),
             "pwd".to_owned(),
             vec![],
         );
         ga.perform_action_for_repo();
-        if let Action::GitAction(path, _, _, _) = ga {
+        if let Action::PathAction(path, _, _, _) = ga {
+            // if let Action::GitAction(path, _, _, _) = ga {
             assert_eq!(format!("{:?}", path), "");
         }
     }

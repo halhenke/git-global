@@ -107,7 +107,8 @@ impl GitGlobalConfig {
                      .unwrap_or(String::new())
                      .split(",")
                      .map(|p| p.trim().to_string())
-                     .map(|ga| Action::PathAction(ga.to_owned(), ga.clone(), vec![]))
+                    //  TODO: Figure out how to handle an Action without a path
+                     .map(|ga| Action::NeedsAPathAction(ga.to_owned(), ga.clone(), vec![]))
                      .collect::<Vec<Action>>()
                 )
             }
