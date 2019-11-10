@@ -44,8 +44,10 @@ pub fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
         )
         .subcommand(
             SubCommand::with_name("action")
+                .about("commands related to actions that can be performed in specific repositories")
                 .subcommand(
                     SubCommand::with_name("perform")
+                        .about("perform one (or more?) actions for repositories filtered by tag/path")
                         .arg(
                             Arg::with_name("action")
                                 .help("perform this action")
@@ -54,11 +56,16 @@ pub fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
                         .arg(
                             Arg::with_name("tags")
                                 .help("on repos with these tags")
+                                .long("tags")
+                                .short("t")
                                 .takes_value(true))
                                 // .required(true)
                         .arg(
                             Arg::with_name("path")
                                 .help("on repos which match this path")
+                                .multiple(true)
+                                .long("path")
+                                .short("p")
                                 .takes_value(true))
                                 // .required(true)
                         )
