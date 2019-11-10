@@ -232,6 +232,7 @@ pub fn run_from_command_line() -> i32 {
                 .subcommand_matches("list")
                 .unwrap()
                 .value_of("path_filter");
+            // let path_filter = get_path_filter(&matches, "list");
             subcommands::list::get_results(path_filter)
         }
         Some("list-tags") => subcommands::list_tags::get_results(),
@@ -240,7 +241,24 @@ pub fn run_from_command_line() -> i32 {
             .unwrap()
             .subcommand_name()
         {
-            Some("perform") => subcommands::actions::perform(),
+            Some("perform") => {
+                let tags = get_subcommand_value(
+                    matches.subcommand_matches("action").unwrap(),
+                    "perform",
+                    "tags",
+                );
+                let path = get_subcommand_value(
+                    matches.subcommand_matches("action").unwrap(),
+                    "perform",
+                    "path",
+                );
+                let action = get_subcommand_values(
+                    matches.subcommand_matches("action").unwrap(),
+                    "perform",
+                    "action",
+                );
+                subcommands::actions::perform(tags, path, action)
+            }
             Some("list") => subcommands::actions::list(),
             _ => Err(GitGlobalError::BadSubcommand(String::from(
                 "bad action subcommand",
@@ -337,11 +355,38 @@ fn get_new_status(
 }
 
 fn get_path_filter(matches: &ArgMatches, subcommand: &str) -> Option<String> {
+    get_subcommand_value(matches, subcommand, "path_filter")
+}
+
+/// Get the [`Arg`] value for a given [`SubCommand`]
+fn get_subcommand_value(
+    matches: &ArgMatches,
+    subcommand: &str,
+    value: &str,
+) -> Option<String> {
     matches
         .subcommand_matches(subcommand)
         .unwrap()
-        .value_of("path_filter")
+        .value_of(value)
         .map(|s| String::from(s))
+}
+
+/// Get all [`Arg`] values for a given [`SubCommand`]
+fn get_subcommand_values(
+    matches: &ArgMatches,
+    subcommand: &str,
+    value: &str,
+) -> Option<String> {
+    let result = matches
+        .subcommand_matches(subcommand)
+        .unwrap()
+        .values_of(value)
+        .unwrap()
+        .fold(String::new(), |a, b| [a, b.to_owned()].concat());
+    println!("values is {}", result);
+    Some(result)
+
+    // .map(|s| String::from(s))
 }
 
 /// Writes results to STDOUT, as either text or JSON, and returns `0`.
