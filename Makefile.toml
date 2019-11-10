@@ -1,5 +1,6 @@
 [env]
 APP_NAME = "git-global-hal"
+SHELL_COMPLETIONS = "${MACKUP_PATH}/.zsh-code/completions/"
 
 [tasks.build]
 command = "cargo"
@@ -16,4 +17,11 @@ args = ["install", "--force", "--path", "."]
 description = "Output zsh completion info via `clap` and store it in /usr/local/share/zsh/site-functions"
 script = [
 	"${APP_NAME} --zsh > /usr/local/share/zsh/site-functions/_${APP_NAME}"
+]
+
+[tasks.copy-shell-completions]
+description = "After running `$APP_NAME completions` you should have a `_${APP_NAME}` file - this will copy it to the provided shell completions directory - ${SHELL_COMPLETIONS}"
+script = [
+	"echo Moving _$APP_NAME to $SHELL_COMPLETIONS",
+	"mv _${APP_NAME} ${SHELL_COMPLETIONS}"
 ]
