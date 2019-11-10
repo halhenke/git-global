@@ -1,5 +1,6 @@
 //! Primary DataStructures
 pub mod action;
+pub mod action_set;
 pub mod config;
 pub mod errors;
 pub mod focus_ring;
@@ -9,6 +10,7 @@ pub mod repo_tag;
 pub mod result;
 pub mod utils;
 pub use self::action::*;
+pub use self::action_set::*;
 pub use self::config::*;
 pub use self::errors::*;
 pub use self::repo::*;

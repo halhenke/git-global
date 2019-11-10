@@ -119,6 +119,15 @@ impl Action {
         }
     }
 
+    /// return Action command
+    pub fn get_command(&self) -> &str {
+        match self {
+            Action::PathAction(_, _, cmd, ..) => cmd,
+            Action::NeedsAPathAction(_, cmd, ..)
+            | Action::NonPathAction(_, cmd, ..) => cmd,
+        }
+    }
+
     /// Indicates whether the action needs to be provided with a path in which to be executed - i.e. is it a [`Action::NeedsAPathAction`]
     pub fn needs_path(&self) -> bool {
         match self {
