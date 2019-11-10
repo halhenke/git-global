@@ -56,6 +56,9 @@ git config --global global.ignore .cargo,.vim,Library
   - i.e. dont run `rm` or `mv` without a prompt
 - [ ] A dangerous flag?
 - [ ] Perhaps a more complex input format/source than a comma separated list of strings
+- [ ] A GUI composer - let you see what Repos you would be about to effect with an action based on path/tag filtering.
+- [ ] A way to sequence actions run one then another
+- [ ]
 
 ## Ideas
 
