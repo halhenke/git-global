@@ -149,6 +149,36 @@ impl fmt::Display for Repo {
     }
 }
 
+pub trait Filterable {
+    // pub trait Filterable<T> {
+    // let repos: Vec<Repo>;
+    // type repos
+    fn filter_tags(&self, tags: Vec<RepoTag>) -> Vec<Repo>;
+    fn filter_paths(&self, path: String) -> Vec<Repo>;
+    // fn filter_tags(&self, tags: Vec<RepoTag>) -> Vec<Repo> {
+    //     self.repos
+    //         .iter()
+    //         .filter(|r| r.path.contains("ug"))
+    //         .collect()
+    // }
+}
+
+impl Filterable for Vec<Repo> {
+    fn filter_tags(&self, tags: Vec<RepoTag>) -> Vec<Repo> {
+        self.clone()
+            .into_iter()
+            .filter(|r| r.tags.iter().any(|rt| tags.contains(rt)))
+            .collect()
+    }
+    fn filter_paths(&self, path: String) -> Vec<Repo> {
+        self.clone()
+            .into_iter()
+            .filter(|r| r.path.contains(&path))
+            // .filter(|r| r.tags.iter().any(|rt| tags.contains(rt)))
+            .collect()
+    }
+}
+
 // /// Because I use this everywhere
 // impl Vec<Repo> {
 //     pub fn filter_by_path(&self, path_filter: String) -> Vec<Repo> {
