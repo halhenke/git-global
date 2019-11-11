@@ -1,7 +1,7 @@
 use git2;
 use std::fmt;
 // use std::iter::FromIterator;
-use repo::Repo;
+use crate::repo::Repo;
 use std::path::Path;
 
 /// All tags from a Vec of repos

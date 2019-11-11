@@ -1,10 +1,10 @@
 //! A Useful struct when dealing with cursive callbacks and Selectviews
 //! [`SelectView`]: ../../../cursive/views/select_view/struct.SelectView.html
 
-use itertools::Itertools;
-use repo::{
+use crate::repo::{
     errors, GitGlobalConfig, GitGlobalError, GitGlobalResult, Repo, RepoTag,
 };
+use itertools::Itertools;
 use std::ops::Deref;
 use std::{cell::RefCell, rc::Rc};
 

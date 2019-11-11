@@ -1,7 +1,7 @@
 //! The `clear` subcommand: clears the cache
 
-use repo::errors::{GitGlobalError, Result};
-use repo::{GitGlobalConfig, GitGlobalResult};
+use crate::repo::errors::{GitGlobalError, Result};
+use crate::repo::{GitGlobalConfig, GitGlobalResult};
 
 /// Forces the display of each repo path, without any extra output.
 pub fn cache_clear(clear_cmd: &str) -> Result<GitGlobalResult> {

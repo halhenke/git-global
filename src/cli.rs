@@ -1,10 +1,12 @@
 //! The command line interface for git-global.
 
+use crate::repo::{
+    errors, light_table::LightTable, GitGlobalError, GitGlobalResult,
+};
 use clap::{App, Arg, ArgMatches, Shell, SubCommand};
-use repo::{errors, light_table::LightTable, GitGlobalError, GitGlobalResult};
 use std::io::{stderr, Write};
 
-use subcommands;
+use crate::subcommands;
 
 // use dirs::home_dir;
 // use config::{Config, ConfigError, File};

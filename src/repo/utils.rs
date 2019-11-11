@@ -4,9 +4,9 @@
 //! the `get_repos()` function.
 
 use colored::*;
-pub use repo::config::GitGlobalConfig;
-pub use repo::result::GitGlobalResult;
-pub use repo::{Repo, RepoTag};
+pub use crate::repo::config::GitGlobalConfig;
+pub use crate::repo::result::GitGlobalResult;
+pub use crate::repo::{Repo, RepoTag};
 // use std::fmt;
 use std::sync::Arc;
 

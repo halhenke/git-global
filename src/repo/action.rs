@@ -1,4 +1,4 @@
-use repo::Repo;
+use crate::repo::Repo;
 use std::fmt::{Display, Error};
 use subprocess::{Exec, Popen};
 

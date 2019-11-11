@@ -87,9 +87,16 @@ extern crate ring_queue;
 extern crate subprocess;
 
 mod cli;
+// mod subcommands;
 pub mod repo;
-pub mod subcommands; // Using `pub mod` so we see the docs.
+// pub mod subcommands;
+pub mod subcommands;
+// pub mod self::repo;
+// pub mod subcommands; // Using `pub mod` so we see the docs.
 
+// use self::repo;
+// use crate::subcommands;
+// pub use crate::repo;
 pub use cli::run_from_command_line;
 
 // use log::{Level, LevelFilter, Log, Metadata, Record};
@@ -98,7 +105,7 @@ pub use cli::run_from_command_line;
 // extern crate log;
 // pretty_env_logger::init();
 
-// pub use repo::{
+// pub use crate::repo::{
 //     GitGlobalConfig,
 //     GitGlobalResult,
 //     Repo,
@@ -106,5 +113,5 @@ pub use cli::run_from_command_line;
 //     RepoTag,
 //     get_tagged_repos
 // };
-// pub use repo::Result;
-// pub use repo::GitGlobalError;
+// pub use crate::repo::Result;
+// pub use crate::repo::GitGlobalError;

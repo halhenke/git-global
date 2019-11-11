@@ -7,9 +7,9 @@ use std::ops::Deref;
 use std::rc::Rc;
 extern crate cursive;
 
-// use repo::Foci;
-use repo::focus_ring::Foci;
-// use repo::focus_ring::{
+// use crate::repo::Foci;
+use crate::repo::focus_ring::Foci;
+// use crate::repo::focus_ring::{
 //     DEBUG_VIEW, NEW_TAG, REPO_FIELD, TAG_DISPLAY, TAG_POOL, TEXT_VIEW,
 // };
 use ring_queue::Ring;
@@ -30,12 +30,12 @@ use self::cursive::{
     },
 };
 use self::cursive::{Printer, XY};
-use itertools::Itertools;
-use repo::errors::Result as WeirdResult;
-use repo::{
+use crate::repo::errors::Result as WeirdResult;
+use crate::repo::{
     light_table::{LightTable, RcVecRepo, RcVecRepoTag},
     save_repos_and_tags, GitGlobalConfig, GitGlobalResult, Repo, RepoTag,
 };
+use itertools::Itertools;
 use std::borrow::BorrowMut;
 use std::cell::Ref;
 

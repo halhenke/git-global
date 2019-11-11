@@ -1,8 +1,8 @@
 //! The `filter` subcommand: lists all repos known to git-global.
 
-use repo::errors::Result;
-use repo::{get_tagged_repos, GitGlobalResult, RepoTag};
-use subcommands::utilities::print_str_pat;
+use super::utilities::print_str_pat;
+use crate::repo::errors::Result;
+use crate::repo::{get_tagged_repos, GitGlobalResult, RepoTag};
 
 /// Forces the display of each repo path, without any extra output.
 pub fn get_results(pat: &str, tags: Vec<&str>) -> Result<GitGlobalResult> {

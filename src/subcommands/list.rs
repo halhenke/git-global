@@ -1,9 +1,9 @@
 //! The `list` subcommand: lists all repos known to git-global.
 
+use crate::repo::errors::Result;
+use crate::repo::{get_repos, GitGlobalResult};
 use colored::*;
 use itertools::Itertools;
-use repo::errors::Result;
-use repo::{get_repos, GitGlobalResult};
 
 /// Forces the display of each repo path, without any extra output.
 pub fn get_results(path_filter: Option<&str>) -> Result<GitGlobalResult> {

@@ -1,7 +1,7 @@
 use git2;
 use std::fmt;
 // use std::iter::FromIterator;
-use repo::repo_tag::RepoTag;
+use crate::repo::repo_tag::RepoTag;
 use std::path::Path;
 
 /// A git repository, represented by the full path to its base directory.

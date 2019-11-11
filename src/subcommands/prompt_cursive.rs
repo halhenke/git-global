@@ -7,9 +7,9 @@ use self::cursive::event::EventResult;
 use self::cursive::traits::*;
 use self::cursive::views::{Dialog, OnEventView, SelectView, TextView};
 
-use repo::errors::Result as WeirdResult;
+use crate::repo::errors::Result as WeirdResult;
 
-use repo::{get_repos, GitGlobalConfig, GitGlobalResult};
+use crate::repo::{get_repos, GitGlobalConfig, GitGlobalResult};
 
 #[derive(Debug)]
 struct Selectable<'a> {
