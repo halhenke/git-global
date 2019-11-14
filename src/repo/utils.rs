@@ -3,10 +3,10 @@
 //! Includes the `Repo`, `GitGlobalConfig`, and `GitGlobalResult` structs, and
 //! the `get_repos()` function.
 
-use colored::*;
 pub use crate::repo::config::GitGlobalConfig;
 pub use crate::repo::result::GitGlobalResult;
 pub use crate::repo::{Repo, RepoTag};
+use colored::*;
 // use std::fmt;
 use std::sync::Arc;
 
@@ -122,13 +122,6 @@ pub fn new_find_repos() -> Vec<Repo> {
     repos
 }
 
-/// Caches repo list to disk, in the XDG cache directory for git-global.
-/// TODO: Shouldnt this be a method on GitGlobalConfig?
-pub fn cache_repos(repos: &Vec<Repo>) {
-    let user_config = GitGlobalConfig::new();
-    user_config.cache_repos(repos);
-}
-
 // TODO: using this?
 pub fn get_tagged_repos(tags: &Vec<RepoTag>) -> Vec<Repo> {
     if tags.len() == 0 {
@@ -159,7 +152,7 @@ pub fn get_repos() -> Vec<Repo> {
     if !user_config.has_cache() {
         println!("{}", "You have no cached repos yet...".yellow());
         let repos = new_find_repos();
-        cache_repos(&repos);
+        user_config.cache_repos(&repos);
         repos
     } else {
         println!("{}", "You have a cache!".green());

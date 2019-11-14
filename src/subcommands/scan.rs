@@ -11,12 +11,13 @@
 //! be rerun at any time to refresh the list.
 
 use crate::repo::errors::Result;
-use crate::repo::{cache_repos, new_find_repos, GitGlobalResult};
+use crate::repo::{new_find_repos, GitGlobalConfig, GitGlobalResult};
 
 /// Caches the results of `find_repos()` and says how many were found.
 pub fn get_results() -> Result<GitGlobalResult> {
+    let uc = GitGlobalConfig::new();
     let repos = new_find_repos();
-    cache_repos(&repos);
+    uc.cache_repos(&repos);
     let mut result = GitGlobalResult::new(&repos);
     result.add_message(format!(
         "Found {} repos. Use `git global list` to show them.",

@@ -330,7 +330,7 @@ impl GitGlobalConfig {
 
     /// Writes the given repo paths to the cache file.
     pub fn cache_repos(&self, repos: &Vec<Repo>) {
-        if !self.cache_file.as_path().exists() {
+        if !self.has_cache() {
             // Try to create the cache directory if the cache *file* doesn't
             // exist; app_dir() handles an existing directory just fine.
             match app_dir(AppDataType::UserCache, &APP, "cache") {
