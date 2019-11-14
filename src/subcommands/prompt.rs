@@ -79,7 +79,7 @@ pub fn go() -> WeirdResult<GitGlobalResult> {
 
     // Event Loop
     loop {
-        let _size = terminal.size().unwrap();
+        let _size = terminal.size()?;
         // if app.size != size {
         //     terminal.resize(size).unwrap();
         //     app.size = size;

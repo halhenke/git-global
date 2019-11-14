@@ -68,22 +68,21 @@ impl Display for Action {
         match self {
             // Action::GitAction(path, name, _, _) => {},
             Action::PathAction(path, name, _, _) => {
-                f.write_str(&format!("Action `{}` for path {}", name, path));
+                f.write_str(&format!("Action `{}` for path {}", name, path))
             }
             Action::NeedsAPathAction(name, _, _) => {
                 f.write_str(&format!(
                     "Action `{}` needs to be associated with a path before execution",
                     name
-                ));
+                ))
             }
             Action::NonPathAction(name, _, _) => {
                 f.write_str(&format!(
                     "Action `{}` not associated with a path",
                     name
-                ));
+                ))
             }
         }
-        Ok(())
     }
 }
 

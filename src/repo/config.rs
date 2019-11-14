@@ -244,9 +244,9 @@ impl GitGlobalConfig {
     }
 
     pub fn make_empty_cache(&self) -> Result<()> {
-        let mut f = File::create(&self.cache_file).unwrap();
+        let mut f = File::create(&self.cache_file)?;
         let rt: RepoTagCache = RepoTagCache::new(&Vec::new(), &Vec::new());
-        let serialized = serde_json::to_string(&rt).unwrap();
+        let serialized = serde_json::to_string(&rt)?;
         f.write_all(serialized.as_bytes())
     }
 

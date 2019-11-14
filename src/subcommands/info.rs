@@ -12,7 +12,7 @@ extern crate clap;
 
 use colored::*;
 
-use crate::repo::errors::Result;
+use crate::repo::errors::{GitGlobalError, Result};
 use crate::repo::{get_repos, GitGlobalConfig, GitGlobalResult};
 
 /// Returns the age of a file in terms of days, hours, minutes, and seconds.
