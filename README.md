@@ -49,6 +49,37 @@ git config --global global.ignore .cargo,.vim,Library
 - [ ] have a negative filter option for status also (things to exclude)
 - [x] Replace mpsc with crossbeam in `status` command
 
+### Rust 2018
+
+- [ ] extern crates
+- [ ] try to get rid of some unwraps for `?`s
+
+### Bugs
+
+- [ ] What if we scan for repos again - do we lose all our existing tag info?
+  - [ ] We need to store tags separately maybe?
+- [ ] When we tag-projects after filtering by path/tag and save them we are overwriting our repos with a subset of all our repos
+
+### Bigger Changes
+
+- [ ] Maybe i need to refactor the basic data types - they probably dont make sense for what i want this project to be
+  - particularly `GitGlobalConfig` and `GitGlobalResult`
+    - `GitGlobalConfig` reads .gitglobalconfig and stores option
+      - it is used to read/save repos to the cache
+    - `GitGlobalResult` stores a bunch of "messages" for each `Repo` and in general for the result of an operation
+  - What would fit instead?
+    - Need to persist more data
+    - Initial resource should fetch and store our global repo/tag list
+      - When we try to save a subset of repos we should update this list/merge the two and then save
+    - So we should perhaps store
+      - default tags
+      - current tags
+      - baseline/cached repos
+      - subset of total repos
+      - baseline/cached/default actions
+      - newer actions
+- [ ] Get rid of duplicated core functionality
+
 ### Actions
 
 - [ ] An option to run an action on groups of repos/directories
