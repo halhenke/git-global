@@ -12,12 +12,13 @@
 // use colored::*;
 // use std::env;
 use app_dirs::{app_dir, get_app_dir, AppDataType, AppInfo};
+use colored::*;
 use git2;
 use std::fs::{remove_file, File};
 use std::io::{Error, ErrorKind};
 use std::io::{Read, Result, Write};
 use std::path::{Path, PathBuf};
-// use std::result::Result as BResult;
+use futures::executor::LocalPool;
 use walkdir::DirEntry;
 
 use crate::repo::{
@@ -358,6 +359,24 @@ impl GitGlobalConfig {
 
         f.write_all(serialized.as_bytes())
             .expect("Problem writing cache file");
+    }
+
+    /// Returns all known git repos, populating the cache first, if necessary.
+    /// TODO: Shouldnt this be a method on GitGlobalConfig?
+    /// TODO? Surely this should update the `repos` field?
+    pub async fn get_repos(&mut self) -> Vec<Repo> {
+        if self.has_cache() {
+            println!("{}", "You have no cached repos yet...".yellow());
+            let repos = new_find_repos();
+            // let repos = new_find_repos();
+            self.repos = repos;
+            self.cache_repos(&self.repos);
+            self.repos.clone()
+        } else {
+            println!("{}", "You have a cache!".green());
+            self.repos = self.get_cached_repos();
+            self.repos.clone()
+        }
     }
 
     /// Returns the list of repos found in the cache file.

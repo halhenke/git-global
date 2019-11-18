@@ -7,6 +7,9 @@ pub use crate::repo::config::GitGlobalConfig;
 pub use crate::repo::result::GitGlobalResult;
 pub use crate::repo::{Repo, RepoTag};
 use colored::*;
+use futures::future::*;
+use futures::future;
+
 // use std::fmt;
 use std::sync::Arc;
 
@@ -63,9 +66,14 @@ fn my_new_repo_check(repos: &mut Vec<Repo>, entry: jwalk::DirEntry) -> () {
     }
 }
 
+pub async fn new_find_repos() -> Vec<Repo> {
+    // new_find_repos_async().wait()
+    new_find_repos_async().await
+}
+
 /// Walks the configured base directory, looking for git repos.
 /// TODO: Shouldnt this be a method on GitGlobalConfig?
-pub fn new_find_repos() -> Vec<Repo> {
+pub async fn new_find_repos_async() -> future::Ready<Result<Vec<Repo>, ()>> {
     let mut repos: Vec<Repo> = Vec::new();
     let user_config = GitGlobalConfig::new();
     let basedir = &user_config.basedir;
@@ -119,7 +127,8 @@ pub fn new_find_repos() -> Vec<Repo> {
         }
     }
     repos.sort_by(|a, b| a.path().cmp(&b.path()));
-    repos
+    future::ok::<Vec<Repo>, ()>(repos)
+    // repos
 }
 
 // TODO: using this?
