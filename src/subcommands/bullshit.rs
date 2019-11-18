@@ -49,7 +49,7 @@ pub fn get_results() -> Result<GitGlobalResult> {
         .canonicalize()
         .unwrap()
         .into_os_string();
-    let mut tok = File::open(p).unwrap();
+    let mut tok = File::open(p)?;
     let mut json = String::new();
     tok.read_to_string(&mut json).expect("Read String fail");
     let tok_val: Value = serde_json::from_str(&json).unwrap();

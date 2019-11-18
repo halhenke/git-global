@@ -1,8 +1,12 @@
 //! The command line interface for git-global.
 
+// use crate::repo::errors::Result;
 use crate::repo::{
-    errors, light_table::LightTable, GitGlobalError, GitGlobalResult,
+    errors::{GitGlobalError, Result},
+    light_table::LightTable,
+    GitGlobalResult,
 };
+
 use clap::{App, Arg, ArgMatches, Shell, SubCommand};
 use std::io::{stderr, Write};
 
@@ -324,7 +328,8 @@ pub fn run_from_command_line() -> i32 {
     }
 }
 
-fn get_status(matches: clap::ArgMatches) -> errors::Result<GitGlobalResult> {
+fn get_status(matches: clap::ArgMatches) -> Result<GitGlobalResult> {
+    // fn get_status(matches: clap::ArgMatches) -> errors::Result<GitGlobalResult> {
     let modified = matches
         .subcommand_matches("status")
         .unwrap()
@@ -337,11 +342,10 @@ fn get_status(matches: clap::ArgMatches) -> errors::Result<GitGlobalResult> {
     subcommands::status::get_results(modified, ignore_untracked, path_filter)
 }
 
-fn get_new_status(
-    matches: clap::ArgMatches,
-) -> errors::Result<GitGlobalResult> {
+fn get_new_status(matches: clap::ArgMatches) -> Result<GitGlobalResult> {
     let modified = matches
         .subcommand_matches("new-status")
+        // .ok_or(GitGlobalError::FromIOError)?
         .unwrap()
         .is_present("modified");
     let path_filter = get_path_filter(&matches, "new-status");

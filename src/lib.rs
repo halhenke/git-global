@@ -84,7 +84,10 @@ extern crate cursive;
 extern crate jwalk;
 #[macro_use]
 extern crate ring_queue;
+extern crate anyhow;
 extern crate subprocess;
+#[macro_use]
+extern crate thiserror;
 
 mod cli;
 // mod subcommands;
