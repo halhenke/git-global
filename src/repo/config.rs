@@ -23,6 +23,7 @@ use walkdir::DirEntry;
 use crate::repo::{
     action::Action,
     result::GitGlobalResult,
+    utils::new_find_repos,
     // repo::{Repo, RepoTag},
     Repo,
     RepoTag,
@@ -45,8 +46,8 @@ const SETTINGS_DEFAULT_GIT_ACTIONS: &'static str = "global.default-git-actions";
 #[derive(Serialize, Deserialize, Debug)]
 pub struct GitGlobalConfig {
     pub basedir: String,
-    // pub basedirs: String,
     pub basedirs: Vec<String>,
+    pub repos: Vec<Repo>,
     pub ignored_patterns: Vec<String>,
     pub tags: Vec<RepoTag>,
     pub default_tags: Vec<RepoTag>,
@@ -151,6 +152,7 @@ impl GitGlobalConfig {
         let mut ggc = GitGlobalConfig {
             basedir: basedir,
             basedirs: basedirs,
+            repos: vec![],
             tags: vec![],
             default_tags,
             actions: default_actions,
@@ -158,8 +160,16 @@ impl GitGlobalConfig {
             cache_file: cache_file,
             tags_file,
         };
-        ggc.tags = ggc.read_tags().unwrap_or(vec![]);
+        // TODO: get rid of this
+        // ggc.tags = ggc.read_tags().unwrap_or(vec![]);
         ggc
+    }
+
+    /// Initialise With Repos
+    pub fn new_with_repos() -> Self {
+        let mut gc = GitGlobalConfig::new();
+        gc.get_repos();
+        gc
     }
 
     /// A version that prepopulates some set of tags and/or actions
@@ -262,7 +272,7 @@ impl GitGlobalConfig {
     }
 
     pub fn read_tags(&self) -> Result<Vec<RepoTag>> {
-        if !self.cache_file.as_path().exists() {
+        if !self.has_cache() {
             // Try to create the cache directory if the cache *file* doesn't
             // exist; app_dir() handles an existing directory just fine.
             match app_dir(AppDataType::UserCache, &APP, "cache") {
@@ -297,7 +307,7 @@ impl GitGlobalConfig {
     pub fn write_tags(&self) {
         debug!("WRITING TAGS: called");
 
-        if !self.cache_file.as_path().exists() {
+        if !self.has_cache() {
             // Try to create the cache directory if the cache *file* doesn't
             // exist; app_dir() handles an existing directory just fine.
             match app_dir(AppDataType::UserCache, &APP, "cache") {
@@ -355,7 +365,7 @@ impl GitGlobalConfig {
         debug!("GET CACHED REPOS - 0");
 
         let mut repos = Vec::new();
-        if self.cache_file.as_path().exists() {
+        if self.has_cache() {
             let mut f = File::open(&self.cache_file)
                 .expect("Could not open cache file.");
 
