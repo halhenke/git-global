@@ -9,6 +9,9 @@ use crate::repo::{
 
 use clap::{App, Arg, ArgMatches, Shell, SubCommand};
 use std::io::{stderr, Write};
+// use tokio::
+use futures::executor::LocalPool;
+use futures::{future, io};
 
 use crate::subcommands;
 
@@ -209,7 +212,8 @@ pub fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
 ///
 /// As the effective binary entry point for `git-global`, prints results to
 /// `STDOUT` and returns an exit code.
-pub fn run_from_command_line() -> i32 {
+// pub fn run_from_command_line() -> impl futures::Future<Output = i32> {
+pub async fn run_from_command_line() -> Result<()> {
     let clap_app = get_clap_app();
     let matches: ArgMatches<'static> = clap_app.get_matches();
     let use_json = matches.is_present("json");
@@ -222,6 +226,8 @@ pub fn run_from_command_line() -> i32 {
     //     );
     //     return 0;
     // }
+
+    let mut exec = LocalPool::new();
 
     let results = match matches.subcommand_name() {
         Some("bullshit") => subcommands::bullshit::get_results(),
@@ -323,8 +329,16 @@ pub fn run_from_command_line() -> i32 {
         None => get_status(matches),
     };
     match results {
-        Ok(res) => show_results(res, use_json),
-        Err(err) => show_error(err, use_json),
+        Ok(res) => {
+            show_results(res, use_json);
+            Ok(())
+        },
+        Err(err) => {
+            show_error(err, use_json);
+            Err(GitGlobalError::FromIOError("something happened...".to_owned()))
+        },
+        // Ok(res) => show_results(res, use_json),
+        // Err(err) => show_error(err, use_json),
     }
 }
 
