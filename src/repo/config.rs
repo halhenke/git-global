@@ -25,6 +25,7 @@ use crate::repo::{
     action::Action,
     result::GitGlobalResult,
     utils::new_find_repos,
+    new_find_repos_executed,
     // repo::{Repo, RepoTag},
     Repo,
     RepoTag,
@@ -368,7 +369,12 @@ impl GitGlobalConfig {
         if self.has_cache() {
             println!("{}", "You have no cached repos yet...".yellow());
             let repos = new_find_repos();
+            // let repos = new_find_repos_executed();
+            // asyn
+            // crate::repo::utils::async_find_repos_and_nothing();
             // let repos = new_find_repos();
+            // self.repos = repos.await;
+            // self.repos = vec![];
             self.repos = repos;
             self.cache_repos(&self.repos);
             self.repos.clone()

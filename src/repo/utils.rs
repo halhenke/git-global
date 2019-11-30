@@ -8,6 +8,7 @@ pub use crate::repo::result::GitGlobalResult;
 pub use crate::repo::{Repo, RepoTag};
 use colored::*;
 use futures::future::*;
+use futures::executor;
 use futures::future;
 
 // use std::fmt;
@@ -66,10 +67,19 @@ fn my_new_repo_check(repos: &mut Vec<Repo>, entry: jwalk::DirEntry) -> () {
     }
 }
 
-pub async fn new_find_repos() -> Vec<Repo> {
+// pub async fn async_find_repos_and_nothing() {
+pub async fn new_find_repos_executed() -> Vec<Repo> {
     // new_find_repos_async().wait()
-    new_find_repos_async().await
+    // new_find_repos_async().await
+    executor::block_on(new_find_repos_async()).await.unwrap()
 }
+
+// pub async fn new_find_repos() -> future::Ready<Result<Vec<Repo>, ()>> {
+// // pub async fn new_find_repos() -> Vec<Repo> {
+//     // new_find_repos_async().wait()
+//     new_find_repos_async().await
+//     // executor::block_on(new_find_repos_async().await).unwrap()
+// }
 
 /// Walks the configured base directory, looking for git repos.
 /// TODO: Shouldnt this be a method on GitGlobalConfig?
@@ -129,6 +139,58 @@ pub async fn new_find_repos_async() -> future::Ready<Result<Vec<Repo>, ()>> {
     repos.sort_by(|a, b| a.path().cmp(&b.path()));
     future::ok::<Vec<Repo>, ()>(repos)
     // repos
+}
+
+/// Walks the configured base directory, looking for git repos.
+/// TODO: Shouldnt this be a method on GitGlobalConfig?
+pub fn new_find_repos() -> Vec<Repo> {
+    let mut repos: Vec<Repo> = Vec::new();
+    let user_config = GitGlobalConfig::new();
+    let basedir = &user_config.basedir;
+    let walker = jwalk::WalkDir::new(basedir)
+        .skip_hidden(false)
+        // .num_threads(1)
+        .process_entries(|v| {
+            v.into_iter().for_each(|de| {
+                // debug!("In the map ");
+                let mut d: &mut jwalk::DirEntry = de.as_mut().unwrap();
+                if d.file_type.as_ref().unwrap().is_dir()
+                    && d.path().read_dir().unwrap().any(|f| {
+                        let ff = f.unwrap();
+                        // debug!(".git path is {}", ff.path().display());
+                        ff.file_name() == ".git"
+                    })
+                {
+                    debug!("A match! {}", d.path().display());
+                    d.content_spec = None;
+                    // debug!("d.content_spec {:?}", d.content_spec);
+                }
+            });
+        })
+        .into_iter();
+    format!(
+        "{}, {}",
+        "Scanning for git repos under {}; this may take a while...",
+        basedir.green()
+    );
+
+
+    for entry in walker {
+        match entry {
+            Ok(entry) => {
+                if entry.file_type.as_ref().unwrap().is_dir()
+                    && entry.content_spec.is_none()
+                {
+                    debug!("A GIT: {}", entry.file_name.to_str().unwrap());
+                    my_new_repo_check(&mut repos, entry);
+                }
+            }
+            Err(_) => (),
+        }
+    }
+    repos.sort_by(|a, b| a.path().cmp(&b.path()));
+    // future::ok::<Vec<Repo>, ()>(repos)
+    repos
 }
 
 // TODO: using this?
