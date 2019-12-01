@@ -15,6 +15,8 @@ use tokio;
 fn main() -> Result<(), std::io::Error> {
     pretty_env_logger::init();
     // logger::init();
+    println!("I am in rust land\n\n");
+
     let rt = tokio::runtime::Builder::new()
         .threaded_scheduler()
         .enable_io()

@@ -214,6 +214,9 @@ pub fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
 /// `STDOUT` and returns an exit code.
 // pub fn run_from_command_line() -> impl futures::Future<Output = i32> {
 pub async fn run_from_command_line() -> Result<()> {
+
+    println!("I am in async land\n\n");
+
     let clap_app = get_clap_app();
     let matches: ArgMatches<'static> = clap_app.get_matches();
     let use_json = matches.is_present("json");
