@@ -26,23 +26,23 @@ path = "src/main.rs"
 [dependencies]
 app_dirs = "1.2.1"
 clap = "2.33.0"
-chrono = "0.4.9"
-colored = "1.8.0"
+chrono = "0.4.10"
+colored = "1.9.0"
 crossbeam-channel = "0.3.9"
-futures = "0.3"
-itertools = "0.8.0"
+futures = "0.3.1"
+itertools = "0.8.2"
 json = "0.12.0"
 lazy_static = "1.4.0"
 mut_static = "5.0.0"
-tui = "0.6.2"
-termion = "1.5.3"
+tui = "0.7.0"
+termion = "1.5.4"
 walkdir = "2.2.9"
 jwalk = "0.4.0"
 github-rs = "0.7.0"
 ring_queue = "0.2.0"
-serde = "1.0.101"
-serde_derive = "1.0.101"
-serde_json = "1.0.40"
+serde = "1.0.103"
+serde_derive = "1.0.103"
+serde_json = "1.0.42"
 strfmt = "0.1.6"
 subprocess = "0.1.18"
 pipeline = "0.5.0"
@@ -53,8 +53,8 @@ log = "0.4.8"
 take_mut = "0.2.2"
 icecream = "0.1.0"
 config = "0.9.3"
-anyhow = "1.0"
-thiserror = "1.0"
+anyhow = "1.0.25"
+thiserror = "1.0.6"
 tokio = { version = "0.2.2", features = ["full"] }
 
 
@@ -64,7 +64,7 @@ default-features = false
 features = ["termion-backend"]
 
 [dependencies.git2]
-version = "0.10.1"
+version = "0.10.2"
 default-features = false  # don't want SSH/HTTPS/Curl
 
 [dev-dependencies]
