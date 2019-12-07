@@ -2,10 +2,10 @@
 //!     - `perform` - performs the given action/s in named repo/s or repo/s filtered by name/tag
 //!     - `list` - list all currently available actions
 
-// use crate::repo::does_this_work;
-use crate::repo::errors::Result;
-use crate::repo::{get_repos, GitGlobalConfig, GitGlobalResult};
-use crate::repo::{Action, ActionError, Filterable, Repo, RepoTag};
+// use crate::models::does_this_work;
+use crate::models::errors::Result;
+use crate::models::{get_repos, GitGlobalConfig, GitGlobalResult};
+use crate::models::{Action, ActionError, Filterable, Repo, RepoTag};
 use colored::Colorize;
 
 /// Forces the display of each repo path, without any extra output.

@@ -17,7 +17,9 @@ fn main() -> Result<(), std::io::Error> {
     // logger::init();
     println!("I am in rust land\n\n");
 
+    // let rt = tokio::runtime::Runtime::new().expect("tokio fail");
     let rt = tokio::runtime::Builder::new()
+        // .basic_scheduler()
         .threaded_scheduler()
         .enable_io()
         .build()?;

@@ -1,7 +1,7 @@
 //! A Useful struct when dealing with cursive callbacks and Selectviews
 //! [`SelectView`]: ../../../cursive/views/select_view/struct.SelectView.html
 
-use crate::repo::{
+use crate::models::{
     errors, GitGlobalConfig, GitGlobalError, GitGlobalResult, Repo, RepoTag,
 };
 use itertools::Itertools;

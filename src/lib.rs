@@ -91,7 +91,7 @@ extern crate thiserror;
 
 mod cli;
 // mod subcommands;
-pub mod repo;
+pub mod models;
 // pub mod subcommands;
 pub mod subcommands;
 // pub mod self::repo;
@@ -99,7 +99,7 @@ pub mod subcommands;
 
 // use self::repo;
 // use crate::subcommands;
-// pub use crate::repo;
+// pub use crate::models;
 pub use cli::run_from_command_line;
 
 // use log::{Level, LevelFilter, Log, Metadata, Record};
@@ -108,7 +108,7 @@ pub use cli::run_from_command_line;
 // extern crate log;
 // pretty_env_logger::init();
 
-// pub use crate::repo::{
+// pub use crate::models::{
 //     GitGlobalConfig,
 //     GitGlobalResult,
 //     Repo,
@@ -116,5 +116,5 @@ pub use cli::run_from_command_line;
 //     RepoTag,
 //     get_tagged_repos
 // };
-// pub use crate::repo::Result;
-// pub use crate::repo::GitGlobalError;
+// pub use crate::models::Result;
+// pub use crate::models::GitGlobalError;

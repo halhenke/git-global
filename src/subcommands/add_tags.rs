@@ -13,8 +13,8 @@ use self::cursive::views::{
 };
 use self::cursive::Cursive;
 use self::cursive::{traits::*, view::Selector};
-use crate::repo::errors::Result as WeirdResult;
-use crate::repo::{GitGlobalConfig, GitGlobalResult};
+use crate::models::errors::Result as WeirdResult;
+use crate::models::{GitGlobalConfig, GitGlobalResult};
 use take_mut;
 
 type RMut = Rc<RefCell<TextContent>>;

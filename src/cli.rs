@@ -1,7 +1,7 @@
 //! The command line interface for git-global.
 
-// use crate::repo::errors::Result;
-use crate::repo::{
+// use crate::models::errors::Result;
+use crate::models::{
     errors::{GitGlobalError, Result},
     light_table::LightTable,
     GitGlobalResult,

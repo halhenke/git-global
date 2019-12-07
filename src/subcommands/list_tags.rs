@@ -1,8 +1,8 @@
 //! The `list` subcommand: lists all repos known to git-global.
 
-// use crate::repo::does_this_work;
-use crate::repo::errors::Result;
-use crate::repo::{get_repos, GitGlobalConfig, GitGlobalResult};
+// use crate::models::does_this_work;
+use crate::models::errors::Result;
+use crate::models::{get_repos, GitGlobalConfig, GitGlobalResult};
 
 /// Forces the display of each repo path, without any extra output.
 pub fn get_results() -> Result<GitGlobalResult> {

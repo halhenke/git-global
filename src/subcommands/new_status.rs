@@ -9,8 +9,8 @@ use std::thread;
 
 use git2;
 
-use crate::repo::errors::Result;
-use crate::repo::{get_repos, GitGlobalError, GitGlobalResult, Repo};
+use crate::models::errors::Result;
+use crate::models::{get_repos, GitGlobalError, GitGlobalResult, Repo};
 
 /// Gathers `git status -s` for all known repos.
 /// This is a reimplementation of `status` command using `crossbeam

@@ -1,7 +1,7 @@
 //! The `list` subcommand: lists all repos known to git-global.
 
-use crate::repo::errors::Result;
-use crate::repo::{get_repos, GitGlobalResult};
+use crate::models::errors::Result;
+use crate::models::{get_repos, GitGlobalResult};
 use colored::*;
 use itertools::Itertools;
 

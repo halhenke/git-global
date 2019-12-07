@@ -12,9 +12,9 @@ extern crate termion;
 use self::termion::event;
 use self::termion::input::TermRead;
 
-use crate::repo::errors::Result as WeirdResult;
+use crate::models::errors::Result as WeirdResult;
 
-use crate::repo::GitGlobalResult;
+use crate::models::GitGlobalResult;
 // use super::super::{GitGlobalResult, RepoTag, get_repos, get_tagged_repos};
 
 enum Event {

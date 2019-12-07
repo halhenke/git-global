@@ -21,7 +21,7 @@ use std::path::{Path, PathBuf};
 use futures::executor::LocalPool;
 use walkdir::DirEntry;
 
-use crate::repo::{
+use crate::models::{
     action::Action,
     result::GitGlobalResult,
     utils::new_find_repos,
@@ -371,7 +371,7 @@ impl GitGlobalConfig {
             let repos = new_find_repos();
             // let repos = new_find_repos_executed();
             // asyn
-            // crate::repo::utils::async_find_repos_and_nothing();
+            // crate::models::utils::async_find_repos_and_nothing();
             // let repos = new_find_repos();
             // self.repos = repos.await;
             // self.repos = vec![];

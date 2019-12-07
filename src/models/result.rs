@@ -6,7 +6,7 @@
         - a list of messages per [`Repo`]
     Its designed to be the result of any particular command - not sure it fits anymore - or at least we might want a different data structure for other stuff
 */
-use crate::repo::{Repo, RepoTag};
+use crate::models::{Repo, RepoTag};
 use std::collections::HashMap;
 
 /// The result of a git-global subcommand.

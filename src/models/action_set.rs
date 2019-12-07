@@ -1,4 +1,4 @@
-use crate::repo::{
+use crate::models::{
     Repo, {Action, ActionError},
 };
 use std::{

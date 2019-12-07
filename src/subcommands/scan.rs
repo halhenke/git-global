@@ -10,8 +10,8 @@
 //! The `scan` subcommand caches the list of git repos paths it finds, and can
 //! be rerun at any time to refresh the list.
 
-use crate::repo::errors::Result;
-use crate::repo::{new_find_repos, GitGlobalConfig, GitGlobalResult};
+use crate::models::errors::Result;
+use crate::models::{new_find_repos, GitGlobalConfig, GitGlobalResult};
 
 /// Caches the results of `find_repos()` and says how many were found.
 pub fn get_results() -> Result<GitGlobalResult> {

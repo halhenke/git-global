@@ -3,9 +3,9 @@
 //! Includes the `Repo`, `GitGlobalConfig`, and `GitGlobalResult` structs, and
 //! the `get_repos()` function.
 
-pub use crate::repo::config::GitGlobalConfig;
-pub use crate::repo::result::GitGlobalResult;
-pub use crate::repo::{Repo, RepoTag};
+pub use crate::models::config::GitGlobalConfig;
+pub use crate::models::result::GitGlobalResult;
+pub use crate::models::{Repo, RepoTag};
 use colored::*;
 use futures::future::*;
 use futures::executor;

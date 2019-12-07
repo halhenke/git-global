@@ -16,8 +16,8 @@ use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 
-use crate::repo::errors::Result;
-use crate::repo::{get_repos, GitGlobalResult};
+use crate::models::errors::Result;
+use crate::models::{get_repos, GitGlobalResult};
 
 fn get_query(owner: &str, name: &str) -> String {
     // fn get_query(owner: &str, name: &str) -> Value {
