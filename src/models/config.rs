@@ -42,6 +42,23 @@ const SETTING_IGNORED: &'static str = "global.ignore";
 const SETTINGS_DEFAULT_TAGS: &'static str = "global.default-tags";
 const SETTINGS_DEFAULT_GIT_ACTIONS: &'static str = "global.default-git-actions";
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct CurrentState {
+    pub tags: Vec<RepoTag>,
+    pub repos: Vec<Repo>,
+    pub actions: Vec<Repo>,
+}
+
+impl CurrentState {
+    pub fn new() -> Self {
+        CurrentState {
+            tags: vec![],
+            repos: vec![],
+            actions: vec![],
+        }
+    }
+}
+
 /// A container for git-global configuration options.
 /// By Default these options are gathered from the global `.gitconfig`
 /// file and cached repos/tags are retrieved/stored on disk
@@ -50,7 +67,12 @@ pub struct GitGlobalConfig {
     pub basedir: String,
     pub basedirs: Vec<String>,
     pub repos: Vec<Repo>,
+    pub current: CurrentState,
+    // pub current_repos: Vec<Repo>,
     pub ignored_patterns: Vec<String>,
+    // TODO: This should probably not be here - or it should not be relied upon as a source of truth.
+    // Instead tags should
+    // be derived from those associated with repos and the default tags
     pub tags: Vec<RepoTag>,
     pub default_tags: Vec<RepoTag>,
     pub actions: Vec<Action>,
@@ -154,6 +176,7 @@ impl GitGlobalConfig {
         let mut ggc = GitGlobalConfig {
             basedir: basedir,
             basedirs: basedirs,
+            current: CurrentState::new(),
             repos: vec![],
             tags: vec![],
             default_tags,
