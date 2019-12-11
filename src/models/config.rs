@@ -13,19 +13,19 @@
 // use std::env;
 use app_dirs::{app_dir, get_app_dir, AppDataType, AppInfo};
 use colored::*;
+use futures::executor::LocalPool;
 use git2;
 use std::fs::{remove_file, File};
 use std::io::{Error, ErrorKind};
 use std::io::{Read, Result, Write};
 use std::path::{Path, PathBuf};
-use futures::executor::LocalPool;
 use walkdir::DirEntry;
 
 use crate::models::{
     action::Action,
+    new_find_repos_executed,
     result::GitGlobalResult,
     utils::new_find_repos,
-    new_find_repos_executed,
     // repo::{Repo, RepoTag},
     Repo,
     RepoTag,
@@ -296,6 +296,7 @@ impl GitGlobalConfig {
         self.get_cached_repos().len() == 0
     }
 
+    /// Reads the cache and returns Vec of Tags
     pub fn read_tags(&self) -> Result<Vec<RepoTag>> {
         if !self.has_cache() {
             // Try to create the cache directory if the cache *file* doesn't
@@ -329,6 +330,7 @@ impl GitGlobalConfig {
         Ok(tags)
     }
 
+    /// Reads the currently stored repos from the cache and then writes them along with the in-memory Vec of Tags to disk
     pub fn write_tags(&self) {
         debug!("WRITING TAGS: called");
 
@@ -385,6 +387,19 @@ impl GitGlobalConfig {
             .expect("Problem writing cache file");
     }
 
+    /// This should be better
+    /// - Should have more control over saving repos and tags
+    pub fn save_repos_and_tags(
+        &mut self,
+        repos: Vec<Repo>,
+        tags: Vec<RepoTag>,
+    ) {
+        // let mut gc: GitGlobalConfig = GitGlobalConfig::new();
+        // gc.repos = repos;
+        self.tags = tags;
+        self.cache_repos(&repos);
+        // hmmmm...
+    }
     /// Returns all known git repos, populating the cache first, if necessary.
     /// TODO: Shouldnt this be a method on GitGlobalConfig?
     /// TODO? Surely this should update the `repos` field?
@@ -442,21 +457,15 @@ impl GitGlobalConfig {
                 r
             })
             .collect();
-        save_repos_and_tags(repos, vec![]);
+        // save_repos_and_tags(repos, vec![]);
+        self.cache_repos(&repos);
         Ok("cool")
     }
 
+    /// Reads cached Repos from disk and returns them as a `GitGlobalResult`
     pub fn get_cached_results(&self) -> GitGlobalResult {
         GitGlobalResult::new(&self.get_cached_repos())
     }
-}
-
-pub fn save_repos_and_tags(repos: Vec<Repo>, tags: Vec<RepoTag>) {
-    let mut gc: GitGlobalConfig = GitGlobalConfig::new();
-    // gc.repos = repos;
-    gc.tags = tags;
-    gc.cache_repos(&repos);
-    // hmmmm...
 }
 
 trait Cached {
