@@ -2,10 +2,13 @@ use git2;
 use std::fmt;
 // use std::iter::FromIterator;
 use crate::models::repo_tag::RepoTag;
+use itertools::Itertools;
 use std::path::Path;
 
 /// A git repository, represented by the full path to its base directory.
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Hash, Clone)]
+#[derive(
+    Serialize, Deserialize, Debug, PartialOrd, PartialEq, Eq, Hash, Clone,
+)]
 pub struct Repo {
     pub path: String,
     pub tags: Vec<RepoTag>,
@@ -179,9 +182,112 @@ impl Filterable for Vec<Repo> {
     }
 }
 
+pub trait Updatable {
+    fn merge_repos(&self, repos: Vec<Repo>) -> Vec<Repo>;
+    fn merge_tags(&self, tags: Vec<RepoTag>) -> Vec<RepoTag>;
+    fn merge_repos_and_tags(
+        &self,
+        repos: Vec<Repo>,
+        tags: Vec<RepoTag>,
+    ) -> (Vec<Repo>, Vec<RepoTag>);
+}
+
+impl Updatable for crate::models::config::GitGlobalConfig {
+    fn merge_repos(&self, repos: Vec<Repo>) -> Vec<Repo> {
+        repos
+    }
+    fn merge_tags(&self, tags: Vec<RepoTag>) -> Vec<RepoTag> {
+        tags
+    }
+    fn merge_repos_and_tags(
+        &self,
+        repos: Vec<Repo>,
+        tags: Vec<RepoTag>,
+    ) -> (Vec<Repo>, Vec<RepoTag>) {
+        let merge_func = |r1: &Repo, r2: &Repo| false; // r1.path == r2.path; // && r1.tags == r2.tags;
+        let new_repos = vec![self.repos.clone(), repos]
+            .into_iter()
+            .concat()
+            .into_iter()
+            .unique()
+            .collect();
+        // .kmerge()
+        // .collect();
+        // let new_repos = self
+        //     .repos
+        //     .clone()
+        //     .into_iter()
+        //     .merge_by(repos, merge_func)
+        //     .collect();
+        let new_tag_total = vec![];
+        (new_repos, new_tag_total)
+    }
+}
+
 // /// Because I use this everywhere
 // impl Vec<Repo> {
 //     pub fn filter_by_path(&self, path_filter: String) -> Vec<Repo> {
 //         self.clone()
 //     }
 // }
+
+#[cfg(test)]
+mod tests {
+    use super::Updatable;
+    use crate::models::config::GitGlobalConfig;
+    use crate::models::{repo::Repo, repo_tag::RepoTag};
+
+    #[test]
+    pub fn test_merge_repos_and_tags() {
+        let mut gc = GitGlobalConfig::new();
+        let tags1: Vec<RepoTag> = vec!["apple", "os x", "denite"]
+            .into_iter()
+            .map(RepoTag::new)
+            .collect();
+        let tags2: Vec<RepoTag> = vec!["apple", "os windows", "haskell"]
+            .into_iter()
+            .map(RepoTag::new)
+            .collect();
+        let repo1: Vec<Repo> =
+            vec!["/hal/code/1", "/hal/code/2", "/hal/code/3"]
+                .into_iter()
+                .map(|s| Repo::new(s.to_owned()))
+                .collect();
+        let repo2: Vec<Repo> = vec!["/hal/code/1", "/hal/code/4"]
+            .into_iter()
+            .map(|s| Repo::new(s.to_owned()))
+            .collect();
+        // PRE-SORTED REPOS
+        let repo_final: Vec<Repo> =
+            vec!["/hal/code/1", "/hal/code/2", "/hal/code/3", "/hal/code/4"]
+                .into_iter()
+                .map(|s| Repo::new(s.to_owned()))
+                .collect();
+        gc.repos = repo1;
+        let (r_out, t_out) =
+            gc.merge_repos_and_tags(repo2.clone(), tags2.clone());
+        assert_eq!(r_out, repo_final, "repo comparison failed!");
+        // UNSORTED REPOS
+        let repo1: Vec<Repo> =
+            vec!["/hal/code/2", "/hal/code/3", "/hal/code/1"]
+                .into_iter()
+                .map(|s| Repo::new(s.to_owned()))
+                .collect();
+        gc.repos = repo1;
+        let (r_out, t_out) =
+            gc.merge_repos_and_tags(repo2.clone(), tags2.clone());
+        assert_eq!(
+            r_out, repo_final,
+            "repo comparison failed for unsorted data!"
+        );
+        // UNEQUAL REPOS
+        let repo1: Vec<Repo> = vec!["/hal/code/2", "/hal/code/3"]
+            .into_iter()
+            .map(|s| Repo::new(s.to_owned()))
+            .collect();
+        gc.repos = repo1;
+        let (r_out, t_out) =
+            gc.merge_repos_and_tags(repo2.clone(), tags2.clone());
+        assert_ne!(r_out, repo_final, "repo comparison succeeded when it should have failed due to not equal inputs!");
+    }
+}
