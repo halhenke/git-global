@@ -23,11 +23,13 @@ fn main() -> Result<(), std::io::Error> {
         .threaded_scheduler()
         .enable_io()
         .build()?;
-    rt.spawn(
+    println!("Runtime is built\n\n");
+    let rts = rt.spawn(
         git_global::run_from_command_line()
             // .await
             // .expect("tokio fail"),
     );
+    println!("Spawn is spawned\n\n");
     // rt.enter(async move|| git_global::run_from_command_line().await.expect("tokio fail"));
     Ok(())
     // exit(0);
