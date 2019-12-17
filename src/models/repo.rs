@@ -248,9 +248,7 @@ mod tests {
     }
 
     fn repos_from_vecs(s: Vec<&str>) -> Vec<Repo> {
-        // s.into_iter().map(|s| Repo::new(s.to_owned())).collect()
         vec_from_vecs(s, Box::new(|s: &str| Repo::new(s.to_owned())))
-        // s.into_iter().map(|s| Repo::new(s.to_owned())).collect()
     }
 
     fn repotags_from_vecs(s: Vec<&str>) -> Vec<RepoTag> {
@@ -260,39 +258,30 @@ mod tests {
     #[test]
     pub fn test_merge_repos_and_tags() {
         let mut gc = GitGlobalConfig::new();
-        let tags1: Vec<RepoTag> = vec!["apple", "os x", "denite"]
-            .into_iter()
-            .map(RepoTag::new)
-            .collect();
+        let tags1: Vec<RepoTag> =
+            repotags_from_vecs(vec!["apple", "os x", "denite"]);
         let tags2: Vec<RepoTag> = vec!["apple", "os windows", "haskell"]
             .into_iter()
             .map(RepoTag::new)
             .collect();
         let repo1: Vec<Repo> =
-            vec!["/hal/code/1", "/hal/code/2", "/hal/code/3"]
-                .into_iter()
-                .map(|s| Repo::new(s.to_owned()))
-                .collect();
-        let repo2: Vec<Repo> = vec!["/hal/code/1", "/hal/code/4"]
-            .into_iter()
-            .map(|s| Repo::new(s.to_owned()))
-            .collect();
+            repos_from_vecs(vec!["/hal/code/1", "/hal/code/2", "/hal/code/3"]);
+        let repo2: Vec<Repo> =
+            repos_from_vecs(vec!["/hal/code/1", "/hal/code/4"]);
         // PRE-SORTED REPOS
-        let repo_final: Vec<Repo> =
-            vec!["/hal/code/1", "/hal/code/2", "/hal/code/3", "/hal/code/4"]
-                .into_iter()
-                .map(|s| Repo::new(s.to_owned()))
-                .collect();
+        let repo_final: Vec<Repo> = repos_from_vecs(vec![
+            "/hal/code/1",
+            "/hal/code/2",
+            "/hal/code/3",
+            "/hal/code/4",
+        ]);
         gc.repos = repo1;
         let (r_out, t_out) =
             gc.merge_repos_and_tags(repo2.clone(), tags2.clone());
         assert_eq!(r_out, repo_final, "repo comparison failed!");
         // UNSORTED REPOS
         let repo1: Vec<Repo> =
-            vec!["/hal/code/2", "/hal/code/3", "/hal/code/1"]
-                .into_iter()
-                .map(|s| Repo::new(s.to_owned()))
-                .collect();
+            repos_from_vecs(vec!["/hal/code/2", "/hal/code/3", "/hal/code/1"]);
         gc.repos = repo1;
         let (r_out, t_out) =
             gc.merge_repos_and_tags(repo2.clone(), tags2.clone());
@@ -301,10 +290,8 @@ mod tests {
             "repo comparison failed for unsorted data!"
         );
         // UNEQUAL REPOS
-        let repo1: Vec<Repo> = vec!["/hal/code/2", "/hal/code/8"]
-            .into_iter()
-            .map(|s| Repo::new(s.to_owned()))
-            .collect();
+        let repo1: Vec<Repo> =
+            repos_from_vecs(vec!["/hal/code/2", "/hal/code/8"]);
         gc.repos = repo1;
         let (r_out, t_out) =
             gc.merge_repos_and_tags(repo2.clone(), tags2.clone());
