@@ -9,13 +9,14 @@ use std::path::{Path, PathBuf};
 #[allow(dead_code)]
 pub fn with_temp_repo<T>(test: T) -> ()
 where
-    T: FnOnce(git_global::repo::Repo) -> (),
+    T: FnOnce(git_global::models::repo::Repo) -> (),
 {
     let tempdir = tempdir::TempDir::new("git-global-test").unwrap();
     let repo_path = tempdir.path();
     git2::Repository::init(repo_path).unwrap();
-    let repo =
-        git_global::repo::Repo::new(repo_path.to_str().unwrap().to_string());
+    let repo = git_global::models::repo::Repo::new(
+        repo_path.to_str().unwrap().to_string(),
+    );
     test(repo);
 }
 
