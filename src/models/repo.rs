@@ -7,7 +7,7 @@ use std::path::Path;
 
 /// A git repository, represented by the full path to its base directory.
 #[derive(
-    Serialize, Deserialize, Debug, PartialOrd, PartialEq, Eq, Hash, Clone,
+    Serialize, Deserialize, Debug, PartialOrd, Ord, PartialEq, Eq, Hash, Clone,
 )]
 pub struct Repo {
     pub path: String,
@@ -205,12 +205,14 @@ impl Updatable for crate::models::config::GitGlobalConfig {
         tags: Vec<RepoTag>,
     ) -> (Vec<Repo>, Vec<RepoTag>) {
         let merge_func = |r1: &Repo, r2: &Repo| false; // r1.path == r2.path; // && r1.tags == r2.tags;
-        let new_repos = vec![self.repos.clone(), repos]
+        let mut new_repos: Vec<Repo> = vec![self.repos.clone(), repos]
             .into_iter()
             .concat()
             .into_iter()
             .unique()
-            .collect();
+            .collect::<Vec<Repo>>();
+        // .sort();
+        new_repos.sort();
         // .kmerge()
         // .collect();
         // let new_repos = self
@@ -236,6 +238,24 @@ mod tests {
     use super::Updatable;
     use crate::models::config::GitGlobalConfig;
     use crate::models::{repo::Repo, repo_tag::RepoTag};
+
+    fn vec_from_vecs<T>(s: Vec<&str>, f: Box<dyn FnMut(&str) -> T>) -> Vec<T>
+// fn vec_from_vecs<T, F>(s: Vec<&str>, f: F) -> Vec<T>
+    // where
+    //     F: FnOnce(&str) -> T,
+    {
+        s.into_iter().map(f).collect::<Vec<T>>()
+    }
+
+    fn repos_from_vecs(s: Vec<&str>) -> Vec<Repo> {
+        // s.into_iter().map(|s| Repo::new(s.to_owned())).collect()
+        vec_from_vecs(s, Box::new(|s: &str| Repo::new(s.to_owned())))
+        // s.into_iter().map(|s| Repo::new(s.to_owned())).collect()
+    }
+
+    fn repotags_from_vecs(s: Vec<&str>) -> Vec<RepoTag> {
+        vec_from_vecs(s, Box::new(|s: &str| RepoTag::new(s)))
+    }
 
     #[test]
     pub fn test_merge_repos_and_tags() {
@@ -281,7 +301,7 @@ mod tests {
             "repo comparison failed for unsorted data!"
         );
         // UNEQUAL REPOS
-        let repo1: Vec<Repo> = vec!["/hal/code/2", "/hal/code/3"]
+        let repo1: Vec<Repo> = vec!["/hal/code/2", "/hal/code/8"]
             .into_iter()
             .map(|s| Repo::new(s.to_owned()))
             .collect();
