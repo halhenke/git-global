@@ -3,6 +3,7 @@ use std::fmt;
 // use std::iter::FromIterator;
 use crate::models::repo_tag::RepoTag;
 use itertools::Itertools;
+use std::hash::Hash;
 use std::path::Path;
 
 /// A git repository, represented by the full path to its base directory.
@@ -183,6 +184,13 @@ impl Filterable for Vec<Repo> {
 }
 
 pub trait Updatable {
+    fn tags_from_repos(&self, repos: Vec<Repo>) -> Vec<RepoTag>;
+    fn recalculate_tags(&mut self) -> Vec<RepoTag>;
+    fn merge_things<T: Clone + Eq + Hash + Ord>(
+        &self,
+        things_one: Vec<T>,
+        things_two: Vec<T>,
+    ) -> Vec<T>;
     fn merge_repos(&self, repos: Vec<Repo>) -> Vec<Repo>;
     fn merge_tags(&self, tags: Vec<RepoTag>) -> Vec<RepoTag>;
     fn merge_repos_and_tags(
@@ -193,35 +201,76 @@ pub trait Updatable {
 }
 
 impl Updatable for crate::models::config::GitGlobalConfig {
+    /// functional version to extract tags from a given Vec of repos
+    fn tags_from_repos(&self, repos: Vec<Repo>) -> Vec<RepoTag> {
+        repos.into_iter().flat_map(|r| r.tags).collect()
+    }
+
+    /// Get tags for existing list of Repos and merge with default tags
+    /// Both updates self.tags and returns tags
+    /// NOTE: Not sure about that - maybe should separate update and calculate
+    fn recalculate_tags(&mut self) -> Vec<RepoTag> {
+        // Get tags for existing list of Repos
+        let existing_tags = self.tags_from_repos(self.repos.clone());
+        // Merge with default tags
+        let mut new_tags: Vec<RepoTag> =
+            vec![self.default_tags.clone(), existing_tags]
+                .into_iter()
+                .concat()
+                .into_iter()
+                .unique()
+                .collect::<Vec<RepoTag>>();
+        new_tags.sort();
+        self.tags = new_tags.clone();
+        new_tags
+    }
+
+    fn merge_things<T>(&self, things_one: Vec<T>, things_two: Vec<T>) -> Vec<T>
+    where
+        T: Clone + Eq + Hash + Ord,
+    {
+        // unimplemented!()
+        let mut new_things: Vec<T> = vec![things_one, things_two]
+            .into_iter()
+            .concat()
+            .into_iter()
+            .unique()
+            .collect::<Vec<T>>();
+        new_things.sort();
+        new_things
+    }
+
     fn merge_repos(&self, repos: Vec<Repo>) -> Vec<Repo> {
-        repos
+        // let mut new_repos: Vec<Repo> = vec![self.repos.clone(), repos]
+        //     .into_iter()
+        //     .concat()
+        //     .into_iter()
+        //     .unique()
+        //     .collect::<Vec<Repo>>();
+        // new_repos.sort();
+        // new_repos
+        self.merge_things(self.repos.clone(), repos)
     }
+
     fn merge_tags(&self, tags: Vec<RepoTag>) -> Vec<RepoTag> {
-        tags
+        // let mut new_tags: Vec<RepoTag> = vec![self.tags.clone(), tags]
+        //     .into_iter()
+        //     .concat()
+        //     .into_iter()
+        //     .unique()
+        //     .collect::<Vec<RepoTag>>();
+        // new_tags.sort();
+        // new_tags
+        self.merge_things(self.tags.clone(), tags)
     }
+
     fn merge_repos_and_tags(
         &self,
         repos: Vec<Repo>,
         tags: Vec<RepoTag>,
     ) -> (Vec<Repo>, Vec<RepoTag>) {
-        let merge_func = |r1: &Repo, r2: &Repo| false; // r1.path == r2.path; // && r1.tags == r2.tags;
-        let mut new_repos: Vec<Repo> = vec![self.repos.clone(), repos]
-            .into_iter()
-            .concat()
-            .into_iter()
-            .unique()
-            .collect::<Vec<Repo>>();
-        // .sort();
-        new_repos.sort();
-        // .kmerge()
-        // .collect();
-        // let new_repos = self
-        //     .repos
-        //     .clone()
-        //     .into_iter()
-        //     .merge_by(repos, merge_func)
-        //     .collect();
-        let new_tag_total = vec![];
+        let new_repos = self.merge_repos(repos);
+        let new_tag_total = self.merge_tags(tags);
         (new_repos, new_tag_total)
     }
 }
