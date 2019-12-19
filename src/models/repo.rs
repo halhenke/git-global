@@ -185,7 +185,8 @@ impl Filterable for Vec<Repo> {
 
 pub trait Updatable {
     fn tags_from_repos(&self, repos: Vec<Repo>) -> Vec<RepoTag>;
-    fn recalculate_tags(&mut self) -> Vec<RepoTag>;
+    fn recalculate_tags(&self) -> Vec<RepoTag>;
+    fn update_tags(&mut self);
     fn merge_things<T: Clone + Eq + Hash + Ord>(
         &self,
         things_one: Vec<T>,
@@ -198,6 +199,11 @@ pub trait Updatable {
         repos: Vec<Repo>,
         tags: Vec<RepoTag>,
     ) -> (Vec<Repo>, Vec<RepoTag>);
+    fn update_merge_repos_and_tags(
+        &mut self,
+        repos: Vec<Repo>,
+        tags: Vec<RepoTag>,
+    );
 }
 
 impl Updatable for crate::models::config::GitGlobalConfig {
@@ -207,29 +213,27 @@ impl Updatable for crate::models::config::GitGlobalConfig {
     }
 
     /// Get tags for existing list of Repos and merge with default tags
-    /// Both updates self.tags and returns tags
+    /// Returns tags but DOES NOT update self.tags
     /// NOTE: Not sure about that - maybe should separate update and calculate
-    fn recalculate_tags(&mut self) -> Vec<RepoTag> {
+    fn recalculate_tags(&self) -> Vec<RepoTag> {
         // Get tags for existing list of Repos
         let existing_tags = self.tags_from_repos(self.repos.clone());
         // Merge with default tags
         let mut new_tags: Vec<RepoTag> =
-            vec![self.default_tags.clone(), existing_tags]
-                .into_iter()
-                .concat()
-                .into_iter()
-                .unique()
-                .collect::<Vec<RepoTag>>();
+            self.merge_things(self.default_tags.clone(), existing_tags);
         new_tags.sort();
-        self.tags = new_tags.clone();
+        // self.tags = new_tags.clone();
         new_tags
+    }
+
+    fn update_tags(&mut self) {
+        self.tags = self.recalculate_tags();
     }
 
     fn merge_things<T>(&self, things_one: Vec<T>, things_two: Vec<T>) -> Vec<T>
     where
         T: Clone + Eq + Hash + Ord,
     {
-        // unimplemented!()
         let mut new_things: Vec<T> = vec![things_one, things_two]
             .into_iter()
             .concat()
@@ -241,27 +245,11 @@ impl Updatable for crate::models::config::GitGlobalConfig {
     }
 
     fn merge_repos(&self, repos: Vec<Repo>) -> Vec<Repo> {
-        // let mut new_repos: Vec<Repo> = vec![self.repos.clone(), repos]
-        //     .into_iter()
-        //     .concat()
-        //     .into_iter()
-        //     .unique()
-        //     .collect::<Vec<Repo>>();
-        // new_repos.sort();
-        // new_repos
         self.merge_things(self.repos.clone(), repos)
     }
 
     fn merge_tags(&self, tags: Vec<RepoTag>) -> Vec<RepoTag> {
-        // let mut new_tags: Vec<RepoTag> = vec![self.tags.clone(), tags]
-        //     .into_iter()
-        //     .concat()
-        //     .into_iter()
-        //     .unique()
-        //     .collect::<Vec<RepoTag>>();
-        // new_tags.sort();
-        // new_tags
-        self.merge_things(self.tags.clone(), tags)
+        self.merge_things(self.recalculate_tags(), tags)
     }
 
     fn merge_repos_and_tags(
@@ -272,6 +260,18 @@ impl Updatable for crate::models::config::GitGlobalConfig {
         let new_repos = self.merge_repos(repos);
         let new_tag_total = self.merge_tags(tags);
         (new_repos, new_tag_total)
+    }
+
+    fn update_merge_repos_and_tags(
+        &mut self,
+        repos: Vec<Repo>,
+        tags: Vec<RepoTag>,
+    ) {
+        self.repos = self.merge_repos(repos);
+        // Need to do this after merge_repos and before merge_tags
+        // so that we have all tags (and default tags) to update from
+        self.update_tags();
+        self.tags = self.merge_tags(tags);
     }
 }
 
