@@ -11,7 +11,7 @@ pub mod new_status;
 pub mod prompt;
 pub mod prompt_cursive;
 pub mod scan;
-pub mod status;
+pub mod sync_status;
 pub mod tag;
 pub mod tag_projects;
 pub mod utilities;

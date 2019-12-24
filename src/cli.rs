@@ -161,7 +161,7 @@ pub fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
         )
         .subcommand(
             SubCommand::with_name("status")
-                .about("shows status of all git repos")
+                .about("shows status of all git repos (original MSPC implementation)")
                 .arg(
                     Arg::with_name("path_filter")
                         .short("p")
@@ -184,7 +184,7 @@ pub fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
         )
         .subcommand(
             SubCommand::with_name("new-status")
-                .about("shows status of all git repos")
+                .about("shows status of all git repos (newer implementation with crossbeam)")
                 .arg(
                     Arg::with_name("path_filter")
                         .short("p")
