@@ -13,7 +13,7 @@
 // use std::env;
 use app_dirs::{app_dir, get_app_dir, AppDataType, AppInfo};
 use colored::*;
-use futures::executor::LocalPool;
+// use futures::executor::LocalPool;
 use git2;
 use std::fs::{remove_file, File};
 use std::io::{Error, ErrorKind};
@@ -24,9 +24,10 @@ use walkdir::DirEntry;
 use crate::models::{
     action::Action,
     new_find_repos_executed,
+    // repo::{Repo, RepoTag},
+    repo::Updatable,
     result::GitGlobalResult,
     utils::new_find_repos,
-    // repo::{Repo, RepoTag},
     Repo,
     RepoTag,
 };
@@ -394,12 +395,22 @@ impl GitGlobalConfig {
         repos: Vec<Repo>,
         tags: Vec<RepoTag>,
     ) {
-        // let mut gc: GitGlobalConfig = GitGlobalConfig::new();
-        // gc.repos = repos;
         self.tags = tags;
         self.cache_repos(&repos);
         // hmmmm...
     }
+
+    /// Dont replace all repos
+    pub fn update_repos_and_tags(
+        &mut self,
+        repos: Vec<Repo>,
+        tags: Vec<RepoTag>,
+    ) {
+        // self.current.tags = tags;
+        // self.current.repos = repos;
+        self.efficient_repos_update(repos);
+    }
+
     /// Returns all known git repos, populating the cache first, if necessary.
     /// TODO: Shouldnt this be a method on GitGlobalConfig?
     /// TODO? Surely this should update the `repos` field?

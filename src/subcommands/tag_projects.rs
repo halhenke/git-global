@@ -31,6 +31,7 @@ use self::cursive::{
 };
 use self::cursive::{Printer, XY};
 use crate::models::errors::Result as WeirdResult;
+use crate::models::repo::Updatable;
 use crate::models::{
     light_table::{LightTable, RcVecRepo, RcVecRepoTag},
     GitGlobalConfig, GitGlobalResult, Repo, RepoTag,
@@ -383,7 +384,11 @@ pub fn go<'a>(path_filter: Option<String>) -> WeirdResult<GitGlobalResult> {
         reps: Vec<Repo>,
         tags: Vec<RepoTag>,
     ) {
-        GitGlobalConfig::new().save_repos_and_tags(reps, tags);
+        let mut gc = GitGlobalConfig::new();
+        // NOTE: This is bloody stupid - needing to clone repos
+        // gc.efficient_repos_update(reps.clone());
+        // gc.save_repos_and_tags(reps, tags);
+        gc.update_repos_and_tags(reps, tags);
         s.cb_sink()
             .send(Box::new(|siv: &mut Cursive| siv.quit()))
             .expect("thread send failed");

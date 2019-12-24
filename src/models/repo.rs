@@ -187,6 +187,7 @@ pub trait Updatable {
     fn tags_from_repos(&self, repos: Vec<Repo>) -> Vec<RepoTag>;
     fn recalculate_tags(&self) -> Vec<RepoTag>;
     fn reset_tags(&mut self);
+    // Generic Functions
     fn merge_things<T: Clone + Eq + Hash + Ord>(
         &self,
         things_one: Vec<T>,
@@ -197,6 +198,7 @@ pub trait Updatable {
         things_one: Vec<T>,
         things_two: Vec<T>,
     ) -> Vec<T>;
+    // Doing Stuff
     fn merge_repos(&self, repos: Vec<Repo>) -> Vec<Repo>;
     fn merge_tags(&self, tags: Vec<RepoTag>) -> Vec<RepoTag>;
     fn update_repos(
@@ -233,6 +235,15 @@ pub trait Updatable {
         add_tags: Vec<RepoTag>,
         delete_tags: Vec<RepoTag>,
     );
+    // fn proper_repos_update(&mut self, repos: Vec<Repo>) -> Vec<Repo>;
+    fn proper_repos_update(
+        &mut self,
+        original: Vec<Repo>,
+        updates: Vec<Repo>,
+    ) -> Vec<Repo>;
+
+    fn proper_repos_self_update(&mut self, updates: Vec<Repo>);
+    fn efficient_repos_update(&mut self, updates: Vec<Repo>);
 }
 
 impl Updatable for crate::models::config::GitGlobalConfig {
@@ -255,6 +266,8 @@ impl Updatable for crate::models::config::GitGlobalConfig {
         new_tags
     }
 
+    /// Basically run recalculate_tags and then assign the result
+    /// to self.tags
     fn reset_tags(&mut self) {
         self.tags = self.recalculate_tags();
     }
@@ -366,6 +379,37 @@ impl Updatable for crate::models::config::GitGlobalConfig {
         self.repos = self.update_repos(add_repos, delete_repos);
         self.reset_tags();
         self.tags = self.update_tags(add_tags, delete_tags);
+    }
+
+    /// Tried to do this with a mutable reference but you cant borrow self and self.repos more than oncee
+    fn proper_repos_update(
+        &mut self,
+        mut original: Vec<Repo>,
+        updates: Vec<Repo>,
+    ) -> Vec<Repo> {
+        for repo in updates {
+            if let Some(r) = original.iter_mut().find(|r| r.path == repo.path) {
+                r.tags = repo.tags;
+            }
+        }
+        original
+    }
+
+    /// This is the same as proper_repos_self_update but it doesnt require a clone on repos - couldnt find a way to do that without reimplementing
+    fn efficient_repos_update(&mut self, updates: Vec<Repo>) {
+        for repo in updates {
+            if let Some(r) = self.repos.iter_mut().find(|r| r.path == repo.path)
+            {
+                r.tags = repo.tags;
+            }
+        }
+        self.reset_tags();
+    }
+
+    fn proper_repos_self_update(&mut self, updates: Vec<Repo>) {
+        // let repos: &Vec<Repo> = self.proper_repos_update(self.repos, updates);
+        self.repos = self.proper_repos_update(self.repos.clone(), updates);
+        self.reset_tags();
     }
 }
 
