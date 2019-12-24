@@ -236,11 +236,28 @@ pub async fn run_from_command_line() -> Result<()> {
 
     if let Some("new-status") = matches.subcommand_name() {
         println!("We matched!!");
-        let l = get_new_status(&matches);
+        let (modified, path_filter, ignore_untracked) = {
+            let modified = matches.subcommand_matches("new-status").is_some()
+                && matches.is_present("modified");
+            let path_filter = get_path_filter(&matches, "new-status");
+            let ignore_untracked =
+                matches.subcommand_matches("new-status").is_some()
+                    && matches.is_present("ignore_untracked");
+            (modified, path_filter, ignore_untracked)
+        };
+        drop(matches);
+        let l = subcommands::new_status::get_results(
+            modified,
+            ignore_untracked,
+            path_filter,
+        )
+        .await
+        .expect("");
+        // let l = { get_new_status(&matches) }.await;
         println!("We stat!!");
         // .expect("await fail");
         // let l = get_new_status(&matches).await.expect("await fail");
-        show_results(l, use_json);
+        // show_results(l, use_json);
         return Ok(());
     } else {
         Err(GitGlobalError::FromIOError(
@@ -440,18 +457,19 @@ fn get_subcommand_values(
 
 /// Writes results to STDOUT, as either text or JSON, and returns `0`.
 // async fn show_results(results: impl Future, use_json: bool) -> i32
-async fn show_results<T>(
-    // async fn show_results<T, T: Output = GitGlobalResult>(
-    results: T,
-    use_json: bool,
-) -> i32
-where
-    T: Future<Output = GitGlobalResult>,
-    // T::Output: GitGlobalResult,
-{
-    // async fn show_results(results: GitGlobalResult, use_json: bool) -> i32 {
-    // async fn show_results(results: GitGlobalResult, use_json: bool) -> i32 {
-    let r: GitGlobalResult = results.await;
+// async fn show_results<T>(
+//     // async fn show_results<T, T: Output = GitGlobalResult>(
+//     results: T,
+//     use_json: bool,
+// ) -> i32
+// where
+//     T: Future<Output = GitGlobalResult>,
+//     // T::Output: GitGlobalResult,
+// {
+// async fn show_results(results: GitGlobalResult, use_json: bool) -> i32 {
+async fn show_results(results: GitGlobalResult, use_json: bool) -> i32 {
+    let r = results;
+    // let r: GitGlobalResult = results.await;
     println!("We showed!!");
 
     if use_json {
