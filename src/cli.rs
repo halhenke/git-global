@@ -12,6 +12,7 @@ use std::io::{stderr, Write};
 // use tokio::
 use futures::executor::LocalPool;
 use futures::{future, io};
+use std::future::Future;
 
 use crate::subcommands;
 
@@ -214,7 +215,6 @@ pub fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
 /// `STDOUT` and returns an exit code.
 // pub fn run_from_command_line() -> impl futures::Future<Output = i32> {
 pub async fn run_from_command_line() -> Result<()> {
-
     println!("I am in async land\n\n");
 
     let clap_app = get_clap_app();
@@ -230,151 +230,173 @@ pub async fn run_from_command_line() -> Result<()> {
     //     return 0;
     // }
 
-    let mut exec = LocalPool::new();
+    // NOTE: THIS may have been causing program to crash:
+    // let mut exec = LocalPool::new();
+    println!("Another debug message!!");
 
-    let results = match matches.subcommand_name() {
-        Some("bullshit") => subcommands::bullshit::get_results(),
-        Some("info") => {
-            let raw_info = matches
-                .subcommand_matches("info")
-                .unwrap()
-                .is_present("raw");
-            subcommands::info::get_results(raw_info)
-        }
-        // Some("list") => subcommands::list::get_results(),
-        Some("list") => {
-            let path_filter = matches
-                .subcommand_matches("list")
-                .unwrap()
-                .value_of("path_filter");
-            // let path_filter = get_path_filter(&matches, "list");
-            subcommands::list::get_results(path_filter)
-        }
-        Some("list-tags") => subcommands::list_tags::get_results(),
-        Some("action") => match matches
-            .subcommand_matches("action")
-            .unwrap()
-            .subcommand_name()
-        {
-            Some("perform") => {
-                let tags = get_subcommand_value(
-                    matches.subcommand_matches("action").unwrap(),
-                    "perform",
-                    "tags",
-                );
-                let path = get_subcommand_value(
-                    matches.subcommand_matches("action").unwrap(),
-                    "perform",
-                    "path",
-                );
-                let action = get_subcommand_values(
-                    matches.subcommand_matches("action").unwrap(),
-                    "perform",
-                    "action",
-                );
-                subcommands::actions::perform(tags, path, action)
-            }
-            Some("list") => subcommands::actions::list(),
-            _ => Err(GitGlobalError::BadSubcommand(String::from(
-                "bad action subcommand",
-            ))),
-        },
-        Some("add-tags") => subcommands::add_tags::go(),
-        Some("filter") => {
-            let sub_com =
-                matches.subcommand_matches("filter").expect("filter panic");
-            let pat =
-                sub_com.value_of("pattern").expect("a pattern is expected");
-            let tags = sub_com.values_of("tags").unwrap().collect();
-            subcommands::filter::get_results(pat, tags)
-        }
-        Some("clean") => {
-            let sub_com =
-                matches.subcommand_matches("clean").expect("clean panic");
-            // if let Some(result) = sub_com.subcommand_name() {
-            //     subcommands::clean::cache_clear(result)
-            // }
-            // subcommands::clean::cache_clear(sub_com.subcommand_name().unwrap())
-            // let result = match sub_com.subcommand_name() {
-            match sub_com.subcommand_name() {
-                Some(n) => subcommands::clean::cache_clear(n),
-                None => Err(GitGlobalError::MissingSubcommand(
-                    vec!["tags", "all"].into_iter().map(String::from).collect(),
-                )),
-            }
-        }
-        Some("scan") => subcommands::scan::get_results(),
-        Some("prompt") => subcommands::prompt::go(),
-        Some("prompt-cursive") => subcommands::prompt_cursive::go(),
-        Some("tag") => {
-            let sub_com =
-                matches.subcommand_matches("tag").expect("filter panic");
-            let tag = sub_com.values_of("tag_arg").unwrap().collect();
-            subcommands::tag::get_results(tag)
-        }
-        Some("tag-projects") => {
-            let pf = get_path_filter(&matches, "tag-projects");
-            subcommands::tag_projects::go(pf)
-        }
-        Some("status") => get_status(matches),
-        Some("new-status") => get_new_status(matches),
-        Some("completions") => {
-            let mut file = std::fs::File::create("_git-global-hal")
-                .expect("Could not write completions file");
-            get_clap_app().gen_completions_to(
-                "git-global-hal",
-                Shell::Zsh,
-                &mut file, // &mut io::stdout(),
-            );
-            Ok(GitGlobalResult::new(&Vec::new()))
-        }
-        Some(cmd) => Err(GitGlobalError::BadSubcommand(cmd.to_string())),
-        None => get_status(matches),
-    };
-    match results {
-        Ok(res) => {
-            show_results(res, use_json);
-            Ok(())
-        },
-        Err(err) => {
-            show_error(err, use_json);
-            Err(GitGlobalError::FromIOError("something happened...".to_owned()))
-        },
-        // Ok(res) => show_results(res, use_json),
-        // Err(err) => show_error(err, use_json),
+    if let Some("new-status") = matches.subcommand_name() {
+        println!("We matched!!");
+        let l = get_new_status(&matches);
+        println!("We stat!!");
+        // .expect("await fail");
+        // let l = get_new_status(&matches).await.expect("await fail");
+        show_results(l, use_json);
+        return Ok(());
+    } else {
+        Err(GitGlobalError::FromIOError(
+            "something happened...".to_owned(),
+        ))
     }
+
+    // let results = match matches.subcommand_name() {
+    //     Some("bullshit") => subcommands::bullshit::get_results(),
+    //     Some("info") => {
+    //         let raw_info = matches
+    //             .subcommand_matches("info")
+    //             .unwrap()
+    //             .is_present("raw");
+    //         subcommands::info::get_results(raw_info)
+    //     }
+    //     // Some("list") => subcommands::list::get_results(),
+    //     Some("list") => {
+    //         let path_filter = matches
+    //             .subcommand_matches("list")
+    //             .unwrap()
+    //             .value_of("path_filter");
+    //         // let path_filter = get_path_filter(&matches, "list");
+    //         subcommands::list::get_results(path_filter)
+    //     }
+    //     Some("list-tags") => subcommands::list_tags::get_results(),
+    //     Some("action") => match matches
+    //         .subcommand_matches("action")
+    //         .unwrap()
+    //         .subcommand_name()
+    //     {
+    //         Some("perform") => {
+    //             let tags = get_subcommand_value(
+    //                 matches.subcommand_matches("action").unwrap(),
+    //                 "perform",
+    //                 "tags",
+    //             );
+    //             let path = get_subcommand_value(
+    //                 matches.subcommand_matches("action").unwrap(),
+    //                 "perform",
+    //                 "path",
+    //             );
+    //             let action = get_subcommand_values(
+    //                 matches.subcommand_matches("action").unwrap(),
+    //                 "perform",
+    //                 "action",
+    //             );
+    //             subcommands::actions::perform(tags, path, action)
+    //         }
+    //         Some("list") => subcommands::actions::list(),
+    //         _ => Err(GitGlobalError::BadSubcommand(String::from(
+    //             "bad action subcommand",
+    //         ))),
+    //     },
+    //     Some("add-tags") => subcommands::add_tags::go(),
+    //     Some("filter") => {
+    //         let sub_com =
+    //             matches.subcommand_matches("filter").expect("filter panic");
+    //         let pat =
+    //             sub_com.value_of("pattern").expect("a pattern is expected");
+    //         let tags = sub_com.values_of("tags").unwrap().collect();
+    //         subcommands::filter::get_results(pat, tags)
+    //     }
+    //     Some("clean") => {
+    //         let sub_com =
+    //             matches.subcommand_matches("clean").expect("clean panic");
+    //         match sub_com.subcommand_name() {
+    //             Some(n) => subcommands::clean::cache_clear(n),
+    //             None => Err(GitGlobalError::MissingSubcommand(
+    //                 vec!["tags", "all"].into_iter().map(String::from).collect(),
+    //             )),
+    //         }
+    //     }
+    //     Some("scan") => subcommands::scan::get_results(),
+    //     Some("prompt") => subcommands::prompt::go(),
+    //     Some("prompt-cursive") => subcommands::prompt_cursive::go(),
+    //     Some("tag") => {
+    //         let sub_com =
+    //             matches.subcommand_matches("tag").expect("filter panic");
+    //         let tag = sub_com.values_of("tag_arg").unwrap().collect();
+    //         subcommands::tag::get_results(tag)
+    //     }
+    //     Some("tag-projects") => {
+    //         let pf = get_path_filter(&matches, "tag-projects");
+    //         subcommands::tag_projects::go(pf)
+    //     }
+    //     Some("status") => get_sync_status(matches),
+    //     // Some("new-status") => get_new_status(matches),
+    //     Some("completions") => {
+    //         let mut file = std::fs::File::create("_git-global-hal")
+    //             .expect("Could not write completions file");
+    //         get_clap_app().gen_completions_to(
+    //             "git-global-hal",
+    //             Shell::Zsh,
+    //             &mut file, // &mut io::stdout(),
+    //         );
+    //         Ok(GitGlobalResult::new(&Vec::new()))
+    //     }
+    //     // Some(cmd) => Err(GitGlobalError::BadSubcommand(cmd.to_string())),
+    //     Some(cmd) => {
+    //         if (cmd == "new-status") {
+    //             let l = get_new_status(&matches).await.expect("await fail");
+    //             show_results(l, use_json);
+    //             Err(GitGlobalError::BadSubcommand(cmd.to_string()))
+    //         // return Ok(());
+    //         } else {
+    //             Err(GitGlobalError::BadSubcommand(cmd.to_string()))
+    //         }
+    //     }
+    //     None => get_sync_status(matches),
+    // };
+    // match results {
+    //     Ok(res) => {
+    //         show_results(res, use_json);
+    //         Ok(())
+    //     }
+    //     Err(err) => {
+    //         show_error(err, use_json);
+    //         Err(GitGlobalError::FromIOError(
+    //             "something happened...".to_owned(),
+    //         ))
+    //     }
+    // }
 }
 
-fn get_status(matches: clap::ArgMatches) -> Result<GitGlobalResult> {
-    // fn get_status(matches: clap::ArgMatches) -> errors::Result<GitGlobalResult> {
-    let modified = matches
-        .subcommand_matches("status")
-        .unwrap()
-        .is_present("modified");
+fn get_sync_status(matches: clap::ArgMatches) -> Result<GitGlobalResult> {
+    // fn get_sync_status(matches: clap::ArgMatches) -> errors::Result<GitGlobalResult> {
+    let modified = matches.subcommand_matches("status").is_some()
+        && matches.is_present("modified");
     let path_filter = get_path_filter(&matches, "status");
-    let ignore_untracked = matches
-        .subcommand_matches("status")
-        .unwrap()
-        .is_present("ignore_untracked");
-    subcommands::status::get_results(modified, ignore_untracked, path_filter)
+    let ignore_untracked = matches.subcommand_matches("status").is_some()
+        && matches.is_present("ignore_untracked");
+    subcommands::sync_status::get_results(
+        modified,
+        ignore_untracked,
+        path_filter,
+    )
 }
 
-fn get_new_status(matches: clap::ArgMatches) -> Result<GitGlobalResult> {
-    let modified = matches
-        .subcommand_matches("new-status")
-        // .ok_or(GitGlobalError::FromIOError)?
-        .unwrap()
-        .is_present("modified");
+async fn get_new_status(
+    matches: &clap::ArgMatches<'_>,
+    // ) -> Result<GitGlobalResult> {
+) -> GitGlobalResult {
+    let modified = matches.subcommand_matches("new-status").is_some()
+        && matches.is_present("modified");
     let path_filter = get_path_filter(&matches, "new-status");
-    let ignore_untracked = matches
-        .subcommand_matches("new-status")
-        .unwrap()
-        .is_present("ignore_untracked");
+    let ignore_untracked = matches.subcommand_matches("new-status").is_some()
+        && matches.is_present("ignore_untracked");
     subcommands::new_status::get_results(
         modified,
         ignore_untracked,
         path_filter,
     )
+    .await
+    .expect("")
+    // .expect("Future failed")
 }
 
 fn get_path_filter(matches: &ArgMatches, subcommand: &str) -> Option<String> {
@@ -387,11 +409,15 @@ fn get_subcommand_value(
     subcommand: &str,
     value: &str,
 ) -> Option<String> {
-    matches
-        .subcommand_matches(subcommand)
-        .unwrap()
-        .value_of(value)
-        .map(|s| String::from(s))
+    // matches
+    //     .subcommand_matches(subcommand)
+    //     .unwrap()
+    //     .value_of(value)
+    //     .map(|s| String::from(s))
+    match matches.subcommand_matches(subcommand) {
+        Some(s) => s.value_of(value).map(|s| String::from(s)),
+        None => None,
+    }
 }
 
 /// Get all [`Arg`] values for a given [`SubCommand`]
@@ -413,11 +439,27 @@ fn get_subcommand_values(
 }
 
 /// Writes results to STDOUT, as either text or JSON, and returns `0`.
-fn show_results(results: GitGlobalResult, use_json: bool) -> i32 {
+// async fn show_results(results: impl Future, use_json: bool) -> i32
+async fn show_results<T>(
+    // async fn show_results<T, T: Output = GitGlobalResult>(
+    results: T,
+    use_json: bool,
+) -> i32
+where
+    T: Future<Output = GitGlobalResult>,
+    // T::Output: GitGlobalResult,
+{
+    // async fn show_results(results: GitGlobalResult, use_json: bool) -> i32 {
+    // async fn show_results(results: GitGlobalResult, use_json: bool) -> i32 {
+    let r: GitGlobalResult = results.await;
+    println!("We showed!!");
+
     if use_json {
-        results.print_json();
+        r.print_json();
+    // results.print_json();
     } else {
-        results.print();
+        r.print();
+        // results.print();
     }
     0
 }

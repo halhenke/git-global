@@ -1,4 +1,5 @@
 #![feature(vec_remove_item)]
+#![feature(async_closure)]
 // #![feature(custom_attribute)]
 //! Keep track of all your git repositories.
 //!

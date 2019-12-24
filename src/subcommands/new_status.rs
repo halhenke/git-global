@@ -3,9 +3,14 @@
 extern crate colored;
 use self::colored::*;
 // use std::io::{stderr, Write};
+
 use crossbeam_channel::{bounded, unbounded};
 use std::sync::{Arc, Mutex};
 use std::thread;
+// NOTE: TOKIO 2019 - Replacing Crossbeam
+use tokio;
+// use tokio::sync::mpsc;
+use tokio::sync::broadcast;
 
 use git2;
 
@@ -14,7 +19,7 @@ use crate::models::{get_repos, GitGlobalError, GitGlobalResult, Repo};
 
 /// Gathers `git status -s` for all known repos.
 /// This is a reimplementation of `status` command using `crossbeam
-pub fn get_results(
+pub async fn get_results(
     only_modified: bool,
     ignore_untracked: bool,
     path_filter: Option<String>,
@@ -26,7 +31,9 @@ pub fn get_results(
     let mut result = GitGlobalResult::new(&repos);
     result.pad_repo_output();
 
-    let (s, r) = bounded(10);
+    let (s, mut r) = broadcast::channel(100);
+    // let (mut s, mut r) = mpsc::channel(100);
+    // let (s, r) = bounded(10);
     // let (s, r) = unbounded();
 
     // TODO: limit number of threads, perhaps with mpsc::sync_channel(n)?
@@ -34,7 +41,8 @@ pub fn get_results(
     for repo in repos {
         let s = s.clone();
         let repo = Arc::new(repo);
-        thread::spawn(move || {
+        tokio::spawn(async move {
+            // thread::spawn(move || {
             let path = repo.path().to_string();
             let mut status_opts = git2::StatusOptions::new();
             status_opts
@@ -50,6 +58,7 @@ pub fn get_results(
                     .collect();
             }
             s.send((path, lines)).unwrap();
+            // s.send((path, lines)).unwrap();
         });
     }
     type ArMuGgr = Arc<Mutex<GitGlobalResult>>;
@@ -59,13 +68,16 @@ pub fn get_results(
 
     let thread_count = 8;
     for _ in 0..thread_count {
-        let r = r.clone();
+        let mut r_loop = s.subscribe();
+        // let r = r.clone();
         let pf = pf.clone();
         let result = result.clone();
 
-        let j = thread::spawn(move || {
+        let j = tokio::spawn(async move {
+            // let j = thread::spawn(move || {
             for _ in 0..(n_repos / thread_count) {
-                let out = r.recv().unwrap();
+                let out = r_loop.recv().await.unwrap();
+                // let out = r.recv().unwrap();
                 let (path, lines): (String, Vec<String>) = out;
 
                 if let Some(pf) = &(*pf) {
@@ -96,8 +108,10 @@ pub fn get_results(
             }
             return result;
         });
+        // let ac: Arc<Mutex<GitGlobalResult>> =
+        // j.join().expect("Arc unwrap failure!");
         let ac: Arc<Mutex<GitGlobalResult>> =
-            j.join().expect("Arc unwrap failure!");
+            j.await.expect("Arc unwrap failure!");
     }
     Ok(Arc::try_unwrap(result)
         .expect("preCommand failed")
