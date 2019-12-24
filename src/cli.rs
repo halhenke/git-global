@@ -216,10 +216,35 @@ pub fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
 // pub fn run_from_command_line() -> impl futures::Future<Output = i32> {
 pub async fn run_from_command_line() -> Result<()> {
     println!("I am in async land\n\n");
-
-    let clap_app = get_clap_app();
-    let matches: ArgMatches<'static> = clap_app.get_matches();
-    let use_json = matches.is_present("json");
+    let (modified, path_filter, ignore_untracked) = {
+        let clap_app = get_clap_app();
+        let matches: ArgMatches<'static> = clap_app.get_matches();
+        let use_json = matches.is_present("json");
+        let modified;
+        let path_filter;
+        let ignore_untracked;
+        if let Some("new-status") = matches.subcommand_name() {
+            println!("We matched!!");
+            let (m, pf, iu) = {
+                let modified =
+                    matches.subcommand_matches("new-status").is_some()
+                        && matches.is_present("modified");
+                let path_filter = get_path_filter(&matches, "new-status");
+                let ignore_untracked =
+                    matches.subcommand_matches("new-status").is_some()
+                        && matches.is_present("ignore_untracked");
+                (modified, path_filter, ignore_untracked)
+            };
+            modified = m;
+            path_filter = pf;
+            ignore_untracked = iu;
+        } else {
+            modified = false;
+            path_filter = None;
+            ignore_untracked = true;
+        }
+        (modified, path_filter, ignore_untracked)
+    };
 
     // if matches.is_present("generate-zsh-completions") {
     //     get_clap_app().gen_completions_to(
@@ -233,37 +258,47 @@ pub async fn run_from_command_line() -> Result<()> {
     // NOTE: THIS may have been causing program to crash:
     // let mut exec = LocalPool::new();
     println!("Another debug message!!");
+    let l = subcommands::new_status::get_results(
+        modified,
+        ignore_untracked,
+        path_filter,
+    )
+    .await
+    .expect("");
+    show_results(l, false);
 
-    if let Some("new-status") = matches.subcommand_name() {
-        println!("We matched!!");
-        let (modified, path_filter, ignore_untracked) = {
-            let modified = matches.subcommand_matches("new-status").is_some()
-                && matches.is_present("modified");
-            let path_filter = get_path_filter(&matches, "new-status");
-            let ignore_untracked =
-                matches.subcommand_matches("new-status").is_some()
-                    && matches.is_present("ignore_untracked");
-            (modified, path_filter, ignore_untracked)
-        };
-        drop(matches);
-        let l = subcommands::new_status::get_results(
-            modified,
-            ignore_untracked,
-            path_filter,
-        )
-        .await
-        .expect("");
-        // let l = { get_new_status(&matches) }.await;
-        println!("We stat!!");
-        // .expect("await fail");
-        // let l = get_new_status(&matches).await.expect("await fail");
-        // show_results(l, use_json);
-        return Ok(());
-    } else {
-        Err(GitGlobalError::FromIOError(
-            "something happened...".to_owned(),
-        ))
-    }
+    return Ok(());
+
+    // if let Some("new-status") = matches.subcommand_name() {
+    //     println!("We matched!!");
+    //     let (modified, path_filter, ignore_untracked) = {
+    //         let modified = matches.subcommand_matches("new-status").is_some()
+    //             && matches.is_present("modified");
+    //         let path_filter = get_path_filter(&matches, "new-status");
+    //         let ignore_untracked =
+    //             matches.subcommand_matches("new-status").is_some()
+    //                 && matches.is_present("ignore_untracked");
+    //         (modified, path_filter, ignore_untracked)
+    //     };
+    //     drop(matches);
+    //     let l = subcommands::new_status::get_results(
+    //         modified,
+    //         ignore_untracked,
+    //         path_filter,
+    //     )
+    //     .await
+    //     .expect("");
+    //     // let l = { get_new_status(&matches) }.await;
+    //     println!("We stat!!");
+    //     // .expect("await fail");
+    //     // let l = get_new_status(&matches).await.expect("await fail");
+    //     // show_results(l, use_json);
+    //     return Ok(());
+    // } else {
+    //     Err(GitGlobalError::FromIOError(
+    //         "something happened...".to_owned(),
+    //     ))
+    // }
 
     // let results = match matches.subcommand_name() {
     //     Some("bullshit") => subcommands::bullshit::get_results(),
