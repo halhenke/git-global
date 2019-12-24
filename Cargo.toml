@@ -55,7 +55,7 @@ icecream = "0.1.0"
 config = "0.10.1"
 anyhow = "1.0.25"
 thiserror = "1.0.9"
-tokio = { version = "0.2.4", features = ["full"] }
+tokio = { version = "0.2.6", features = ["full"] }
 
 
 [dependencies.cursive]
