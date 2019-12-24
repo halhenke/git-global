@@ -18,18 +18,21 @@ fn main() -> Result<(), std::io::Error> {
     println!("I am in rust land\n\n");
 
     // let rt = tokio::runtime::Runtime::new().expect("tokio fail");
-    let rt = tokio::runtime::Builder::new()
+    let mut rt = tokio::runtime::Builder::new()
         // .basic_scheduler()
         .threaded_scheduler()
         .enable_io()
         .build()?;
     println!("Runtime is built\n\n");
-    let rts = rt.spawn(
-        git_global::run_from_command_line()
-            // .await
-            // .expect("tokio fail"),
-    );
-    println!("Spawn is spawned\n\n");
+    rt.block_on(async {
+        tokio::spawn(
+        // let rts = rt.spawn(
+            git_global::run_from_command_line()
+                // .await
+                // .expect("tokio fail"),
+        );
+        println!("Spawn is spawned\n\n");
+    });
     // rt.enter(async move|| git_global::run_from_command_line().await.expect("tokio fail"));
     Ok(())
     // exit(0);
