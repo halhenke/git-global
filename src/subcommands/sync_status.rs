@@ -17,6 +17,7 @@ pub fn get_results(
     ignore_untracked: bool,
     path_filter: Option<String>,
 ) -> Result<GitGlobalResult> {
+    trace!("get_results");
     let include_untracked = true;
     // let include_untracked = config.show_untracked;
     let repos = get_repos();

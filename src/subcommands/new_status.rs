@@ -27,6 +27,7 @@ pub async fn get_results(
     ignore_untracked: bool,
     path_filter: Option<String>,
 ) -> Result<GitGlobalResult> {
+    trace!("get_results");
     let include_untracked = true;
     // let include_untracked = config.show_untracked;
     let repos = get_repos();
@@ -60,7 +61,9 @@ pub async fn get_results(
                     .filter(|l| !l.starts_with("??"))
                     .collect();
             }
-            s.send((path, lines)).unwrap();
+            debug!("path is {} and lines are {:#?}", path, lines);
+            s.send((path.clone(), lines))
+                .expect(&format!("Send failed at {}", path));
             // s.send((path, lines)).unwrap();
         });
     }
@@ -70,7 +73,15 @@ pub async fn get_results(
     let result: Arc<Mutex<GitGlobalResult>> = Arc::new(Mutex::new(result));
 
     let thread_count = 8;
+    debug!(
+        "Thread Count is {}, n_repos is {}, and n_repos / thread_count is {}",
+        thread_count,
+        n_repos,
+        n_repos / thread_count
+    );
+
     for _ in 0..thread_count {
+        debug!("Once for each THREAD");
         let mut r_loop = s.subscribe();
         // let r = r.clone();
         let pf = pf.clone();

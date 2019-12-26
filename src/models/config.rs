@@ -298,6 +298,7 @@ impl GitGlobalConfig {
 
     /// Reads the cache and returns Vec of Tags
     pub fn read_tags(&self) -> Result<Vec<RepoTag>> {
+        trace!("read_tags");
         if !self.has_cache() {
             // Try to create the cache directory if the cache *file* doesn't
             // exist; app_dir() handles an existing directory just fine.
@@ -414,6 +415,7 @@ impl GitGlobalConfig {
     /// TODO: Shouldnt this be a method on GitGlobalConfig?
     /// TODO? Surely this should update the `repos` field?
     pub async fn get_repos(&mut self) -> Vec<Repo> {
+        trace!("get_repos");
         if self.has_cache() {
             println!("{}", "You have no cached repos yet...".yellow());
             let repos = new_find_repos();
@@ -435,6 +437,7 @@ impl GitGlobalConfig {
 
     /// Returns the list of repos found in the cache file.
     pub fn get_cached_repos(&self) -> Vec<Repo> {
+        trace!("get_cached_repos");
         debug!("GET CACHED REPOS - 0");
 
         let mut repos = Vec::new();

@@ -69,6 +69,7 @@ fn my_new_repo_check(repos: &mut Vec<Repo>, entry: jwalk::DirEntry) -> () {
 
 // pub async fn async_find_repos_and_nothing() {
 pub async fn new_find_repos_executed() -> Vec<Repo> {
+    trace!("new_find_repos_executed");
     // new_find_repos_async().wait()
     // new_find_repos_async().await
     executor::block_on(new_find_repos_async()).await.unwrap()
@@ -84,6 +85,7 @@ pub async fn new_find_repos_executed() -> Vec<Repo> {
 /// Walks the configured base directory, looking for git repos.
 /// TODO: Shouldnt this be a method on GitGlobalConfig?
 pub async fn new_find_repos_async() -> future::Ready<Result<Vec<Repo>, ()>> {
+    trace!("new_find_repos_async");
     let mut repos: Vec<Repo> = Vec::new();
     let user_config = GitGlobalConfig::new();
     let basedir = &user_config.basedir;
@@ -144,6 +146,7 @@ pub async fn new_find_repos_async() -> future::Ready<Result<Vec<Repo>, ()>> {
 /// Walks the configured base directory, looking for git repos.
 /// TODO: Shouldnt this be a method on GitGlobalConfig?
 pub fn new_find_repos() -> Vec<Repo> {
+    trace!("new_find_repos");
     let mut repos: Vec<Repo> = Vec::new();
     let user_config = GitGlobalConfig::new();
     let basedir = &user_config.basedir;
@@ -194,6 +197,7 @@ pub fn new_find_repos() -> Vec<Repo> {
 
 // TODO: using this?
 pub fn get_tagged_repos(tags: &Vec<RepoTag>) -> Vec<Repo> {
+    trace!("get_tagged_repos");
     if tags.len() == 0 {
         // println!("NO TAGS");
         return get_repos();
@@ -215,6 +219,7 @@ pub fn get_tagged_repos(tags: &Vec<RepoTag>) -> Vec<Repo> {
 /// Returns all known git repos, populating the cache first, if necessary.
 /// TODO: Shouldnt this be a method on GitGlobalConfig?
 pub fn get_repos() -> Vec<Repo> {
+    trace!("get_repos");
     // debug!("get repos");
     let user_config = GitGlobalConfig::new();
     // debug!("got config");

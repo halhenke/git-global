@@ -29,6 +29,7 @@ use crate::subcommands;
 
 /// Returns the definitive clap::App instance for git-global.
 pub fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
+    trace!("get_clap_app");
     App::new("git-global")
         .version(crate_version!())
         .author("Eric Petersen <eric@ericpetersen.io>")
@@ -215,6 +216,7 @@ pub fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
 /// `STDOUT` and returns an exit code.
 // pub fn run_from_command_line() -> impl futures::Future<Output = i32> {
 pub async fn run_from_command_line() -> Result<()> {
+    trace!("run_from_command_line__scoped");
     println!("I am in async land\n\n");
     let (modified, path_filter, ignore_untracked) = {
         let clap_app = get_clap_app();
@@ -420,6 +422,7 @@ pub async fn run_from_command_line() -> Result<()> {
 
 fn get_sync_status(matches: clap::ArgMatches) -> Result<GitGlobalResult> {
     // fn get_sync_status(matches: clap::ArgMatches) -> errors::Result<GitGlobalResult> {
+    trace!("get_sync_status");
     let modified = matches.subcommand_matches("status").is_some()
         && matches.is_present("modified");
     let path_filter = get_path_filter(&matches, "status");
@@ -436,6 +439,7 @@ async fn get_new_status(
     matches: &clap::ArgMatches<'_>,
     // ) -> Result<GitGlobalResult> {
 ) -> GitGlobalResult {
+    trace!("get_new_status");
     let modified = matches.subcommand_matches("new-status").is_some()
         && matches.is_present("modified");
     let path_filter = get_path_filter(&matches, "new-status");
@@ -503,6 +507,7 @@ fn get_subcommand_values(
 // {
 // async fn show_results(results: GitGlobalResult, use_json: bool) -> i32 {
 async fn show_results(results: GitGlobalResult, use_json: bool) -> i32 {
+    trace!("show_results");
     let r = results;
     // let r: GitGlobalResult = results.await;
     println!("We showed!!");
@@ -519,6 +524,7 @@ async fn show_results(results: GitGlobalResult, use_json: bool) -> i32 {
 
 /// Writes errors to STDERR, as either text or JSON, and returns `1`.
 fn show_error(error: GitGlobalError, use_json: bool) -> i32 {
+    trace!("show_error");
     if use_json {
         let json = object! {
             "error" => true,
