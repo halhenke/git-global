@@ -101,7 +101,9 @@ pub mod subcommands;
 // use self::repo;
 // use crate::subcommands;
 // pub use crate::models;
-pub use cli::run_from_command_line;
+// pub use cli::run_from_command_line;
+pub use cli::run_from_command_line__nested;
+pub use cli::run_from_command_line__scoped;
 
 // use log::{Level, LevelFilter, Log, Metadata, Record};
 // extern crate pretty_env_logger;

@@ -42,6 +42,7 @@ pub async fn get_results(
 
     // TODO: limit number of threads, perhaps with mpsc::sync_channel(n)?
 
+    // SEND MESSAGES LOOP
     for repo in repos {
         let s = s.clone();
         let repo = Arc::new(repo);
@@ -68,11 +69,10 @@ pub async fn get_results(
         });
     }
     type ArMuGgr = Arc<Mutex<GitGlobalResult>>;
-    let mut resvec: Vec<ArMuGgr> = vec![];
     let pf = Arc::new(path_filter);
     let result: Arc<Mutex<GitGlobalResult>> = Arc::new(Mutex::new(result));
 
-    let thread_count = 8;
+    let thread_count = 1;
     debug!(
         "Thread Count is {}, n_repos is {}, and n_repos / thread_count is {}",
         thread_count,
@@ -87,9 +87,10 @@ pub async fn get_results(
         let pf = pf.clone();
         let result = result.clone();
 
+        // RECEIVE MESSAGES LOOP
         let j = tokio::spawn(async move {
             // let j = thread::spawn(move || {
-            for _ in 0..(n_repos / thread_count) {
+            for _ in 0..((n_repos) / thread_count) {
                 let out = r_loop.recv().await.unwrap();
                 // let out = r.recv().unwrap();
                 let (path, lines): (String, Vec<String>) = out;
@@ -100,9 +101,7 @@ pub async fn get_results(
                     }
                 }
                 let mut result = result.lock().unwrap();
-
                 let repo = Repo::new(path.to_string());
-
                 let ss = format!(
                     "{} {}",
                     "Status for".blue(),
@@ -122,11 +121,10 @@ pub async fn get_results(
             }
             return result;
         });
-        // let ac: Arc<Mutex<GitGlobalResult>> =
-        // j.join().expect("Arc unwrap failure!");
         let ac: Arc<Mutex<GitGlobalResult>> =
             j.await.expect("Arc unwrap failure!");
     }
+    r;
     Ok(Arc::try_unwrap(result)
         .expect("preCommand failed")
         .into_inner()
