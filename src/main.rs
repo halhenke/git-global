@@ -6,6 +6,9 @@ extern crate git_global;
 extern crate pretty_env_logger;
 // #[macro_use] extern crate log;
 
+use git_global::cli::{
+    run_from_command_line__nested, run_from_command_line__scoped,
+};
 use std::process::exit;
 use tokio;
 // extern crate cursive;
@@ -41,6 +44,6 @@ use tokio;
 
 fn main() -> Result<(), std::io::Error> {
     pretty_env_logger::init();
-    git_global::run_from_command_line__nested();
+    run_from_command_line__nested();
     exit(0)
 }

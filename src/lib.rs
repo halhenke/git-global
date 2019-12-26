@@ -51,28 +51,25 @@
 
 extern crate app_dirs;
 extern crate chrono;
+extern crate colored;
 extern crate config;
 extern crate dirs;
 extern crate git2;
 extern crate itertools;
+extern crate mut_static;
+extern crate pipeline;
 extern crate serde_json;
 extern crate tui;
 extern crate walkdir;
-#[macro_use]
-extern crate pipeline;
-extern crate colored;
-extern crate mut_static;
 #[macro_use]
 extern crate clap;
 #[macro_use]
 extern crate json;
 #[macro_use]
 extern crate serde_derive;
-#[macro_use]
 extern crate lazy_static;
 #[macro_use]
 extern crate log;
-#[macro_use]
 extern crate icecream;
 // Have to use macros before other stuff
 #[macro_use]
@@ -90,34 +87,6 @@ extern crate subprocess;
 #[macro_use]
 extern crate thiserror;
 
-mod cli;
-// mod subcommands;
+pub mod cli;
 pub mod models;
-// pub mod subcommands;
 pub mod subcommands;
-// pub mod self::repo;
-// pub mod subcommands; // Using `pub mod` so we see the docs.
-
-// use self::repo;
-// use crate::subcommands;
-// pub use crate::models;
-// pub use cli::run_from_command_line;
-pub use cli::run_from_command_line__nested;
-pub use cli::run_from_command_line__scoped;
-
-// use log::{Level, LevelFilter, Log, Metadata, Record};
-// extern crate pretty_env_logger;
-// #[macro_use]
-// extern crate log;
-// pretty_env_logger::init();
-
-// pub use crate::models::{
-//     GitGlobalConfig,
-//     GitGlobalResult,
-//     Repo,
-//     get_repos,
-//     RepoTag,
-//     get_tagged_repos
-// };
-// pub use crate::models::Result;
-// pub use crate::models::GitGlobalError;

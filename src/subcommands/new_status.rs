@@ -124,7 +124,6 @@ pub async fn get_results(
         let ac: Arc<Mutex<GitGlobalResult>> =
             j.await.expect("Arc unwrap failure!");
     }
-    r;
     Ok(Arc::try_unwrap(result)
         .expect("preCommand failed")
         .into_inner()
