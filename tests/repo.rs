@@ -1,5 +1,5 @@
 mod utils;
-use git_global::models::Repo;
+use git_global::models::repo::Repo;
 
 #[test]
 /// Test that we get an actual git repo, we can get a git2::Repository

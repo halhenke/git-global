@@ -2,7 +2,8 @@
 //! [`SelectView`]: ../../../cursive/views/select_view/struct.SelectView.html
 
 use crate::models::{
-    errors, GitGlobalConfig, GitGlobalError, GitGlobalResult, Repo, RepoTag,
+    config::GitGlobalConfig, errors::GitGlobalError,
+    result::GitGlobalResult, repo::Repo, repo_tag::RepoTag,
 };
 use itertools::Itertools;
 use std::ops::Deref;

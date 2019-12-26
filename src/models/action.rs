@@ -1,4 +1,4 @@
-use crate::models::Repo;
+use crate::models::repo::Repo;
 use std::fmt::{Display, Error};
 use subprocess::{Exec, Popen};
 
@@ -228,6 +228,7 @@ impl Action {
 mod action_tests {
     use super::*;
 
+    /// Not sure what this is supposed to test anymore
     #[test]
     pub fn enum_rep() {
         let ga = Action::PathAction(

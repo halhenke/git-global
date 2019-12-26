@@ -9,7 +9,7 @@ use std::thread;
 use git2;
 
 use crate::models::errors::Result;
-use crate::models::{get_repos, GitGlobalResult, Repo};
+use crate::models::{repo::Repo, result::GitGlobalResult, utils::get_repos};
 
 /// Gathers `git status -s` for all known repos.
 pub fn get_results(

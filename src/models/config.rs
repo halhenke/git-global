@@ -23,13 +23,12 @@ use walkdir::DirEntry;
 
 use crate::models::{
     action::Action,
-    new_find_repos_executed,
+    repo::Repo,
     // repo::{Repo, RepoTag},
     repo::Updatable,
+    repo_tag::RepoTag,
     result::GitGlobalResult,
-    utils::new_find_repos,
-    Repo,
-    RepoTag,
+    utils::{new_find_repos, new_find_repos_executed},
 };
 
 const APP: AppInfo = AppInfo {

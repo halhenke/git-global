@@ -5,11 +5,11 @@
 
 pub use crate::models::config::GitGlobalConfig;
 pub use crate::models::result::GitGlobalResult;
-pub use crate::models::{Repo, RepoTag};
+pub use crate::models::{repo::Repo, repo_tag::RepoTag};
 use colored::*;
-use futures::future::*;
 use futures::executor;
 use futures::future;
+use futures::future::*;
 
 // use std::fmt;
 use std::sync::Arc;
@@ -173,7 +173,6 @@ pub fn new_find_repos() -> Vec<Repo> {
         "Scanning for git repos under {}; this may take a while...",
         basedir.green()
     );
-
 
     for entry in walker {
         match entry {

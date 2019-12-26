@@ -1,7 +1,9 @@
 //! The `tag` subcommand: lists all repos known to git-global.
 
 use crate::models::errors::Result;
-use crate::models::{get_tagged_repos, GitGlobalResult, RepoTag};
+use crate::models::{
+    repo_tag::RepoTag, result::GitGlobalResult, utils::get_tagged_repos,
+};
 // use subcommands::utilities::print_str_pat;
 
 /// Forces the display of each repo path, without any extra output.

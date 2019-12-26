@@ -14,7 +14,7 @@ use self::termion::input::TermRead;
 
 use crate::models::errors::Result as WeirdResult;
 
-use crate::models::GitGlobalResult;
+use crate::models::result::GitGlobalResult;
 // use super::super::{GitGlobalResult, RepoTag, get_repos, get_tagged_repos};
 
 enum Event {

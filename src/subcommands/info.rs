@@ -13,7 +13,9 @@ extern crate clap;
 use colored::*;
 
 use crate::models::errors::{GitGlobalError, Result};
-use crate::models::{get_repos, GitGlobalConfig, GitGlobalResult};
+use crate::models::{
+    config::GitGlobalConfig, result::GitGlobalResult, utils::get_repos,
+};
 
 /// Returns the age of a file in terms of days, hours, minutes, and seconds.
 fn get_age(filename: &PathBuf) -> Option<String> {

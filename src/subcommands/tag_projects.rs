@@ -34,7 +34,7 @@ use crate::models::errors::Result as WeirdResult;
 use crate::models::repo::Updatable;
 use crate::models::{
     light_table::{LightTable, RcVecRepo, RcVecRepoTag},
-    GitGlobalConfig, GitGlobalResult, Repo, RepoTag,
+    config::GitGlobalConfig, result::GitGlobalResult, repo::Repo, repo_tag::RepoTag,
 };
 use itertools::Itertools;
 use std::borrow::BorrowMut;

@@ -9,7 +9,9 @@ use self::cursive::views::{Dialog, OnEventView, SelectView, TextView};
 
 use crate::models::errors::Result as WeirdResult;
 
-use crate::models::{get_repos, GitGlobalConfig, GitGlobalResult};
+use crate::models::{
+    config::GitGlobalConfig, result::GitGlobalResult, utils::get_repos,
+};
 
 #[derive(Debug)]
 struct Selectable<'a> {

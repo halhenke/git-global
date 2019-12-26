@@ -4,8 +4,14 @@
 
 // use crate::models::does_this_work;
 use crate::models::errors::Result;
-use crate::models::{get_repos, GitGlobalConfig, GitGlobalResult};
-use crate::models::{Action, ActionError, Filterable, Repo, RepoTag};
+use crate::models::{
+    action::{Action, ActionError},
+    repo::{Filterable, Repo},
+    repo_tag::RepoTag,
+};
+use crate::models::{
+    config::GitGlobalConfig, result::GitGlobalResult, utils::get_repos,
+};
 use colored::Colorize;
 
 /// Forces the display of each repo path, without any extra output.

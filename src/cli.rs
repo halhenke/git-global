@@ -4,7 +4,7 @@
 use crate::models::{
     errors::{GitGlobalError, Result},
     light_table::LightTable,
-    GitGlobalResult,
+    result::GitGlobalResult,
 };
 
 use clap::{App, Arg, ArgMatches, Shell, SubCommand};

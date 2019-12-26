@@ -14,7 +14,7 @@ use self::cursive::views::{
 use self::cursive::Cursive;
 use self::cursive::{traits::*, view::Selector};
 use crate::models::errors::Result as WeirdResult;
-use crate::models::{GitGlobalConfig, GitGlobalResult};
+use crate::models::{config::GitGlobalConfig, result::GitGlobalResult};
 use take_mut;
 
 type RMut = Rc<RefCell<TextContent>>;

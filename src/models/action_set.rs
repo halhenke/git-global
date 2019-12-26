@@ -1,5 +1,6 @@
 use crate::models::{
-    Repo, {Action, ActionError},
+    action::{Action, ActionError},
+    repo::Repo,
 };
 use std::{
     fmt::{Display, Error},
