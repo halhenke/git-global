@@ -210,13 +210,12 @@ pub fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
 /// As the effective binary entry point for `git-global`, prints results to
 /// `STDOUT` and returns an exit code.
 // pub fn run_from_command_line() -> impl futures::Future<Output = i32> {
-pub async fn run_from_command_line__scoped() -> Result<()> {
+pub async fn run_from_command_line_scoped() -> Result<()> {
     trace!("run_from_command_line__scoped");
     println!("I am in async land\n\n");
     let (modified, path_filter, ignore_untracked) = {
         let clap_app = get_clap_app();
         let matches: ArgMatches<'static> = clap_app.get_matches();
-        let use_json = matches.is_present("json");
         let modified;
         let path_filter;
         let ignore_untracked;
@@ -258,42 +257,11 @@ pub async fn run_from_command_line__scoped() -> Result<()> {
 
 /// Original-ish version of function
 // pub fn run_from_command_line__nested() -> i32 {
-pub fn run_from_command_line__nested() -> Result<()> {
+pub fn run_from_command_line_nested() -> Result<()> {
     trace!("run_from_command_line__nested");
     let clap_app = get_clap_app();
     let matches: ArgMatches<'static> = clap_app.get_matches();
     let use_json = matches.is_present("json");
-
-    // if let Some("new-status") = matches.subcommand_name() {
-    //     println!("We matched!!");
-    //     let (modified, path_filter, ignore_untracked) = {
-    //         let modified = matches.subcommand_matches("new-status").is_some()
-    //             && matches.is_present("modified");
-    //         let path_filter = get_path_filter(&matches, "new-status");
-    //         let ignore_untracked =
-    //             matches.subcommand_matches("new-status").is_some()
-    //                 && matches.is_present("ignore_untracked");
-    //         (modified, path_filter, ignore_untracked)
-    //     };
-    //     drop(matches);
-    //     let l = subcommands::new_status::get_results(
-    //         modified,
-    //         ignore_untracked,
-    //         path_filter,
-    //     )
-    //     .await
-    //     .expect("");
-    //     // let l = { get_new_status(&matches) }.await;
-    //     println!("We stat!!");
-    //     // .expect("await fail");
-    //     // let l = get_new_status(&matches).await.expect("await fail");
-    //     // show_results(l, use_json);
-    //     return Ok(());
-    // } else {
-    //     Err(GitGlobalError::FromIOError(
-    //         "something happened...".to_owned(),
-    //     ))
-    // }
 
     let results = match matches.subcommand_name() {
         Some("bullshit") => subcommands::bullshit::get_results(),
