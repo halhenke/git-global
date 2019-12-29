@@ -241,7 +241,8 @@ mod action_tests {
         ga.perform_action_for_repo();
         if let Action::PathAction(path, _, _, _) = ga {
             // if let Action::GitAction(path, _, _, _) = ga {
-            assert_eq!(format!("{:?}", path), "");
+            assert_eq!(path, "/usr/local");
+            // assert_eq!(format!("{:?}", path), "/usr/local");
         }
     }
 }
