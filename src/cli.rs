@@ -81,17 +81,17 @@ pub fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
                 )
         )
         .subcommand(SubCommand::with_name("clean").about("Clear the cache")
-            .arg(
-                Arg::with_name("tags")
+            .subcommand(
+                SubCommand::with_name("tags")
                     .help("Remove all tags")
-                    .takes_value(false)
-                    .required(false)
             )
-            .arg(
-                Arg::with_name("all")
+            .subcommand(
+                SubCommand::with_name("all")
                     .help("Remove all cached repos and tags")
-                    .takes_value(false)
-                    .required(false)
+            )
+            .subcommand(
+                SubCommand::with_name("remove")
+                    .help("Remove the cache file")
         ))
         .subcommand(
             SubCommand::with_name("prompt")
@@ -155,6 +155,9 @@ pub fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
         )
         .subcommand(
             SubCommand::with_name("scan").about("update cache of git repos on your machine"),
+        )
+        .subcommand(
+            SubCommand::with_name("print-cache").about("prints the location of the cache file - not contents")
         )
         .subcommand(
             SubCommand::with_name("status")
@@ -320,6 +323,7 @@ pub fn run_from_command_line_nested() -> Result<()> {
             subcommands::filter::get_results(pat, tags)
         }
         Some("clean") => {
+            trace!("clean matched: {}", matches.subcommand_name().unwrap());
             let sub_com =
                 matches.subcommand_matches("clean").expect("clean panic");
             match sub_com.subcommand_name() {
