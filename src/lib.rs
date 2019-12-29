@@ -70,6 +70,7 @@ extern crate serde_derive;
 extern crate lazy_static;
 #[macro_use]
 extern crate log;
+#[macro_use]
 extern crate icecream;
 // Have to use macros before other stuff
 #[macro_use]

@@ -484,4 +484,41 @@ mod tests {
             gc.merge_repos_and_tags(repo2.clone(), tags2.clone());
         assert_ne!(r_out, repo_final, "repo comparison succeeded when it should have failed due to not equal inputs!");
     }
+
+    #[test]
+    pub fn test_efficient_updates() {
+        let mut gc = GitGlobalConfig::new();
+        let gc_repos: Vec<Repo> = repos_from_vecs(vec![
+            "/hal/code/1",
+            "/hal/code/2",
+            "/hal/code/3",
+            "/hal/code/4",
+        ]);
+        let mut test_rep_1 = Repo::new("/hal/code/2".to_owned());
+        let mut test_rep_2 = Repo::new("/hal/code/3".to_owned());
+        test_rep_1.tags =
+            vec![RepoTag::new("bat-bath"), RepoTag::new("birdface!")];
+        test_rep_2.tags = vec![RepoTag::new("camelo"), RepoTag::new("ordinaf")];
+        gc.repos = gc_repos;
+        gc.efficient_repos_update(vec![test_rep_1.clone(), test_rep_2.clone()]);
+        if let Some(res_1) = gc.repos.iter().find(|r| r.path == test_rep_1.path)
+        {
+            ic!(res_1.tags);
+            ic!(res_1.path);
+            ic!(gc.repos);
+            assert!(res_1.tags == test_rep_1.tags);
+        } else {
+            panic!("res_1 tags are not equal")
+        }
+        if let Some(res_2) = gc.repos.iter().find(|r| r.path == test_rep_2.path)
+        {
+            ic!(res_2.tags);
+            ic!(res_2.path);
+            ic!(gc.tags);
+            assert!(res_2.tags == test_rep_2.tags);
+        } else {
+            panic!("res_2 tags are not equal")
+        }
+        gc.cache_repos(&gc.repos);
+    }
 }
