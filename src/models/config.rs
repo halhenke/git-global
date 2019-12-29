@@ -102,6 +102,7 @@ impl GitGlobalConfig {
     ///     - a set of default actions
     /// if they are defined in the global .gitconfig file
     pub fn new() -> GitGlobalConfig {
+        trace!("GitGlobalConfig::new");
         let home_dir = dirs::home_dir()
             .expect("Could not determine home directory.")
             .to_str()
@@ -192,6 +193,7 @@ impl GitGlobalConfig {
 
     /// Initialise With Repos
     pub fn new_with_repos() -> Self {
+        trace!("GitGlobalConfig::new_with_repos");
         let mut gc = GitGlobalConfig::new();
         gc.get_repos();
         gc
@@ -199,6 +201,7 @@ impl GitGlobalConfig {
 
     /// A version that prepopulates some set of tags and/or actions
     pub fn new_with_defaults(tags: Vec<RepoTag>, actions: Vec<Action>) -> Self {
+        trace!("GitGlobalConfig::new_with_defaults");
         let mut gcc = Self::new();
         gcc.tags = tags;
         gcc.actions = actions;
@@ -207,6 +210,7 @@ impl GitGlobalConfig {
 
     /// Add tags to the [`GitGlobalConfig`] object - Chainable
     pub fn with_tags(&mut self, tags: Vec<RepoTag>) -> &mut Self {
+        trace!("GitGlobalConfig::with_tags");
         self.tags = tags;
         self
     }
@@ -278,7 +282,7 @@ impl GitGlobalConfig {
         self.cache_file.as_path().exists()
     }
 
-    pub fn make_empty_cache(&self) -> Result<()> {
+    pub fn clear_cache(&self) -> Result<()> {
         let mut f = File::create(&self.cache_file)?;
         let rt: RepoTagCache = RepoTagCache::new(&Vec::new(), &Vec::new());
         let serialized = serde_json::to_string(&rt)?;
@@ -286,7 +290,7 @@ impl GitGlobalConfig {
     }
 
     /// Remove the cache file
-    pub fn destroy_cache(&self) -> Result<()> {
+    pub fn remove_cache_file(&self) -> Result<()> {
         remove_file(self.cache_file.as_path())
     }
 
@@ -312,9 +316,25 @@ impl GitGlobalConfig {
     }
 
     /// Reads the cache and returns Vec of Tags
-    pub fn read_tags(&self) -> Result<Vec<RepoTag>> {
-        trace!("read_tags");
-        if !self.has_cache() {
+    pub fn get_cached_repos_and_tags(
+        &self,
+    ) -> Result<(Vec<Repo>, Vec<RepoTag>)> {
+        trace!("get_cached_repos_and_tags");
+        if self.has_cache() {
+            let mut f = File::open(&self.cache_file)
+                .expect("Could not create cache file.");
+            let reader = &mut Vec::new();
+            f.read_to_end(reader).expect("Couldnt read.");
+
+            let rtt: RepoTagCache =
+                serde_json::from_slice(reader).expect("Could not deserialize");
+
+            // let _tags: &Vec<RepoTag> = &rtt.tags;
+            // let tags = _tags.to_vec();
+            // let tags = rtt.tags;
+            // debug!("Tags are {:?}", &tags);
+            Ok((rtt.repos, rtt.tags))
+        } else {
             // Try to create the cache directory if the cache *file* doesn't
             // exist; app_dir() handles an existing directory just fine.
             match app_dir(AppDataType::UserCache, &APP, "cache") {
@@ -332,18 +352,31 @@ impl GitGlobalConfig {
                 }
             }
         }
-        let mut f =
-            File::open(&self.cache_file).expect("Could not create cache file.");
-        let reader = &mut Vec::new();
-        f.read_to_end(reader).expect("Couldnt read.");
+    }
 
-        let _temp: RepoTagCache =
-            serde_json::from_slice(reader).expect("Could not deserialize");
+    /// Returns the list of repos found in the cache file.
+    pub fn get_cached_repos(&self) -> Vec<Repo> {
+        trace!("get_cached_repos");
+        // debug!("GET CACHED REPOS - 0");
+        self.get_cached_repos_and_tags()
+            .expect("get_cached_repos_and_tags failed")
+            .0
+        // .map(|rtt| rtt.0)
+    }
 
-        let _tags: &Vec<RepoTag> = &_temp.tags;
-        let tags = _tags.to_vec();
-        debug!("Tags are {:?}", &tags);
-        Ok(tags)
+    /// Reads the cache and returns Vec of Tags
+    pub fn get_cached_tags(&self) -> Vec<RepoTag> {
+        trace!("get_cached_tags");
+        self.get_cached_repos_and_tags()
+            .expect("get_cached_repos_and_tags failed")
+            .1
+        // .map(|rtt| rtt.1)
+    }
+
+    /// Reads cached Repos from disk and returns them as a `GitGlobalResult`
+    pub fn get_cached_results(&self) -> GitGlobalResult {
+        trace!("get_cached_results");
+        GitGlobalResult::new(&self.get_cached_repos())
     }
 
     /// Reads the currently stored repos from the cache and then writes them along with the in-memory Vec of Tags to disk
@@ -421,9 +454,16 @@ impl GitGlobalConfig {
         repos: Vec<Repo>,
         tags: Vec<RepoTag>,
     ) {
+        // NOTE: I either need to read repos from cache first
+        // or i need to do a kind of merge write to cache afterwards...
         // self.current.tags = tags;
         // self.current.repos = repos;
+        self.repos = self.get_cached_repos();
         self.efficient_repos_update(repos);
+        // self.repos = repos;
+        // self.cache_repos(&repos);
+        self.cache_repos(&self.repos);
+    }
 
     // TODO: using this? - YEP
     pub fn get_tagged_repos(&mut self, tags: &Vec<RepoTag>) -> Vec<Repo> {
@@ -470,33 +510,8 @@ impl GitGlobalConfig {
         }
     }
 
-    /// Returns the list of repos found in the cache file.
-    pub fn get_cached_repos(&self) -> Vec<Repo> {
-        trace!("get_cached_repos");
-        debug!("GET CACHED REPOS - 0");
-
-        let mut repos = Vec::new();
-        if self.has_cache() {
-            let mut f = File::open(&self.cache_file)
-                .expect("Could not open cache file.");
-
-            let reader = &mut Vec::new();
-            f.read_to_end(reader).expect("Couldnt read ");
-            debug!(
-                "reader is {}",
-                String::from_utf8(reader.clone()).expect("more")
-            );
-
-            let _temp: RepoTagCache =
-                serde_json::from_slice(reader).expect("Could not deserialize");
-
-            let _repos: &Vec<Repo> = &_temp.repos;
-            repos = _repos.to_vec();
-        }
-        repos
-    }
-
     pub fn clear_tags(&self) -> Result<&str> {
+        trace!("clear_tags");
         let repos: Vec<Repo> = self
             .get_cached_repos()
             .into_iter()
@@ -508,11 +523,6 @@ impl GitGlobalConfig {
         // save_repos_and_tags(repos, vec![]);
         self.cache_repos(&repos);
         Ok("cool")
-    }
-
-    /// Reads cached Repos from disk and returns them as a `GitGlobalResult`
-    pub fn get_cached_results(&self) -> GitGlobalResult {
-        GitGlobalResult::new(&self.get_cached_repos())
     }
 }
 

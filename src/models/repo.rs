@@ -402,7 +402,12 @@ impl Updatable for crate::models::config::GitGlobalConfig {
             {
                 r.tags = repo.tags;
             }
+            // NOTE: This should only happen if we have a new GitGlobalConfig atm - there shouldnt be a reason to add new repos from nowhere
+            else {
+                self.repos.push(repo);
+            }
         }
+        self.repos.sort();
         self.reset_tags();
     }
 
