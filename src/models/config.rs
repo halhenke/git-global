@@ -290,6 +290,21 @@ impl GitGlobalConfig {
         remove_file(self.cache_file.as_path())
     }
 
+    ///Return the cache file
+    pub fn print_cache(
+        &self,
+    ) -> std::result::Result<
+        GitGlobalResult,
+        crate::models::errors::GitGlobalError,
+    > {
+        println!(
+            "git-global cache is at {}",
+            self.cache_file.as_path().display()
+        );
+        let v: Vec<Repo> = vec![];
+        Ok(GitGlobalResult::new(&v))
+    }
+
     #[allow(dead_code)]
     /// Do we have any repos in the cache?
     fn empty_cache(&self) -> bool {

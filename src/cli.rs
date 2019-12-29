@@ -330,6 +330,10 @@ pub fn run_from_command_line_nested() -> Result<()> {
             }
         }
         Some("scan") => subcommands::scan::get_results(),
+        Some("print-cache") => {
+            let gc = crate::models::config::GitGlobalConfig::new();
+            gc.print_cache()
+        }
         Some("prompt") => subcommands::prompt::go(),
         Some("prompt-cursive") => subcommands::prompt_cursive::go(),
         Some("tag") => {
