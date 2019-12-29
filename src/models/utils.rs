@@ -9,13 +9,11 @@ pub use crate::models::{repo::Repo, repo_tag::RepoTag};
 use colored::*;
 use futures::executor;
 use futures::future;
-use futures::future::*;
 
 // use std::fmt;
-use std::sync::Arc;
 
 use jwalk;
-use walkdir::{DirEntry, WalkDir};
+use walkdir::DirEntry;
 
 extern crate serde;
 extern crate serde_json;
@@ -23,7 +21,7 @@ extern crate serde_json;
 /// Trying to get .gitignore contents
 /// - part of a strategy to not recurse into ignored directories
 /// Not used at preesnt but perhaps later.
-pub fn repo_filter(
+fn repo_filter(
     e: &DirEntry,
     uc: GitGlobalConfig,
 ) -> Result<bool, std::io::Error> {
@@ -67,24 +65,9 @@ fn my_new_repo_check(repos: &mut Vec<Repo>, entry: jwalk::DirEntry) -> () {
     }
 }
 
-// pub async fn async_find_repos_and_nothing() {
-pub async fn new_find_repos_executed() -> Vec<Repo> {
-    trace!("new_find_repos_executed");
-    // new_find_repos_async().wait()
-    // new_find_repos_async().await
-    executor::block_on(new_find_repos_async()).await.unwrap()
-}
-
-// pub async fn new_find_repos() -> future::Ready<Result<Vec<Repo>, ()>> {
-// // pub async fn new_find_repos() -> Vec<Repo> {
-//     // new_find_repos_async().wait()
-//     new_find_repos_async().await
-//     // executor::block_on(new_find_repos_async().await).unwrap()
-// }
-
 /// Walks the configured base directory, looking for git repos.
 /// TODO: Shouldnt this be a method on GitGlobalConfig?
-pub async fn new_find_repos_async() -> future::Ready<Result<Vec<Repo>, ()>> {
+async fn new_find_repos_async() -> future::Ready<Result<Vec<Repo>, ()>> {
     trace!("new_find_repos_async");
     let mut repos: Vec<Repo> = Vec::new();
     let user_config = GitGlobalConfig::new();
@@ -193,44 +176,4 @@ pub fn new_find_repos() -> Vec<Repo> {
     repos.sort_by(|a, b| a.path().cmp(&b.path()));
     // future::ok::<Vec<Repo>, ()>(repos)
     repos
-}
-
-// TODO: using this?
-pub fn get_tagged_repos(tags: &Vec<RepoTag>) -> Vec<Repo> {
-    trace!("get_tagged_repos");
-    if tags.len() == 0 {
-        // println!("NO TAGS");
-        return get_repos();
-    } else {
-        debug!("tags!!!! {}", tags.len());
-        return get_repos()
-            .into_iter()
-            // .cloned()
-            .filter(|x| {
-                tags.iter()
-                    .filter(|y| x.tags.iter().any(|t| &t == y))
-                    .count()
-                    > 0
-            })
-            .collect();
-    }
-}
-
-/// Returns all known git repos, populating the cache first, if necessary.
-/// TODO: Shouldnt this be a method on GitGlobalConfig?
-pub fn get_repos() -> Vec<Repo> {
-    trace!("get_repos");
-    // debug!("get repos");
-    let user_config = GitGlobalConfig::new();
-    // debug!("got config");
-
-    if !user_config.has_cache() {
-        println!("{}", "You have no cached repos yet...".yellow());
-        let repos = new_find_repos();
-        user_config.cache_repos(&repos);
-        repos
-    } else {
-        println!("{}", "You have a cache!".green());
-        user_config.get_cached_repos()
-    }
 }
