@@ -9,7 +9,9 @@ use std::thread;
 use git2;
 
 use crate::models::errors::Result;
-use crate::models::{repo::Repo, result::GitGlobalResult, utils::get_repos};
+use crate::models::{
+    config::GitGlobalConfig, repo::Repo, result::GitGlobalResult,
+};
 
 /// Gathers `git status -s` for all known repos.
 pub fn get_results(
@@ -20,7 +22,8 @@ pub fn get_results(
     trace!("get_results");
     let include_untracked = true;
     // let include_untracked = config.show_untracked;
-    let repos = get_repos();
+    let mut gc = GitGlobalConfig::new();
+    let repos = gc.get_repos();
     let n_repos = repos.len();
     let mut result = GitGlobalResult::new(&repos);
     result.pad_repo_output();

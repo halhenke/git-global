@@ -17,7 +17,7 @@ use std::io::Read;
 use std::path::Path;
 
 use crate::models::errors::Result;
-use crate::models::{result::GitGlobalResult, utils::get_repos};
+use crate::models::{config::GitGlobalConfig, result::GitGlobalResult};
 
 fn get_query(owner: &str, name: &str) -> String {
     // fn get_query(owner: &str, name: &str) -> Value {
@@ -93,7 +93,8 @@ pub fn get_results() -> Result<GitGlobalResult> {
     println!("stat {}", stat);
     println!("code {}", code.unwrap());
 
-    let repos = get_repos();
+    let mut gc = GitGlobalConfig::new();
+    let repos = gc.get_repos();
     let mut result = GitGlobalResult::new(&repos);
     for repo in repos.iter() {
         // GitGlobalResult.print() already prints out the repo name if it has

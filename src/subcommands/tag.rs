@@ -2,7 +2,7 @@
 
 use crate::models::errors::Result;
 use crate::models::{
-    repo_tag::RepoTag, result::GitGlobalResult, utils::get_tagged_repos,
+    config::GitGlobalConfig, repo_tag::RepoTag, result::GitGlobalResult,
 };
 // use subcommands::utilities::print_str_pat;
 
@@ -14,8 +14,8 @@ pub fn get_results(tags: Vec<&str>) -> Result<GitGlobalResult> {
         .map(|x| x.trim())
         .map(|x| RepoTag::new(&x))
         .collect();
-
-    let repos = get_tagged_repos(tag_conv);
+    let mut gc = GitGlobalConfig::new();
+    let repos = gc.get_tagged_repos(tag_conv);
     let mut result = GitGlobalResult::new(&repos);
     for repo in repos.iter() {
         // for repo in repos.iter().filter(|&x| x.path().contains(pat)) {

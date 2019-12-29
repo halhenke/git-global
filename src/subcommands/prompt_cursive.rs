@@ -9,9 +9,7 @@ use self::cursive::views::{Dialog, OnEventView, SelectView, TextView};
 
 use crate::models::errors::Result as WeirdResult;
 
-use crate::models::{
-    config::GitGlobalConfig, result::GitGlobalResult, utils::get_repos,
-};
+use crate::models::{config::GitGlobalConfig, result::GitGlobalResult};
 
 #[derive(Debug)]
 struct Selectable<'a> {
@@ -52,8 +50,8 @@ pub fn go() -> WeirdResult<GitGlobalResult> {
     Choice 2
     Choice 3";
 
-    let _global_git = GitGlobalConfig::new();
-    let repos = get_repos();
+    let mut gc = GitGlobalConfig::new();
+    let repos = gc.get_repos();
     let r_tags: Vec<&str> = repos
         .iter()
         .map(|r| r.path().rsplit('/').nth(0).expect("repo has name?"))

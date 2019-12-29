@@ -13,9 +13,7 @@ extern crate clap;
 use colored::*;
 
 use crate::models::errors::{GitGlobalError, Result};
-use crate::models::{
-    config::GitGlobalConfig, result::GitGlobalResult, utils::get_repos,
-};
+use crate::models::{config::GitGlobalConfig, result::GitGlobalResult};
 
 /// Returns the age of a file in terms of days, hours, minutes, and seconds.
 fn get_age(filename: &PathBuf) -> Option<String> {
@@ -39,9 +37,9 @@ fn get_age(filename: &PathBuf) -> Option<String> {
 
 /// Gathers metadata about the git-global installation.
 pub fn get_results(raw_arg: bool) -> Result<GitGlobalResult> {
-    let repos = get_repos();
+    let mut config = GitGlobalConfig::new();
+    let repos = config.get_repos();
     let mut result = GitGlobalResult::new(&repos);
-    let config = GitGlobalConfig::new();
     let version = format!("{}", crate_version!());
     // beginning of underline:   git-global x.x.x
     let mut underline = format!("===========");

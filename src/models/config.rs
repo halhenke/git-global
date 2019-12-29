@@ -28,7 +28,7 @@ use crate::models::{
     repo::Updatable,
     repo_tag::RepoTag,
     result::GitGlobalResult,
-    utils::{new_find_repos, new_find_repos_executed},
+    utils::new_find_repos,
 };
 
 const APP: AppInfo = AppInfo {
@@ -409,14 +409,34 @@ impl GitGlobalConfig {
         // self.current.tags = tags;
         // self.current.repos = repos;
         self.efficient_repos_update(repos);
+
+    // TODO: using this? - YEP
+    pub fn get_tagged_repos(&mut self, tags: &Vec<RepoTag>) -> Vec<Repo> {
+        trace!("get_tagged_repos");
+        if tags.len() == 0 {
+            // println!("NO TAGS");
+            return self.get_repos();
+        } else {
+            debug!("tags!!!! {}", tags.len());
+            return self
+                .get_repos()
+                .into_iter()
+                .filter(|x| {
+                    tags.iter()
+                        .filter(|y| x.tags.iter().any(|t| &t == y))
+                        .count()
+                        > 0
+                })
+                .collect();
+        }
     }
 
     /// Returns all known git repos, populating the cache first, if necessary.
     /// TODO: Shouldnt this be a method on GitGlobalConfig?
     /// TODO? Surely this should update the `repos` field?
-    pub async fn get_repos(&mut self) -> Vec<Repo> {
+    pub fn get_repos(&mut self) -> Vec<Repo> {
         trace!("get_repos");
-        if self.has_cache() {
+        if !self.has_cache() {
             println!("{}", "You have no cached repos yet...".yellow());
             let repos = new_find_repos();
             // let repos = new_find_repos_executed();

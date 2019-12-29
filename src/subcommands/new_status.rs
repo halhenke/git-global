@@ -15,9 +15,10 @@ use tokio::sync::broadcast;
 use git2;
 
 use crate::models::errors::Result;
+// use crate::models::utils::get_repos;
 use crate::models::{
-    errors::GitGlobalError, repo::Repo, result::GitGlobalResult,
-    utils::get_repos,
+    config::GitGlobalConfig, errors::GitGlobalError, repo::Repo,
+    result::GitGlobalResult,
 };
 
 /// Gathers `git status -s` for all known repos.
@@ -30,7 +31,9 @@ pub async fn get_results(
     trace!("get_results");
     let include_untracked = true;
     // let include_untracked = config.show_untracked;
-    let repos = get_repos();
+    let mut gc = GitGlobalConfig::new();
+    // let repos = get_repos();
+    let repos = gc.get_repos();
     let n_repos = repos.len();
     let mut result = GitGlobalResult::new(&repos);
     result.pad_repo_output();

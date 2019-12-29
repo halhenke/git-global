@@ -3,7 +3,7 @@
 use super::utilities::print_str_pat;
 use crate::models::errors::Result;
 use crate::models::{
-    repo_tag::RepoTag, result::GitGlobalResult, utils::get_tagged_repos,
+    config::GitGlobalConfig, repo_tag::RepoTag, result::GitGlobalResult,
 };
 
 /// Forces the display of each repo path, without any extra output.
@@ -15,7 +15,8 @@ pub fn get_results(pat: &str, tags: Vec<&str>) -> Result<GitGlobalResult> {
         .map(|x| RepoTag::new(&x))
         .collect();
 
-    let repos = get_tagged_repos(tag_conv);
+    let mut gc = GitGlobalConfig::new();
+    let repos = gc.get_tagged_repos(tag_conv);
     let mut result = GitGlobalResult::new(&repos);
     for repo in repos.iter().filter(|&x| x.path().contains(pat)) {
         // GitGlobalResult.print() already prints out the repo name if it has

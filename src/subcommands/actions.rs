@@ -9,9 +9,7 @@ use crate::models::{
     repo::{Filterable, Repo},
     repo_tag::RepoTag,
 };
-use crate::models::{
-    config::GitGlobalConfig, result::GitGlobalResult, utils::get_repos,
-};
+use crate::models::{config::GitGlobalConfig, result::GitGlobalResult};
 use colored::Colorize;
 
 /// Forces the display of each repo path, without any extra output.

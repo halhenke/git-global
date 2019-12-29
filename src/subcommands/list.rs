@@ -1,14 +1,15 @@
 //! The `list` subcommand: lists all repos known to git-global.
 
 use crate::models::errors::Result;
-use crate::models::{result::GitGlobalResult, utils::get_repos};
+use crate::models::{config::GitGlobalConfig, result::GitGlobalResult};
 use colored::*;
 use itertools::Itertools;
 
 /// Forces the display of each repo path, without any extra output.
 pub fn get_results(path_filter: Option<&str>) -> Result<GitGlobalResult> {
     // pub fn get_results(path_filter: Option<String>) -> Result<GitGlobalResult> {
-    let repos = get_repos();
+    let mut gc = GitGlobalConfig::new();
+    let repos = gc.get_repos();
     let mut result = GitGlobalResult::new(&repos);
     for repo in repos.iter() {
         if let Some(path_filter) = path_filter {

@@ -33,8 +33,11 @@ use self::cursive::{Printer, XY};
 use crate::models::errors::Result as WeirdResult;
 use crate::models::repo::Updatable;
 use crate::models::{
+    config::GitGlobalConfig,
     light_table::{LightTable, RcVecRepo, RcVecRepoTag},
-    config::GitGlobalConfig, result::GitGlobalResult, repo::Repo, repo_tag::RepoTag,
+    repo::Repo,
+    repo_tag::RepoTag,
+    result::GitGlobalResult,
 };
 use itertools::Itertools;
 use std::borrow::BorrowMut;
@@ -77,7 +80,7 @@ pub fn go<'a>(path_filter: Option<String>) -> WeirdResult<GitGlobalResult> {
     let foci2 = Rc::clone(&foci1);
     let foci3 = Rc::clone(&foci1);
 
-    let gc = GitGlobalConfig::new();
+    let mut gc = GitGlobalConfig::new();
     let global_table = LightTable::new_from_ggc(gc, path_filter);
     let mut _g = (*global_table).borrow_mut();
     _g.reset_all_tags();
