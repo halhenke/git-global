@@ -1,4 +1,3 @@
-use crate::models::repo::Repo;
 use std::fmt::{Display, Error};
 use subprocess::{Exec, Popen};
 

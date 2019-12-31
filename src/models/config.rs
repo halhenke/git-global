@@ -328,11 +328,6 @@ impl GitGlobalConfig {
 
             let rtt: RepoTagCache =
                 serde_json::from_slice(reader).expect("Could not deserialize");
-
-            // let _tags: &Vec<RepoTag> = &rtt.tags;
-            // let tags = _tags.to_vec();
-            // let tags = rtt.tags;
-            // debug!("Tags are {:?}", &tags);
             Ok((rtt.repos, rtt.tags))
         } else {
             // Try to create the cache directory if the cache *file* doesn't
@@ -445,7 +440,6 @@ impl GitGlobalConfig {
     ) {
         self.tags = tags;
         self.cache_repos(&repos);
-        // hmmmm...
     }
 
     /// Dont replace all repos
@@ -460,8 +454,6 @@ impl GitGlobalConfig {
         // self.current.repos = repos;
         self.repos = self.get_cached_repos();
         self.efficient_repos_update(repos);
-        // self.repos = repos;
-        // self.cache_repos(&repos);
         self.cache_repos(&self.repos);
     }
 
@@ -494,12 +486,6 @@ impl GitGlobalConfig {
         if !self.has_cache() {
             println!("{}", "You have no cached repos yet...".yellow());
             let repos = new_find_repos();
-            // let repos = new_find_repos_executed();
-            // asyn
-            // crate::models::utils::async_find_repos_and_nothing();
-            // let repos = new_find_repos();
-            // self.repos = repos.await;
-            // self.repos = vec![];
             self.repos = repos;
             self.cache_repos(&self.repos);
             self.repos.clone()

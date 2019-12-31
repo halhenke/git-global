@@ -32,7 +32,6 @@ pub async fn get_results(
     let include_untracked = true;
     // let include_untracked = config.show_untracked;
     let mut gc = GitGlobalConfig::new();
-    // let repos = get_repos();
     let repos = gc.get_repos();
     let n_repos = repos.len();
     let mut result = GitGlobalResult::new(&repos);
