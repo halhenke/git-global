@@ -72,6 +72,10 @@ extern crate lazy_static;
 extern crate log;
 #[macro_use]
 extern crate icecream;
+#[cfg(test)]
+#[macro_use]
+extern crate quickcheck;
+
 // Have to use macros before other stuff
 #[macro_use]
 pub mod macros;

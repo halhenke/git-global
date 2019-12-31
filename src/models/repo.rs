@@ -527,4 +527,52 @@ mod tests {
         }
         gc.cache_repos(&gc.repos);
     }
+
+    use itertools::Itertools;
+    use proptest::prelude::*;
+
+    // fn mk_repo_vec() -> BoxedStrategy<Vec<Repo>> {
+    fn mk_repo_vec() -> impl Strategy<Value = Vec<Repo>> {
+        // prop::collection::vec(".*", 1..100).prop_flat_map(|p| Repo::new(p))
+        ".*".prop_map(|p| Repo::new(p))
+            .prop_flat_map(|r| prop::collection::vec(Just(r), 4..100))
+    }
+
+    proptest! {
+    //     // let gc_repos: Vec<Repo> = repos_from_vecs(vec![
+    //     //     "/hal/code/1",
+    //     //     "/hal/code/2",
+    //     //     "/hal/code/3",
+    //     //     "/hal/code/4",
+    //     // ]);
+    //     // Property Tests
+    //     // - for any 2 vectors of repos being merged, the reulting GCC.repos must be the length of the combined set of repos by path
+        #[test]
+        fn property_testing_efficient_updates(
+            s in mk_repo_vec()
+        ) {
+            let other_repos = s.clone();
+            let unique = s.iter().chain(other_repos.iter()).unique().count();
+            let mut gc = GitGlobalConfig::new();
+            gc.repos = s.into_iter().take(4).chain(repos_from_vecs(vec!["make-this-better"])).collect();
+            // gc.repos = s.into_iter().take(4).collect::<Vec<Repo>>().append(repos_from_vecs(vec!["make-this-better"]));
+            // gc.repos = s.get(0..4).unwrap().to_owned();
+            gc.efficient_repos_update(other_repos);
+
+            prop_assert!(2 + 2 == 4);
+            prop_assert!(unique == gc.repos.len());
+        }
+
+    //     fn property_testing_efficient_updates(
+    //         s in repos_from_vecs(vec![
+    //         "/hal/code/1",
+    //         "/hal/code/2",
+    //         "/hal/code/3",
+    //         "/hal/code/4",
+    //     ])) {
+    //         let mut gc = GitGlobalConfig::new();
+    //         let mut test_rep_1 = Repo::new("/hal/code/2".to_owned());
+    //         let mut test_rep_2 = Repo::new("/hal/code/3".to_owned());
+    //     }
+    }
 }
