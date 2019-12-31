@@ -431,7 +431,8 @@ mod tests {
     use crate::models::config::GitGlobalConfig;
     use crate::models::{repo::Repo, repo_tag::RepoTag};
 
-    fn vec_from_vecs<T>(s: Vec<&str>, f: Box<dyn FnMut(&str) -> T>) -> Vec<T>
+    fn vec_from_vecs<T>(s: Vec<&str>, f: impl FnMut(&str) -> T) -> Vec<T>
+// fn vec_from_vecs<T>(s: Vec<&str>, f: Box<dyn FnMut(&str) -> T>) -> Vec<T>
 // fn vec_from_vecs<T, F>(s: Vec<&str>, f: F) -> Vec<T>
     // where
     //     F: FnOnce(&str) -> T,

@@ -154,7 +154,8 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
 fn save_tags_and_quit(
     s: &mut Cursive,
     tags: &RMut,
-) -> Result<(), SendError<Box<dyn FnOnce(&mut Cursive) + Send>>> {
+) -> Result<(), SendError<impl FnOnce(&mut Cursive) + Send>> {
+    // ) -> Result<(), SendError<Box<dyn FnOnce(&mut Cursive) + Send>>> {
     // fn save_tags_and_quit(s: &mut Cursive, user_config: &mut GitGlobalConfig, tags: &RMut) {
     let mut user_config = GitGlobalConfig::new();
     trace!("save_tags_and_quit");
