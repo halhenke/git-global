@@ -10,6 +10,7 @@ use std::thread;
 // NOTE: TOKIO 2019 - Replacing Crossbeam
 use tokio;
 // use tokio::sync::mpsc;
+use itertools::Itertools;
 use tokio::sync::broadcast;
 
 use git2;
@@ -33,7 +34,8 @@ pub async fn get_results(
     // let include_untracked = config.show_untracked;
     let mut gc = GitGlobalConfig::new();
     let repos = gc.get_repos();
-    let n_repos = repos.len();
+    let n_repos: usize = repos.len();
+    let n_repos_i32: i32 = repos.len() as i32;
     let mut result = GitGlobalResult::new(&repos);
     result.pad_repo_output();
 
@@ -74,7 +76,10 @@ pub async fn get_results(
     let pf = Arc::new(path_filter);
     let result: Arc<Mutex<GitGlobalResult>> = Arc::new(Mutex::new(result));
 
-    let thread_count = 1;
+    let thread_count = 24;
+
+    // TODO: Set thread_count so this is not violated:
+    assert!(n_repos > thread_count);
     debug!(
         "Thread Count is {}, n_repos is {}, and n_repos / thread_count is {}",
         thread_count,
@@ -82,17 +87,56 @@ pub async fn get_results(
         n_repos / thread_count
     );
 
-    for _ in 0..thread_count {
+    let mut cluk_fluk = vec![];
+    {
+        let cluk = &(0..(n_repos_i32))
+            // let cluk: Vec<_> = &(0..n_repos)
+            // let cluk: Vec<Vec<i32>> = &(0..n_repos)
+            .into_iter()
+            .chunks(n_repos / thread_count);
+        // let cluk = &(1..=n_repos).into_iter().chunks(n_repos / thread_count);
+        for c in cluk {
+            cluk_fluk.push(c.collect::<Vec<i32>>());
+        }
+    }
+
+    // let mut v = vec![];
+    // {
+    //     let cluk = &(1..=16).into_iter().chunks(16 / 3);
+    //     for c in cluk {
+    //         v.push(c.collect::<Vec<i32>>());
+    //     }
+    //     // drop(cluk);
+    // }
+
+    // .into_iter()
+    // .map(|c| c.collect::<Vec<usize>>());
+    // .into_iter()
+    // .collect_vec();
+    // .clone();
+    // .to_owned();
+    // .collect::<Vec<Vec<i32>>>();
+    // for chunk in &(0..n_repos).into_iter().chunks(n_repos / thread_count) {
+    for cluk in cluk_fluk {
+        // for _ in 0..thread_count {
         debug!("Once for each THREAD");
         let mut r_loop = s.subscribe();
         // let r = r.clone();
         let pf = pf.clone();
         let result = result.clone();
 
+        // let crunk = chunk.count();
+        // drop(chunk);
+        // // let crunk = chunk.collect_vec();
+
         // RECEIVE MESSAGES LOOP
         let j = tokio::spawn(async move {
             // let j = thread::spawn(move || {
-            for _ in 0..((n_repos) / thread_count) {
+            // for _ in 0..crunk {
+            // for _ in crunk.iter() {
+            // for _ in chunk {
+            for _ in cluk {
+                // for _ in 0..((n_repos) / thread_count) {
                 let out = r_loop.recv().await.unwrap();
                 // let out = r.recv().unwrap();
                 let (path, lines): (String, Vec<String>) = out;
@@ -130,4 +174,37 @@ pub async fn get_results(
         .expect("preCommand failed")
         .into_inner()
         .expect("Mutex unwrap failure!"))
+}
+
+#[cfg(test)]
+mod test {
+
+    use itertools::Itertools;
+
+    #[test]
+    pub fn test_range() {
+        for i in (0..10).into_iter().take(4) {
+            // for i in (0..10).into_iter().minmax() {
+            // for i in (0..10) {
+            println!("{}", i);
+        }
+        for i in &(1..=16).into_iter().chunks(16 / 3) {
+            // for i in (0..10) {
+            // println!("{:?}", i.collect::<Vec<i32>>());
+            for ii in i {
+                print!("{} ", ii);
+            }
+            println!("");
+        }
+        let cluk = &(1..=16).into_iter().chunks(16 / 3);
+        let mut v = vec![];
+        for c in cluk {
+            v.push(c.collect::<Vec<i32>>());
+        }
+        let p: Vec<_> = vec![10, 20, 30, 40];
+        // for i in &p.iter().chunks(2) {
+        for i in &p.into_iter().chunks(2) {
+            println!("{:?}", i.collect_vec());
+        }
+    }
 }
