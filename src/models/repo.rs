@@ -550,11 +550,25 @@ mod tests {
     use itertools::Itertools;
     use proptest::prelude::*;
 
+    // fn mk_repo_path() {
+    fn mk_repo_path(lo: usize, hi: usize) -> impl Strategy<Value = Vec<Repo>> {
+        debug_assert!(hi > lo);
+        let v: Vec<Repo> = (lo..=(hi))
+            // .into_iter()
+            .map(|i| i.to_string())
+            .map(Repo::new)
+            .collect_vec();
+        let mid: usize = (hi - lo) / 2;
+        prop::sample::subsequence(v, mid)
+    }
+
     // fn mk_repo_vec() -> BoxedStrategy<Vec<Repo>> {
     fn mk_repo_vec() -> impl Strategy<Value = Vec<Repo>> {
-        // prop::collection::vec(".*", 1..100).prop_flat_map(|p| Repo::new(p))
-        ".*".prop_map(|p| Repo::new(p))
-            .prop_flat_map(|r| prop::collection::vec(Just(r), 4..100))
+        // prop::collection::vec(".*", 1..100).prop_map(|p| Just(Repo::new(p)))
+        // NOTE: I think this generates a vector of the same Repo.paths:
+        // ".*".prop_map(|p| Repo::new(p))
+        //     .prop_flat_map(|r| prop::collection::vec(Just(r), 4..100))
+        prop::collection::vec(".*".prop_map(|f| Repo::new(f)), 4..100)
     }
 
     proptest! {
@@ -568,17 +582,21 @@ mod tests {
     //     // - for any 2 vectors of repos being merged, the reulting GCC.repos must be the length of the combined set of repos by path
         #[test]
         fn property_testing_efficient_updates(
-            s in mk_repo_vec()
+            s in mk_repo_path(1, 100),
+            t in mk_repo_path(50, 150),
         ) {
-            let other_repos = s.clone();
-            let unique = s.iter().chain(other_repos.iter()).unique().count();
+            // let other_repos = s.clone();
+            let unique = s.iter().chain(t.iter()).unique().count();
             let mut gc = GitGlobalConfig::new();
-            gc.repos = s.into_iter().take(4).chain(repos_from_vecs(vec!["make-this-better"])).collect();
-            // gc.repos = s.into_iter().take(4).collect::<Vec<Repo>>().append(repos_from_vecs(vec!["make-this-better"]));
-            // gc.repos = s.get(0..4).unwrap().to_owned();
-            gc.efficient_repos_update(other_repos);
+            gc.repos = s;
+            gc.efficient_repos_update(t);
+            // gc.repos = s.into_iter().take(4).chain(repos_from_vecs(vec!["make-this-better"])).collect();
+            // // gc.repos = s.into_iter().take(4).collect::<Vec<Repo>>().append(repos_from_vecs(vec!["make-this-better"]));
+            // // gc.repos = s.get(0..4).unwrap().to_owned();
+            // gc.efficient_repos_update(other_repos);
 
-            prop_assert!(2 + 2 == 4);
+            // prop_assert!(s.iter().unique().count() == 1)
+            // prop_assert!(2 + 2 == 4);
             prop_assert!(unique == gc.repos.len());
         }
 
