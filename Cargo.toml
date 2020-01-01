@@ -71,6 +71,8 @@ default-features = false  # don't want SSH/HTTPS/Curl
 tempdir = "0.3.7"
 proptest = "0.9.4"
 quickcheck = "0.9.0"
+quickcheck_macros = "0.8.0"
+rand = "0.7.2"
 
 [build-dependencies]
 clap = "2.33.0"

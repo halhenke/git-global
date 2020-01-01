@@ -75,6 +75,11 @@ extern crate icecream;
 #[cfg(test)]
 #[macro_use]
 extern crate quickcheck;
+#[cfg(test)]
+#[macro_use(quickcheck)]
+extern crate quickcheck_macros;
+#[cfg(test)]
+extern crate rand;
 
 // Have to use macros before other stuff
 #[macro_use]

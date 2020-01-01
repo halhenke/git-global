@@ -509,24 +509,43 @@ mod tests {
         gc.efficient_repos_update(vec![test_rep_1.clone(), test_rep_2.clone()]);
         if let Some(res_1) = gc.repos.iter().find(|r| r.path == test_rep_1.path)
         {
-            ic!(res_1.tags);
-            ic!(res_1.path);
-            ic!(gc.repos);
+            // ic!(res_1.tags);
+            // ic!(res_1.path);
+            // ic!(gc.repos);
             assert!(res_1.tags == test_rep_1.tags);
         } else {
             panic!("res_1 tags are not equal")
         }
         if let Some(res_2) = gc.repos.iter().find(|r| r.path == test_rep_2.path)
         {
-            ic!(res_2.tags);
-            ic!(res_2.path);
-            ic!(gc.tags);
+            // ic!(res_2.tags);
+            // ic!(res_2.path);
+            // ic!(gc.tags);
             assert!(res_2.tags == test_rep_2.tags);
         } else {
             panic!("res_2 tags are not equal")
         }
         gc.cache_repos(&gc.repos);
     }
+
+    // use quickcheck::{Arbitrary, Gen};
+    // use rand::Rng;
+    // impl Arbitrary for Repo {
+    //     fn arbitrary<G: Gen>(g: &mut G) -> Self {
+    //         if g.gen() {
+    //             Repo::new("".to_owned())
+    //         } else {
+    //             Repo::new("gg".to_owned())
+    //         }
+    //     }
+    // }
+
+    // #[quickcheck]
+    // fn quickcheck_efficient_updates(s: Vec<Repo>) {
+    //     let l = s.len();
+    //     // let l = (s.len() as i32);
+    //     s.get(l).unwrap().path == "Oooga";
+    // }
 
     use itertools::Itertools;
     use proptest::prelude::*;
