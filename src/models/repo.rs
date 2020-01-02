@@ -549,9 +549,26 @@ mod tests {
 
     use itertools::Itertools;
     use proptest::prelude::*;
+    use proptest::strategy::ValueTree;
 
-    // fn mk_repo_path() {
     fn mk_repo_path(lo: usize, hi: usize) -> impl Strategy<Value = Vec<Repo>> {
+        debug_assert!(hi > lo);
+        let c = proptest::collection::size_range((1, 100));
+        // This crashes because of bounds error
+        // let c = proptest::collection::size_range((lo, hi));
+        let v: Vec<Repo> = (lo..=(hi))
+            .map(|i| i.to_string())
+            .map(Repo::new)
+            .collect_vec();
+        let mid: usize = (hi - lo) / 2;
+        prop::sample::subsequence(v, c)
+        // prop::sample::subsequence(v, mid)
+    }
+
+    fn mk_repo_with_tags(
+        lo: usize,
+        hi: usize,
+    ) -> impl Strategy<Value = Vec<Repo>> {
         debug_assert!(hi > lo);
         let v: Vec<Repo> = (lo..=(hi))
             // .into_iter()
@@ -571,6 +588,10 @@ mod tests {
         prop::collection::vec(".*".prop_map(|f| Repo::new(f)), 4..100)
     }
 
+    fn repo_to_path(v: Vec<Repo>) -> Vec<String> {
+        v.into_iter().map(|r| r.path).collect()
+    }
+
     proptest! {
     //     // let gc_repos: Vec<Repo> = repos_from_vecs(vec![
     //     //     "/hal/code/1",
@@ -588,15 +609,17 @@ mod tests {
             // let other_repos = s.clone();
             let unique = s.iter().chain(t.iter()).unique().count();
             let mut gc = GitGlobalConfig::new();
-            gc.repos = s;
+            gc.repos = s.clone();
             gc.efficient_repos_update(t);
             // gc.repos = s.into_iter().take(4).chain(repos_from_vecs(vec!["make-this-better"])).collect();
             // // gc.repos = s.into_iter().take(4).collect::<Vec<Repo>>().append(repos_from_vecs(vec!["make-this-better"]));
             // // gc.repos = s.get(0..4).unwrap().to_owned();
             // gc.efficient_repos_update(other_repos);
-
+            ic!(s.len());
+            ic!(repo_to_path(s).iter().join(""));
             // prop_assert!(s.iter().unique().count() == 1)
             // prop_assert!(2 + 2 == 4);
+            // NOTE: Test that the number of repos is basically equal to the intersection of paths from Vec s and Vec t
             prop_assert!(unique == gc.repos.len());
         }
 
