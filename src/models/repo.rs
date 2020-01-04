@@ -426,7 +426,8 @@ impl Updatable for crate::models::config::GitGlobalConfig {
 // }
 
 #[cfg(test)]
-mod tests {
+// #[cfg(bench)]
+pub mod tests {
     use super::Updatable;
     use crate::models::config::GitGlobalConfig;
     use crate::models::{repo::Repo, repo_tag::RepoTag};
@@ -440,11 +441,11 @@ mod tests {
         s.into_iter().map(f).collect::<Vec<T>>()
     }
 
-    fn repos_from_vecs(s: Vec<&str>) -> Vec<Repo> {
+    pub fn repos_from_vecs(s: Vec<&str>) -> Vec<Repo> {
         vec_from_vecs(s, Box::new(|s: &str| Repo::new(s.to_owned())))
     }
 
-    fn repotags_from_vecs(s: Vec<&str>) -> Vec<RepoTag> {
+    pub fn repotags_from_vecs(s: Vec<&str>) -> Vec<RepoTag> {
         vec_from_vecs(s, Box::new(|s: &str| RepoTag::new(s)))
     }
 

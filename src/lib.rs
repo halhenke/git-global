@@ -1,5 +1,7 @@
 #![feature(vec_remove_item)]
 #![feature(async_closure)]
+#![feature(termination_trait_lib)]
+#![feature(test)]
 // #![feature(custom_attribute)]
 //! Keep track of all your git repositories.
 //!
@@ -48,6 +50,9 @@
 //! [`repo`]: repo/index.html
 //! [`cli`]: repo/index.html
 //! [`queries`]: queries/index.html
+
+// Unstable feature (test)
+extern crate test;
 
 extern crate app_dirs;
 extern crate chrono;

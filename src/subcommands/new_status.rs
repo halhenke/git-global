@@ -75,7 +75,8 @@ pub async fn get_results(
     let pf = Arc::new(path_filter);
     let result: Arc<Mutex<GitGlobalResult>> = Arc::new(Mutex::new(result));
 
-    let thread_count = 24;
+    let thread_count = n_repos;
+    // let thread_count = 24;
 
     // TODO: Set thread_count so this is not violated:
     assert!(n_repos > thread_count);
@@ -171,4 +172,29 @@ mod test {
             println!("{:?}", i.collect_vec());
         }
     }
+}
+
+// #[cfg(bench)]
+#[cfg(test)]
+mod bench {
+    use crate::models::{
+        errors::GitGlobalError, repo::tests::repos_from_vecs,
+        result::GitGlobalResult,
+    };
+    use std::process::Termination;
+    use test::bench::{benchmark, Bencher};
+    #[bench]
+    pub fn tokio_drift(bench: &mut Bencher) -> impl Termination {
+        bench.iter(|| {
+            let n: Result<GitGlobalResult, GitGlobalError> =
+                test::black_box(Ok(GitGlobalResult::new(&repos_from_vecs(
+                    vec!["a", "aa", "aap"],
+                ))));
+            super::get_results(false, false, None)
+        })
+    }
+
+    // #[test]
+    // pub fn aunt_rolly_bench() {
+    // }
 }
