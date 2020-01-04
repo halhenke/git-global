@@ -51,7 +51,6 @@ pub async fn get_results(
         let s = s.clone();
         let repo = Arc::new(repo);
         tokio::spawn(async move {
-            // thread::spawn(move || {
             let path = repo.path().to_string();
             let mut status_opts = git2::StatusOptions::new();
             status_opts
@@ -87,58 +86,28 @@ pub async fn get_results(
         n_repos / thread_count
     );
 
-    let mut cluk_fluk = vec![];
+    let mut repo_chunks = vec![];
     {
-        let cluk = &(0..(n_repos_i32))
-            // let cluk: Vec<_> = &(0..n_repos)
-            // let cluk: Vec<Vec<i32>> = &(0..n_repos)
+        let chunk = &(0..(n_repos_i32))
             .into_iter()
             .chunks(n_repos / thread_count);
-        // let cluk = &(1..=n_repos).into_iter().chunks(n_repos / thread_count);
-        for c in cluk {
-            cluk_fluk.push(c.collect::<Vec<i32>>());
+        for c in chunk {
+            repo_chunks.push(c.collect::<Vec<i32>>());
         }
     }
 
-    // let mut v = vec![];
-    // {
-    //     let cluk = &(1..=16).into_iter().chunks(16 / 3);
-    //     for c in cluk {
-    //         v.push(c.collect::<Vec<i32>>());
-    //     }
-    //     // drop(cluk);
-    // }
-
-    // .into_iter()
-    // .map(|c| c.collect::<Vec<usize>>());
-    // .into_iter()
-    // .collect_vec();
-    // .clone();
-    // .to_owned();
-    // .collect::<Vec<Vec<i32>>>();
-    // for chunk in &(0..n_repos).into_iter().chunks(n_repos / thread_count) {
-    for cluk in cluk_fluk {
-        // for _ in 0..thread_count {
+    for chunk in repo_chunks {
         debug!("Once for each THREAD");
         let mut r_loop = s.subscribe();
         // let r = r.clone();
         let pf = pf.clone();
         let result = result.clone();
 
-        // let crunk = chunk.count();
-        // drop(chunk);
-        // // let crunk = chunk.collect_vec();
-
         // RECEIVE MESSAGES LOOP
         let j = tokio::spawn(async move {
             // let j = thread::spawn(move || {
-            // for _ in 0..crunk {
-            // for _ in crunk.iter() {
-            // for _ in chunk {
-            for _ in cluk {
-                // for _ in 0..((n_repos) / thread_count) {
+            for _ in chunk {
                 let out = r_loop.recv().await.unwrap();
-                // let out = r.recv().unwrap();
                 let (path, lines): (String, Vec<String>) = out;
 
                 if let Some(pf) = &(*pf) {
@@ -184,13 +153,9 @@ mod test {
     #[test]
     pub fn test_range() {
         for i in (0..10).into_iter().take(4) {
-            // for i in (0..10).into_iter().minmax() {
-            // for i in (0..10) {
             println!("{}", i);
         }
         for i in &(1..=16).into_iter().chunks(16 / 3) {
-            // for i in (0..10) {
-            // println!("{:?}", i.collect::<Vec<i32>>());
             for ii in i {
                 print!("{} ", ii);
             }
@@ -202,7 +167,6 @@ mod test {
             v.push(c.collect::<Vec<i32>>());
         }
         let p: Vec<_> = vec![10, 20, 30, 40];
-        // for i in &p.iter().chunks(2) {
         for i in &p.into_iter().chunks(2) {
             println!("{:?}", i.collect_vec());
         }
