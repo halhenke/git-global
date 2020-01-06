@@ -250,6 +250,7 @@ pub async fn run_from_command_line_scoped() -> Result<()> {
         modified,
         ignore_untracked,
         path_filter,
+        None,
     )
     .await
     .expect("");
@@ -460,6 +461,7 @@ async fn get_new_status(
         modified,
         ignore_untracked,
         path_filter,
+        None,
     )
     .await
     .expect("")

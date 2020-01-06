@@ -28,6 +28,7 @@ pub async fn get_results(
     only_modified: bool,
     ignore_untracked: bool,
     path_filter: Option<String>,
+    threads: Option<usize>,
 ) -> Result<GitGlobalResult> {
     trace!("get_results");
     let include_untracked = true;
@@ -75,7 +76,8 @@ pub async fn get_results(
     let pf = Arc::new(path_filter);
     let result: Arc<Mutex<GitGlobalResult>> = Arc::new(Mutex::new(result));
 
-    let thread_count = n_repos;
+    let thread_count = threads.unwrap_or(n_repos);
+    // let thread_count = n_repos;
     // let thread_count = 24;
 
     // TODO: Set thread_count so this is not violated:
@@ -185,12 +187,11 @@ mod bench {
     use test::bench::{benchmark, Bencher};
     #[bench]
     pub fn tokio_drift(bench: &mut Bencher) -> impl Termination {
+        let result_vecs = repos_from_vecs(vec!["a", "aa", "aap"]);
         bench.iter(|| {
             let n: Result<GitGlobalResult, GitGlobalError> =
-                test::black_box(Ok(GitGlobalResult::new(&repos_from_vecs(
-                    vec!["a", "aa", "aap"],
-                ))));
-            super::get_results(false, false, None)
+                test::black_box(Ok(GitGlobalResult::new(&result_vecs)));
+            super::get_results(false, false, None, None)
         })
     }
 
