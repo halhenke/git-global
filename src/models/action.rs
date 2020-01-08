@@ -1,5 +1,5 @@
 use std::fmt::{Display, Error};
-use subprocess::{Exec, Popen};
+use subprocess::{Exec};
 
 /// Trying out a nested/weird enum to see how felxible they are
 enum ActionType {
@@ -137,7 +137,7 @@ impl Action {
     /// Check if a given string matches the name of the action
     pub fn name_match(&self, act: &str) -> Option<Self> {
         match self {
-            Action::PathAction(path, name, cmd, args) => {
+            Action::PathAction(_path, name, _cmd, _args) => {
                 if name == act {
                     return Some(self.clone());
                 }
@@ -187,9 +187,9 @@ impl Action {
 
     /// If we have a [`Action::PathAction`] or a [`Action::NonPathAction`] perform the action and return output as a string.
     /// If we have a [`Action::NeedsAPathAction`] then return an Error
-    pub fn perform_action_for_repo(&self) -> ActionResult<(String)> {
+    pub fn perform_action_for_repo(&self) -> ActionResult<String> {
         match self {
-            Action::PathAction(path, name, cmd, args) => {
+            Action::PathAction(path, _name, cmd, args) => {
                 let r = Exec::shell(cmd)
                     .args(args)
                     .cwd(path)
@@ -199,7 +199,7 @@ impl Action {
                 // println!("Here is some r: {}", r);
                 Ok(r)
             }
-            Action::NonPathAction(name, cmd, args) => {
+            Action::NonPathAction(_name, cmd, args) => {
                 let r =
                     Exec::shell(cmd).args(args).capture().unwrap().stdout_str();
                 Ok(r)

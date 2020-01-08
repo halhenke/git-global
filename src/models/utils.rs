@@ -7,7 +7,7 @@ pub use crate::models::config::GitGlobalConfig;
 pub use crate::models::result::GitGlobalResult;
 pub use crate::models::{repo::Repo, repo_tag::RepoTag};
 use colored::*;
-use futures::executor;
+
 use futures::future;
 
 // use std::fmt;

@@ -76,7 +76,7 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     // let immut_con = Rc::clone(&mut_con).borrow()
     let m2_con = Rc::clone(&mut_con);
     // let m2_con = &mut_con.clone();
-    let m3_con = Rc::clone(&mut_con);
+    let _m3_con = Rc::clone(&mut_con);
     let m4_con = Rc::clone(&mut_con);
 
     // debug!("ADD TAGS: did we get here - 3");
@@ -186,7 +186,7 @@ fn save_tags_and_quit(
     s.cb_sink().send(Box::new(|siv: &mut Cursive| siv.quit()))
 }
 
-fn show_next_screen(s: &mut Cursive, name: &str, c: &mut TextContent) {
+fn show_next_screen(s: &mut Cursive, name: &str, _c: &mut TextContent) {
     trace!("show_next_screen");
     if name.is_empty() {
         s.add_layer(Dialog::info("Please enter a name!"));

@@ -7,10 +7,10 @@ extern crate pretty_env_logger;
 // #[macro_use] extern crate log;
 
 use git_global::cli::{
-    run_from_command_line_nested, run_from_command_line_scoped,
+    run_from_command_line_nested,
 };
 use std::process::exit;
-use tokio;
+
 // extern crate cursive;
 // use cursive::logger;
 

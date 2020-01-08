@@ -4,9 +4,9 @@ extern crate colored;
 use self::colored::*;
 // use std::io::{stderr, Write};
 
-use crossbeam_channel::{bounded, unbounded};
+
 use std::sync::{Arc, Mutex};
-use std::thread;
+
 // NOTE: TOKIO 2019 - Replacing Crossbeam
 use tokio;
 // use tokio::sync::mpsc;
@@ -18,7 +18,7 @@ use git2;
 use crate::models::errors::Result;
 // use crate::models::utils::get_repos;
 use crate::models::{
-    config::GitGlobalConfig, errors::GitGlobalError, repo::Repo,
+    config::GitGlobalConfig, repo::Repo,
     result::GitGlobalResult,
 };
 
@@ -40,7 +40,7 @@ pub async fn get_results(
     let mut result = GitGlobalResult::new(&repos);
     result.pad_repo_output();
 
-    let (s, mut r) = broadcast::channel(100);
+    let (s, _r) = broadcast::channel(100);
     // let (mut s, mut r) = mpsc::channel(100);
     // let (s, r) = bounded(10);
     // let (s, r) = unbounded();
@@ -139,7 +139,7 @@ pub async fn get_results(
             }
             return result;
         });
-        let ac: Arc<Mutex<GitGlobalResult>> =
+        let _ac: Arc<Mutex<GitGlobalResult>> =
             j.await.expect("Arc unwrap failure!");
     }
     Ok(Arc::try_unwrap(result)
@@ -184,12 +184,12 @@ mod bench {
         result::GitGlobalResult,
     };
     use std::process::Termination;
-    use test::bench::{benchmark, Bencher};
+    use test::bench::{Bencher};
     #[bench]
     pub fn tokio_drift(bench: &mut Bencher) -> impl Termination {
         let result_vecs = repos_from_vecs(vec!["a", "aa", "aap"]);
         bench.iter(|| {
-            let n: Result<GitGlobalResult, GitGlobalError> =
+            let _n: Result<GitGlobalResult, GitGlobalError> =
                 test::black_box(Ok(GitGlobalResult::new(&result_vecs)));
             super::get_results(false, false, None, None)
         })

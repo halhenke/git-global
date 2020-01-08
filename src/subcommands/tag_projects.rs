@@ -1,9 +1,9 @@
 #![feature(trait_alias)]
 
 use std;
-use std::any::Any;
-use std::cell::RefCell;
-use std::ops::Deref;
+
+
+
 use std::rc::Rc;
 extern crate cursive;
 
@@ -16,9 +16,9 @@ use ring_queue::Ring;
 use std::fs::OpenOptions;
 use std::io::Write;
 
-use self::cursive::event::{Callback, Event, EventResult, EventTrigger, Key};
-use self::cursive::logger;
-use self::cursive::logger::{log, Record};
+use self::cursive::event::{Callback, Event, EventResult, Key};
+
+
 use self::cursive::traits::*;
 use self::cursive::Cursive;
 use self::cursive::{
@@ -29,22 +29,22 @@ use self::cursive::{
         OnEventView, Panel, SelectView, TextContent, TextView, ViewRef,
     },
 };
-use self::cursive::{Printer, XY};
+
 use crate::models::errors::Result as WeirdResult;
-use crate::models::repo::Updatable;
+
 use crate::models::{
     config::GitGlobalConfig,
-    light_table::{LightTable, RcVecRepo, RcVecRepoTag},
+    light_table::{LightTable},
     repo::Repo,
     repo_tag::RepoTag,
     result::GitGlobalResult,
 };
 use itertools::Itertools;
 use std::borrow::BorrowMut;
-use std::cell::Ref;
+
 
 // use std::vec::IntoIter;
-use std::iter::{IntoIterator, Iterator};
+use std::iter::{Iterator};
 
 fn fetch_all_tags<'a>(light_table: &'a mut LightTable) -> &mut Vec<RepoTag> {
     let _current_repo: usize = light_table.repo_index;
@@ -63,13 +63,13 @@ pub fn go<'a>(path_filter: Option<String>) -> WeirdResult<GitGlobalResult> {
     // logger::init();
 
     let DEBUG_VIEW: String = String::from("debug-view");
-    let TEXT_VIEW: String = String::from("text-view");
+    let _TEXT_VIEW: String = String::from("text-view");
     let REPO_FIELD: String = String::from("repo-field");
     let TAG_DISPLAY: String = String::from("tag-display");
     let TAG_POOL: String = String::from("tag-pool");
     let NEW_TAG: String = String::from("new-tag");
 
-    let mut focus_ring: Ring<String> = ring![
+    let focus_ring: Ring<String> = ring![
         REPO_FIELD.clone(),
         TAG_DISPLAY.clone(),
         TAG_POOL.clone(),
@@ -80,7 +80,7 @@ pub fn go<'a>(path_filter: Option<String>) -> WeirdResult<GitGlobalResult> {
     let foci2 = Rc::clone(&foci1);
     let foci3 = Rc::clone(&foci1);
 
-    let mut gc = GitGlobalConfig::new();
+    let gc = GitGlobalConfig::new();
     let global_table = LightTable::new_from_ggc(gc, path_filter);
     let mut _g = (*global_table).borrow_mut();
     _g.reset_all_tags();
@@ -103,7 +103,7 @@ pub fn go<'a>(path_filter: Option<String>) -> WeirdResult<GitGlobalResult> {
     // VIEWS
     let error_view_inner = DebugView::new();
     let error_view_id = error_view_inner.with_id(DEBUG_VIEW);
-    let error_view = error_view_id.max_height(20);
+    let _error_view = error_view_id.max_height(20);
 
     let text_view_inner = TextView::new("Begin...");
     let text_view_id = text_view_inner.with_id("text-view");
@@ -118,7 +118,7 @@ pub fn go<'a>(path_filter: Option<String>) -> WeirdResult<GitGlobalResult> {
     let new_tag_inner: EditView =
         EditView::new().on_submit_mut(move |s, new_text| {
             let mut light_table = (*edit_ref).borrow_mut();
-            let repo_tags = fetch_all_tags(&mut light_table);
+            let _repo_tags = fetch_all_tags(&mut light_table);
             let new_tag = RepoTag::new(new_text);
             if light_table.add_tag(&new_tag) {
                 let mut dd: ViewRef<SelectView<usize>> =
@@ -175,7 +175,7 @@ pub fn go<'a>(path_filter: Option<String>) -> WeirdResult<GitGlobalResult> {
     //  TAGS DISPLAYER
     // =================================================
     let rr = Rc::clone(&repo_tag_ref);
-    let rf = REPO_FIELD.clone();
+    let _rf = REPO_FIELD.clone();
     let td = TAG_DISPLAY.clone();
     let tp = TAG_POOL.clone();
     let tags_displayer_inner: SelectView<usize> = SelectView::new().with_all({
@@ -303,7 +303,7 @@ pub fn go<'a>(path_filter: Option<String>) -> WeirdResult<GitGlobalResult> {
         tags_pool_id,
     );
     let tags_pool = tags_pool_tmp
-        .on_event_inner(Event::Key(Key::Esc), |s1, k| {
+        .on_event_inner(Event::Key(Key::Esc), |_s1, _k| {
             let cb = Callback::from_fn(|siv: &mut Cursive| {
                 siv.focus_id("repo-field")
                     .expect("failed to focus on 'repo-field'");
@@ -400,9 +400,9 @@ pub fn go<'a>(path_filter: Option<String>) -> WeirdResult<GitGlobalResult> {
     Ok(GitGlobalResult::new(&vec![]))
 }
 
-fn debug_write_file(messages: Vec<String>, log_file: &str) {
+fn debug_write_file(messages: Vec<String>, _log_file: &str) {
     let strs_join: String = messages.as_slice().join("\n");
-    let file = OpenOptions::new()
+    let _file = OpenOptions::new()
         .append(true)
         .create(true)
         .open("tmp_out")

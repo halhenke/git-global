@@ -452,7 +452,7 @@ pub mod tests {
     #[test]
     pub fn test_merge_repos_and_tags() {
         let mut gc = GitGlobalConfig::new();
-        let tags1: Vec<RepoTag> =
+        let _tags1: Vec<RepoTag> =
             repotags_from_vecs(vec!["apple", "os x", "denite"]);
         let tags2: Vec<RepoTag> = vec!["apple", "os windows", "haskell"]
             .into_iter()
@@ -470,14 +470,14 @@ pub mod tests {
             "/hal/code/4",
         ]);
         gc.repos = repo1;
-        let (r_out, t_out) =
+        let (r_out, _t_out) =
             gc.merge_repos_and_tags(repo2.clone(), tags2.clone());
         assert_eq!(r_out, repo_final, "repo comparison failed!");
         // UNSORTED REPOS
         let repo1: Vec<Repo> =
             repos_from_vecs(vec!["/hal/code/2", "/hal/code/3", "/hal/code/1"]);
         gc.repos = repo1;
-        let (r_out, t_out) =
+        let (r_out, _t_out) =
             gc.merge_repos_and_tags(repo2.clone(), tags2.clone());
         assert_eq!(
             r_out, repo_final,
@@ -487,7 +487,7 @@ pub mod tests {
         let repo1: Vec<Repo> =
             repos_from_vecs(vec!["/hal/code/2", "/hal/code/8"]);
         gc.repos = repo1;
-        let (r_out, t_out) =
+        let (r_out, _t_out) =
             gc.merge_repos_and_tags(repo2.clone(), tags2.clone());
         assert_ne!(r_out, repo_final, "repo comparison succeeded when it should have failed due to not equal inputs!");
     }
@@ -550,7 +550,7 @@ pub mod tests {
 
     use itertools::Itertools;
     use proptest::prelude::*;
-    use proptest::strategy::ValueTree;
+    
 
     fn mk_repo_path(lo: usize, hi: usize) -> impl Strategy<Value = Vec<Repo>> {
         debug_assert!(hi > lo);
@@ -561,7 +561,7 @@ pub mod tests {
             .map(|i| i.to_string())
             .map(Repo::new)
             .collect_vec();
-        let mid: usize = (hi - lo) / 2;
+        let _mid: usize = (hi - lo) / 2;
         prop::sample::subsequence(v, c)
         // prop::sample::subsequence(v, mid)
     }

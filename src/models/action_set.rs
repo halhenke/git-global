@@ -3,10 +3,9 @@ use crate::models::{
     repo::Repo,
 };
 use std::{
-    fmt::{Display, Error},
     vec::Vec,
 };
-use subprocess::{Exec, Popen};
+
 
 type Danger = String;
 type Warn = String;

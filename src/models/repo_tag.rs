@@ -1,8 +1,8 @@
-use git2;
+
 use std::fmt;
 // use std::iter::FromIterator;
 use crate::models::repo::Repo;
-use std::path::Path;
+
 
 /// All tags from a Vec of repos
 pub fn all_tags<'a>(reps: &Vec<Repo>) -> Vec<RepoTag> {

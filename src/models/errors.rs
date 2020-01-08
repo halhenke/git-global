@@ -3,7 +3,7 @@
 // use std::error::Error;
 use std::fmt;
 use std::io;
-use std::result;
+
 use thiserror::Error;
 
 /// An error.

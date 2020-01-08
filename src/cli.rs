@@ -371,10 +371,10 @@ pub fn run_from_command_line_nested() -> Result<()> {
                 .enable_io()
                 .build()?;
             println!("Runtime is built\n\n");
-            let modified = matches.subcommand_matches("new-status").is_some()
+            let _modified = matches.subcommand_matches("new-status").is_some()
                 && matches.is_present("modified");
-            let path_filter = get_path_filter(&matches, "new-status");
-            let ignore_untracked =
+            let _path_filter = get_path_filter(&matches, "new-status");
+            let _ignore_untracked =
                 matches.subcommand_matches("new-status").is_some()
                     && matches.is_present("ignore_untracked");
             let r = rt.block_on(async move {

@@ -2,7 +2,7 @@
 //! [`SelectView`]: ../../../cursive/views/select_view/struct.SelectView.html
 
 use crate::models::{
-    config::GitGlobalConfig, errors::GitGlobalError,
+    config::GitGlobalConfig,
     result::GitGlobalResult, repo::Repo, repo_tag::RepoTag,
 };
 use itertools::Itertools;
@@ -153,7 +153,7 @@ impl LightTable {
     ///
     /// Recalculate the list of tags available to choose from based on the list of `repos` and the prepopulated `default_tags`
     pub fn reset_all_tags(&mut self) {
-        let mut _tmp: Vec<(RepoTag)> = self
+        let mut _tmp: Vec<RepoTag> = self
             .repos
             .iter()
             .flat_map(|r| r.tags.clone())

@@ -1,7 +1,7 @@
 //! Used in trying to easily cycle focus around the different cursive views with arrow keys
 
 use cursive::{
-    event::{Event, EventResult, EventTrigger, Key},
+    event::{Event, Key},
     view::{View, ViewWrapper},
     views::{OnEventView, TextView, ViewRef},
     Cursive,
@@ -9,7 +9,7 @@ use cursive::{
 use ring_queue::Ring;
 use std::any::Any;
 use std::cell::RefCell;
-use std::marker::PhantomData;
+
 use std::rc::Rc;
 
 // pub DEBUG_VIEW: String = String::from("debug-view");
@@ -151,7 +151,7 @@ impl<'a> Foci {
         // self,
         &self,
         // &mut self,
-        s: &mut Cursive,
+        _s: &mut Cursive,
         e: Event,
     ) -> Box<dyn Fn(&mut Cursive) + 'static>
 // ) -> Box<dyn Fn(&'b mut Cursive) + 'static>
@@ -172,7 +172,7 @@ impl<'a> Foci {
                 Event::Key(Key::Right) => {
                     let mut tt: ViewRef<TextView> =
                         s.find_id("text-view").unwrap();
-                    let mut content = format!(
+                    let content = format!(
                         "From {:?} to {:?}",
                         s2.borrow().peek(0),
                         s2.borrow().peek(1)
@@ -185,7 +185,7 @@ impl<'a> Foci {
                 Event::Key(Key::Left) => {
                     let mut tt: ViewRef<TextView> =
                         s.find_id("text-view").unwrap();
-                    let mut content = format!(
+                    let content = format!(
                         "From {:?} to {:?}",
                         s2.borrow().peek(0),
                         s2.borrow().peek(-1)

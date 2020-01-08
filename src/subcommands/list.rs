@@ -16,7 +16,7 @@ pub fn get_results(path_filter: Option<&str>) -> Result<GitGlobalResult> {
             if !repo.path.contains(path_filter) {
                 continue;
             }
-            let mut ss = repo
+            let ss = repo
                 .path
                 .split(path_filter)
                 .into_iter()

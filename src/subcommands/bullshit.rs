@@ -54,7 +54,7 @@ pub fn get_results() -> Result<GitGlobalResult> {
     tok.read_to_string(&mut json).expect("Read String fail");
     let tok_val: Value = serde_json::from_str(&json).unwrap();
 
-    let mut gh = Github::new(&tok_val["github"].as_str().unwrap()).unwrap();
+    let gh = Github::new(&tok_val["github"].as_str().unwrap()).unwrap();
 
     // let q_str = r#"
     //     query {
@@ -63,7 +63,7 @@ pub fn get_results() -> Result<GitGlobalResult> {
     //         }
     //     }
     // "#.replace("\n", "");
-    let q_str = r#"query {
+    let _q_str = r#"query {
             repository(owner: \"halhenke\", name: \"stack-mate\") {
                 labels(first: 10) {
                     edges {
@@ -86,7 +86,7 @@ pub fn get_results() -> Result<GitGlobalResult> {
     // return "Sorry!";
 
     // let q = Query::new_raw(q_str);
-    let (head, stat, code) = q.unwrap();
+    let (_head, stat, code) = q.unwrap();
     // let (head, stat, code) = gh.query::<Value>(&q).unwrap();
 
     // println!("head {}", head);
