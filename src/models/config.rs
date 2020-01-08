@@ -13,34 +13,31 @@
 // use std::env;
 use app_dirs::{app_dir, get_app_dir, AppDataType, AppInfo};
 use colored::*;
+use config::{Config, ConfigError, Environment, File as CFile, Source, Value};
 // use futures::executor::LocalPool;
+use crate::models::{
+    action::Action, repo::Repo, repo::Updatable, repo_tag::RepoTag,
+    result::GitGlobalResult, utils::new_find_repos,
+};
 use git2;
+use std::collections::hash_map::HashMap;
 use std::fs::{remove_file, File};
 use std::io::{Error, ErrorKind};
 use std::io::{Read, Result, Write};
 use std::path::{Path, PathBuf};
 use walkdir::DirEntry;
 
-use crate::models::{
-    action::Action,
-    repo::Repo,
-    // repo::{Repo, RepoTag},
-    repo::Updatable,
-    repo_tag::RepoTag,
-    result::GitGlobalResult,
-    utils::new_find_repos,
-};
-
 const APP: AppInfo = AppInfo {
     name: "git-global",
     author: "hal",
 };
 const CACHE_FILE: &'static str = "repos.txt";
-const TAG_CACHE_FILE: &'static str = "tags.txt";
+// const TAG_CACHE_FILE: &'static str = "tags.txt";
 const SETTING_BASEDIR: &'static str = "global.basedir";
 const SETTING_IGNORED: &'static str = "global.ignore";
 const SETTINGS_DEFAULT_TAGS: &'static str = "global.default-tags";
 const SETTINGS_DEFAULT_GIT_ACTIONS: &'static str = "global.default-git-actions";
+const CONFIG_FILE_NAME: &'static str = ".git_global_config";
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CurrentState {
@@ -49,6 +46,7 @@ pub struct CurrentState {
     pub actions: Vec<Repo>,
 }
 
+// NOTE: Get rid of this if it isnt used soon
 impl CurrentState {
     pub fn new() -> Self {
         CurrentState {
@@ -75,9 +73,11 @@ pub struct GitGlobalConfig {
     // be derived from those associated with repos and the default tags
     pub tags: Vec<RepoTag>,
     pub default_tags: Vec<RepoTag>,
+    pub ignored_repos: Vec<Repo>,
+    pub default_repos: Vec<Repo>,
     pub actions: Vec<Action>,
     pub cache_file: PathBuf,
-    pub tags_file: PathBuf,
+    // pub tags_file: PathBuf,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -161,30 +161,35 @@ impl GitGlobalConfig {
                 }
                 Err(_) => panic!("TODO: work without XDG"),
             };
-        let tags_file = match get_app_dir(AppDataType::UserCache, &APP, "cache")
-        {
-            Ok(mut dir) => {
-                dir.push(TAG_CACHE_FILE);
-                dir
-            }
-            Err(_) => panic!("TODO: work without XDG"),
-        };
+        // let tags_file = match get_app_dir(AppDataType::UserCache, &APP, "cache")
+        // {
+        //     Ok(mut dir) => {
+        //         dir.push(TAG_CACHE_FILE);
+        //         dir
+        //     }
+        //     Err(_) => panic!("TODO: work without XDG"),
+        // };
 
         // NOTE: Handle this earlier
         // if basedir == "" {
         //     unimplemented!();
         // }
-        let mut ggc = GitGlobalConfig {
+
+        let config = GitGlobalConfig::get_config();
+
+        let ggc = GitGlobalConfig {
             basedir: basedir,
             basedirs: basedirs,
             current: CurrentState::new(),
             repos: vec![],
             tags: vec![],
             default_tags,
+            default_repos: vec![],
+            ignored_repos: vec![],
             actions: default_actions,
             ignored_patterns: patterns,
             cache_file: cache_file,
-            tags_file,
+            // tags_file,
         };
         // TODO: get rid of this
         // ggc.tags = ggc.read_tags().unwrap_or(vec![]);
@@ -206,6 +211,19 @@ impl GitGlobalConfig {
         gcc.tags = tags;
         gcc.actions = actions;
         gcc
+    }
+
+    fn get_config() -> std::result::Result<HashMap<String, Value>, ConfigError>
+    {
+        // fn get_config() -> HashMap<String, Value> {
+        let mut c = Config::default();
+        c.merge(CFile::with_name(CONFIG_FILE_NAME))?
+            // .expect("Merge of Configuration File Values failed")
+            // .or_else(|e| return Err(e))
+            .merge(Environment::with_prefix("GIT_GLOBAL"))?
+            // .expect("Merge of Environment Configuration Values failed")
+            .collect()
+        // .expect("Config: Conversion to hashMap Failed")
     }
 
     /// Add tags to the [`GitGlobalConfig`] object - Chainable
@@ -339,7 +357,7 @@ impl GitGlobalConfig {
                         "Cache Directory exists but no Cache file",
                     ));
                 }
-                Err(e) => {
+                Err(_e) => {
                     return Err(Error::new(
                         ErrorKind::NotFound,
                         "No Cache Directory exists",
@@ -446,7 +464,7 @@ impl GitGlobalConfig {
     pub fn update_repos_and_tags(
         &mut self,
         repos: Vec<Repo>,
-        tags: Vec<RepoTag>,
+        _tags: Vec<RepoTag>,
     ) {
         // NOTE: I either need to read repos from cache first
         // or i need to do a kind of merge write to cache afterwards...
@@ -516,4 +534,25 @@ trait Cached {
     fn cache_repos(&self, repos: &Vec<Repo>);
     fn get_cache_repos(&self) -> &Vec<Repo>;
     fn empty_cache(&self) -> bool;
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_config() {
+        let hm: std::result::Result<HashMap<String, Value>, ConfigError>;
+        // let hm: HashMap<String, Value>;
+        hm = GitGlobalConfig::get_config();
+        // hm = GitGlobalConfig::get_config();
+        assert!(hm.is_ok());
+        // let hmu = hm.unwrap()
+        println!("\n\nCONFIG VALS:");
+        for (k, v) in hm.unwrap() {
+            ic!((k, v));
+            // ic!(v);
+            // println!("key: {}, val: {}", k, v);
+        }
+        println!("CONFIG VALS END\n\n");
+    }
 }
