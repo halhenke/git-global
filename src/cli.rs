@@ -145,6 +145,7 @@ pub fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
                     Arg::with_name("tag_arg").required(true).takes_value(true),
                 ),
         )
+        // NOTE: This seems superfluous with list
         .subcommand(
             SubCommand::with_name("filter")
                 .about(
@@ -320,8 +321,18 @@ pub fn run_from_command_line_nested() -> Result<()> {
                 matches.subcommand_matches("filter").expect("filter panic");
             let pat =
                 sub_com.value_of("pattern").expect("a pattern is expected");
-            let tags = sub_com.values_of("tags").unwrap().collect();
-            subcommands::filter::get_results(pat, tags)
+            // let v = vec![];
+            // let cv: clap::Values = clap::Values {
+            //     iter: v.iter().map(|s| s.to_str().unwrap()),
+            // };
+            // let tags: Vec<&str> =
+            //     sub_com.values_of("tags");
+            if let Some(tags) = sub_com.values_of("tags") {
+                subcommands::filter::get_results(pat, tags.collect())
+            } else {
+                subcommands::filter::get_results(pat, vec![])
+            }
+            // subcommands::filter::get_results(pat, tags)
         }
         Some("clean") => {
             trace!("clean matched: {}", matches.subcommand_name().unwrap());
