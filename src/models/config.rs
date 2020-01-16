@@ -37,7 +37,7 @@ const SETTING_BASEDIR: &'static str = "global.basedir";
 const SETTING_IGNORED: &'static str = "global.ignore";
 const SETTINGS_DEFAULT_TAGS: &'static str = "global.default-tags";
 const SETTINGS_DEFAULT_GIT_ACTIONS: &'static str = "global.default-git-actions";
-const CONFIG_FILE_NAME: &'static str = ".git_global_config";
+const CONFIG_FILE_NAME: &'static str = ".git_global_config_simple";
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CurrentState {
@@ -74,6 +74,7 @@ pub struct GitGlobalConfig {
     pub tags: Vec<RepoTag>,
     pub default_tags: Vec<RepoTag>,
     pub ignored_repos: Vec<Repo>,
+    pub ignored_paths: Vec<String>,
     pub default_repos: Vec<Repo>,
     pub actions: Vec<Action>,
     pub cache_file: PathBuf,
@@ -176,6 +177,12 @@ impl GitGlobalConfig {
         // }
 
         let config = GitGlobalConfig::get_config();
+        let ignored_paths = config
+            .unwrap()
+            .iter()
+            // .iter()
+            .find(|(k, v)| k.as_str() == "IGNORED_PATHS")
+            .unwrap();
 
         let ggc = GitGlobalConfig {
             basedir: basedir,
@@ -185,7 +192,9 @@ impl GitGlobalConfig {
             tags: vec![],
             default_tags,
             default_repos: vec![],
+            // default_paths: vec![],
             ignored_repos: vec![],
+            ignored_paths: vec![],
             actions: default_actions,
             ignored_patterns: patterns,
             cache_file: cache_file,
@@ -224,6 +233,20 @@ impl GitGlobalConfig {
             // .expect("Merge of Environment Configuration Values failed")
             .collect()
         // .expect("Config: Conversion to hashMap Failed")
+    }
+
+    fn get_raw_config() -> Config {
+        // fn get_config() -> HashMap<String, Value> {
+        let mut c = Config::default();
+        c.merge(CFile::with_name(CONFIG_FILE_NAME))
+            .unwrap()
+            // .expect("Merge of Configuration File Values failed")
+            // .or_else(|e| return Err(e))
+            .merge(Environment::with_prefix("GIT_GLOBAL"));
+        // .expect("Merge of Environment Configuration Values failed")
+        // .collect()
+        // .expect("Config: Conversion to hashMap Failed")
+        c
     }
 
     /// Add tags to the [`GitGlobalConfig`] object - Chainable
@@ -554,5 +577,52 @@ mod tests {
             // println!("key: {}, val: {}", k, v);
         }
         println!("CONFIG VALS END\n\n");
+    }
+
+    #[test]
+    fn inspect_config() {
+        println!("INSPECT CONFIG");
+        let config = GitGlobalConfig::get_config().unwrap();
+        // let ignored_paths: Vec<_> = config
+        //     // .unwrap()
+        //     .into_iter()
+        //     // .iter()
+        //     .find(|(k, v)| k.as_str() == "IGNORED_PATHS")
+        //     .map(|(k, v)| {
+        //         v.into_array()
+        //             .unwrap()
+        //             .into_iter()
+        //             .map(|a| a.into_table().unwrap())
+        //             .collect::<HashMap>()
+        //             .into_iter()
+        //             .map(|v| {
+        //                 v.into_iter()
+        //                     .map(|(k, v)| v.into_str().unwrap())
+        //                     .collect()
+        //                 // .unwrap()
+        //                 // .collect::<Vec<String>>()
+        //             })
+        //     })
+        //     // .unwrap::<Option<>>()
+        //     // .map(|v| v.into_iter().map(|(k, v)| v.into_str().unwrap()))
+        //     .collect();
+        // println!("ignored paths {:#?}", ignored_paths);
+        let more_paths = GitGlobalConfig::get_raw_config()
+            .get_array("IGNORED_PATHS")
+            .unwrap();
+        println!("more paths {:#?}", more_paths);
+        let further: Vec<_> = more_paths
+            .into_iter()
+            .map(|v| v.into_table().unwrap())
+            .collect();
+        println!("further {:#?}", further);
+        let mooofe: Vec<String> = further
+            .into_iter()
+            // .into_iter()
+            .map(|v| {
+                v.into_iter().map(|(k, v)| v.into_str().unwrap()).collect()
+            })
+            .collect();
+        println!("mooofe {:#?}", mooofe);
     }
 }

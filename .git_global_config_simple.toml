@@ -1,0 +1,12 @@
+
+BEGINNING = "FORE!!!"
+OUT  = 34
+[[IGNORED_PATHS]]
+path = "~/code/python"
+[[IGNORED_PATHS]]
+path = "~/code/swift"
+
+[PATH_SHORTCUTS]
+haskell = "~/code/haskell"
+swift = "~/code/swift"
+ml = "~/code/ml"
