@@ -636,14 +636,25 @@ mod tests {
             .get_array("IGNORED_PATHS")
             .unwrap();
         let ignored_deserial: Vec<HashMap<String, String>> = ignored
-        // let ignored_deserial: Vec<String> = ignored
+            // let ignored_deserial: Vec<String> = ignored
             .into_iter()
             .map(|v| v.try_into().expect("We tried to convert but"))
             // .map(|v| serde_json::from_value(ignored).unwrap())
             .collect();
-        println!("Deserialized to:");
+        println!("Deserialized IGNORED_PATHS to:");
         for v in ignored_deserial {
             println!("Config: {:#?}", v);
+        }
+        let short_paths: HashMap<String, String> =
+            GitGlobalConfig::get_raw_config()
+                .get_table("PATH_SHORTCUTS")
+                .unwrap()
+                .into_iter()
+                .map(|(k, v)| (k, v.into_str().unwrap()))
+                .collect();
+        println!("Deserialized PATH_SHORTCUTS to:");
+        for (k, v) in short_paths {
+            println!("Config: {}: {}", k, v);
         }
     }
 }
