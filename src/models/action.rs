@@ -1,5 +1,5 @@
 use std::fmt::{Display, Error};
-use subprocess::{Exec};
+use subprocess::Exec;
 
 /// Trying out a nested/weird enum to see how felxible they are
 enum ActionType {

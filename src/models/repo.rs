@@ -550,7 +550,6 @@ pub mod tests {
 
     use itertools::Itertools;
     use proptest::prelude::*;
-    
 
     fn mk_repo_path(lo: usize, hi: usize) -> impl Strategy<Value = Vec<Repo>> {
         debug_assert!(hi > lo);

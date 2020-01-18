@@ -2,8 +2,6 @@
 
 use std;
 
-
-
 use std::rc::Rc;
 extern crate cursive;
 
@@ -17,7 +15,6 @@ use std::fs::OpenOptions;
 use std::io::Write;
 
 use self::cursive::event::{Callback, Event, EventResult, Key};
-
 
 use self::cursive::traits::*;
 use self::cursive::Cursive;
@@ -33,18 +30,14 @@ use self::cursive::{
 use crate::models::errors::Result as WeirdResult;
 
 use crate::models::{
-    config::GitGlobalConfig,
-    light_table::{LightTable},
-    repo::Repo,
-    repo_tag::RepoTag,
-    result::GitGlobalResult,
+    config::GitGlobalConfig, light_table::LightTable, repo::Repo,
+    repo_tag::RepoTag, result::GitGlobalResult,
 };
 use itertools::Itertools;
 use std::borrow::BorrowMut;
 
-
 // use std::vec::IntoIter;
-use std::iter::{Iterator};
+use std::iter::Iterator;
 
 fn fetch_all_tags<'a>(light_table: &'a mut LightTable) -> &mut Vec<RepoTag> {
     let _current_repo: usize = light_table.repo_index;

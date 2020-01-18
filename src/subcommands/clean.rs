@@ -1,6 +1,6 @@
 //! The `clear` subcommand: clears the cache
 
-use crate::models::errors::{Result};
+use crate::models::errors::Result;
 use crate::models::{config::GitGlobalConfig, result::GitGlobalResult};
 
 /// Forces the display of each repo path, without any extra output.

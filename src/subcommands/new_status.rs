@@ -3,23 +3,18 @@
 extern crate colored;
 use self::colored::*;
 // use std::io::{stderr, Write};
-
-
+use precision::{Config, Precision};
 use std::sync::{Arc, Mutex};
-
 // NOTE: TOKIO 2019 - Replacing Crossbeam
 use tokio;
 // use tokio::sync::mpsc;
+use crate::models::errors::Result;
+use git2;
 use itertools::Itertools;
 use tokio::sync::broadcast;
-
-use git2;
-
-use crate::models::errors::Result;
 // use crate::models::utils::get_repos;
 use crate::models::{
-    config::GitGlobalConfig, repo::Repo,
-    result::GitGlobalResult,
+    config::GitGlobalConfig, repo::Repo, result::GitGlobalResult,
 };
 
 /// Gathers `git status -s` for all known repos.
@@ -184,7 +179,7 @@ mod bench {
         result::GitGlobalResult,
     };
     use std::process::Termination;
-    use test::bench::{Bencher};
+    use test::bench::Bencher;
     #[bench]
     pub fn tokio_drift(bench: &mut Bencher) -> impl Termination {
         let result_vecs = repos_from_vecs(vec!["a", "aa", "aap"]);

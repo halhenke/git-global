@@ -321,12 +321,6 @@ pub fn run_from_command_line_nested() -> Result<()> {
                 matches.subcommand_matches("filter").expect("filter panic");
             let pat =
                 sub_com.value_of("pattern").expect("a pattern is expected");
-            // let v = vec![];
-            // let cv: clap::Values = clap::Values {
-            //     iter: v.iter().map(|s| s.to_str().unwrap()),
-            // };
-            // let tags: Vec<&str> =
-            //     sub_com.values_of("tags");
             if let Some(tags) = sub_com.values_of("tags") {
                 subcommands::filter::get_results(pat, tags.collect())
             } else {

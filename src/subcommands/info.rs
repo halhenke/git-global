@@ -12,7 +12,7 @@ extern crate clap;
 
 use colored::*;
 
-use crate::models::errors::{Result};
+use crate::models::errors::Result;
 use crate::models::{config::GitGlobalConfig, result::GitGlobalResult};
 
 /// Returns the age of a file in terms of days, hours, minutes, and seconds.

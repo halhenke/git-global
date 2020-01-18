@@ -1,6 +1,5 @@
 extern crate clap;
 
-
 // include!("src/lib.rs");
 // include!("src/cli.rs");
 

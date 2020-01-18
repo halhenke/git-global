@@ -2,10 +2,7 @@ use crate::models::{
     action::{Action, ActionError},
     repo::Repo,
 };
-use std::{
-    vec::Vec,
-};
-
+use std::vec::Vec;
 
 type Danger = String;
 type Warn = String;
