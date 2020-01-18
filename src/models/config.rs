@@ -562,6 +562,7 @@ trait Cached {
 #[cfg(test)]
 mod tests {
     use super::*;
+
     #[test]
     fn test_config() {
         let hm: std::result::Result<HashMap<String, Value>, ConfigError>;
@@ -624,5 +625,25 @@ mod tests {
             })
             .collect();
         println!("mooofe {:#?}", mooofe);
+    }
+
+    use std::collections::hash_map::HashMap;
+
+    #[test]
+    fn deserialize_config() {
+        // unimplemented!();
+        let ignored: Vec<Value> = GitGlobalConfig::get_raw_config()
+            .get_array("IGNORED_PATHS")
+            .unwrap();
+        let ignored_deserial: Vec<HashMap<String, String>> = ignored
+        // let ignored_deserial: Vec<String> = ignored
+            .into_iter()
+            .map(|v| v.try_into().expect("We tried to convert but"))
+            // .map(|v| serde_json::from_value(ignored).unwrap())
+            .collect();
+        println!("Deserialized to:");
+        for v in ignored_deserial {
+            println!("Config: {:#?}", v);
+        }
     }
 }
