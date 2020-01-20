@@ -4,12 +4,11 @@ use crate::models::{
     errors::{GitGlobalError, Result},
     result::GitGlobalResult,
 };
-
+use crate::subcommands;
+use anyhow::{Context, Error};
 use clap::{App, Arg, ArgMatches, Shell, SubCommand};
 // use futures::{future, io};
 use std::io::{stderr, Write};
-
-use crate::subcommands;
 
 // use dirs::home_dir;
 // use config::{Config, ConfigError, File};
@@ -313,7 +312,11 @@ pub fn run_from_command_line_nested() -> Result<()> {
             Some("list") => subcommands::actions::list(),
             _ => Err(GitGlobalError::BadSubcommand(String::from(
                 "bad action subcommand",
-            ))),
+            )))
+            .context("tried to use list"),
+            // _ => Err(GitGlobalError::BadSubcommand(String::from(
+            //     "bad action subcommand",
+            // ))),
         },
         Some("add-tags") => subcommands::add_tags::go(),
         Some("filter") => {
@@ -336,7 +339,8 @@ pub fn run_from_command_line_nested() -> Result<()> {
                 Some(n) => subcommands::clean::cache_clear(n),
                 None => Err(GitGlobalError::MissingSubcommand(
                     vec!["tags", "all"].into_iter().map(String::from).collect(),
-                )),
+                ))
+                .context("Not sure this should happen due to clap"),
             }
         }
         Some("scan") => subcommands::scan::get_results(),
@@ -433,6 +437,7 @@ pub fn print_results(
             Err(GitGlobalError::FromIOError(
                 "something happened...".to_owned(),
             ))
+            .context("I catch error stupidly - this should be a map function")
         }
     }
 }
@@ -541,7 +546,7 @@ fn show_results(results: GitGlobalResult, use_json: bool) -> i32 {
 }
 
 /// Writes errors to STDERR, as either text or JSON, and returns `1`.
-fn show_error(error: GitGlobalError, use_json: bool) -> i32 {
+fn show_error(error: Error, use_json: bool) -> i32 {
     trace!("show_error");
     if use_json {
         let json = object! {

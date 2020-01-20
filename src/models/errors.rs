@@ -1,6 +1,7 @@
 //! Error handling for git-global.
 
 // use std::error::Error;
+// use std::backtrace::Backtrace;
 use std::fmt;
 use std::io;
 
@@ -23,8 +24,9 @@ pub enum GitGlobalError {
 
 /// Our `Result` alias with `GitGlobalError` as the error type.
 // pub type Result<T> = result::Result<T, GitGlobalError>;
-use anyhow::Result as AHResult;
-pub type Result<T> = AHResult<T, GitGlobalError>;
+// use anyhow::Result as AHResult;
+// pub type Result<T> = AHResult<T, GitGlobalError>;
+pub use anyhow::Result;
 
 impl fmt::Display for GitGlobalError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
