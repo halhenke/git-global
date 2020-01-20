@@ -11,20 +11,29 @@
 */
 // use colored::*;
 // use std::env;
+use anyhow::Context;
+// use anyhow::{Context, Result};
 use app_dirs::{app_dir, get_app_dir, AppDataType, AppInfo};
 use colored::*;
 use config::{Config, ConfigError, Environment, File as CFile, Source, Value};
 // use futures::executor::LocalPool;
 use crate::models::{
-    action::Action, repo::Repo, repo::Updatable, repo_tag::RepoTag,
-    result::GitGlobalResult, utils::new_find_repos,
+    action::Action,
+    errors::{GitGlobalError, Result},
+    // errors::GitGlobalError,
+    repo::Repo,
+    repo::Updatable,
+    repo_tag::RepoTag,
+    result::GitGlobalResult,
+    utils::new_find_repos,
 };
 use git2;
 use std::collections::hash_map::HashMap;
 use std::fs::{remove_file, File};
 use std::io::{Error, ErrorKind};
-use std::io::{Read, Result, Write};
+use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
+use std::result::Result as StdResult;
 use walkdir::DirEntry;
 
 const APP: AppInfo = AppInfo {
@@ -94,6 +103,21 @@ impl RepoTagCache {
             tags: tags.clone(),
         }
     }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Settings {
+    // BEGINNING: String,
+    // OUT: i32,
+    IGNORED_PATHS: Vec<HashMap<String, String>>,
+    PATH_SHORTCUTS: HashMap<String, String>,
+    ignored_patterns: Option<Vec<String>>,
+    // ignored_paths: Option<Vec<String>>,
+    // ignored_repos: Option<Vec<Repo>>,
+    // default_repos: Option<Vec<Repo>>,
+    // default_tags: Option<Vec<RepoTag>>,
+    // actions: Option<Vec<Action>>,
+    // path_shortcuts: HashMap<String, String>,
 }
 
 impl GitGlobalConfig {
@@ -176,13 +200,15 @@ impl GitGlobalConfig {
         //     unimplemented!();
         // }
 
-        let config = GitGlobalConfig::get_config();
-        let ignored_paths = config
-            .unwrap()
-            .iter()
-            // .iter()
-            .find(|(k, v)| k.as_str() == "IGNORED_PATHS")
-            .unwrap();
+        // let config = GitGlobalConfig::get_config();
+        // let ignored_paths = config
+        //     .unwrap()
+        //     .iter()
+        //     // .iter()
+        //     .find(|(k, v)| k.as_str() == "IGNORED_PATHS")
+        //     .unwrap();
+        let settings: std::result::Result<Settings, _> =
+            GitGlobalConfig::get_parsed_config();
 
         let ggc = GitGlobalConfig {
             basedir: basedir,
@@ -235,18 +261,21 @@ impl GitGlobalConfig {
         // .expect("Config: Conversion to hashMap Failed")
     }
 
-    fn get_raw_config() -> Config {
-        // fn get_config() -> HashMap<String, Value> {
+    fn get_raw_config() -> Result<Config> {
+        // fn get_raw_config() -> Config {
         let mut c = Config::default();
-        c.merge(CFile::with_name(CONFIG_FILE_NAME))
-            .unwrap()
-            // .expect("Merge of Configuration File Values failed")
-            // .or_else(|e| return Err(e))
-            .merge(Environment::with_prefix("GIT_GLOBAL"));
-        // .expect("Merge of Environment Configuration Values failed")
-        // .collect()
-        // .expect("Config: Conversion to hashMap Failed")
-        c
+        c.merge(CFile::with_name(CONFIG_FILE_NAME))?
+            .merge(Environment::with_prefix("GIT_GLOBAL"))?;
+        // .unwrap();
+        // .context("Trying to read config from .config filee")
+        Ok(c)
+    }
+
+    pub fn get_parsed_config() -> Result<Settings> {
+        // GitGlobalConfig::get_raw_config().map(|c| c.try_into().unwrap())
+        GitGlobalConfig::get_raw_config()?
+            .try_into()
+            .context("Parse config into Settings")
     }
 
     /// Add tags to the [`GitGlobalConfig`] object - Chainable
@@ -328,19 +357,21 @@ impl GitGlobalConfig {
         let rt: RepoTagCache = RepoTagCache::new(&Vec::new(), &Vec::new());
         let serialized = serde_json::to_string(&rt)?;
         f.write_all(serialized.as_bytes())
+            .context("trying to write empty cache to disk")
     }
 
     /// Remove the cache file
     pub fn remove_cache_file(&self) -> Result<()> {
         remove_file(self.cache_file.as_path())
+            .context("just trying to get anyhow to work")
     }
 
     ///Return the cache file
     pub fn print_cache(
         &self,
-    ) -> std::result::Result<
+    ) -> Result<
         GitGlobalResult,
-        crate::models::errors::GitGlobalError,
+        // crate::models::errors::GitGlobalError,
     > {
         println!(
             "git-global cache is at {}",
@@ -378,13 +409,15 @@ impl GitGlobalConfig {
                     return Err(Error::new(
                         ErrorKind::NotFound,
                         "Cache Directory exists but no Cache file",
-                    ));
+                    ))
+                    .context("just trying to get anyhow to work");
                 }
                 Err(_e) => {
-                    return Err(Error::new(
+                    return Err(GitGlobalError::from(Error::new(
                         ErrorKind::NotFound,
                         "No Cache Directory exists",
-                    ));
+                    )))
+                    .context("just trying to get anyhow to work");
                 }
             }
         }
@@ -609,6 +642,7 @@ mod tests {
         //     .collect();
         // println!("ignored paths {:#?}", ignored_paths);
         let more_paths = GitGlobalConfig::get_raw_config()
+            .unwrap()
             .get_array("IGNORED_PATHS")
             .unwrap();
         println!("more paths {:#?}", more_paths);
@@ -633,6 +667,7 @@ mod tests {
     fn deserialize_config() {
         // unimplemented!();
         let ignored: Vec<Value> = GitGlobalConfig::get_raw_config()
+            .unwrap()
             .get_array("IGNORED_PATHS")
             .unwrap();
         let ignored_deserial: Vec<HashMap<String, String>> = ignored
@@ -647,6 +682,7 @@ mod tests {
         }
         let short_paths: HashMap<String, String> =
             GitGlobalConfig::get_raw_config()
+                .unwrap()
                 .get_table("PATH_SHORTCUTS")
                 .unwrap()
                 .into_iter()
@@ -656,5 +692,12 @@ mod tests {
         for (k, v) in short_paths {
             println!("Config: {}: {}", k, v);
         }
+    }
+
+    #[test]
+    fn deserialize_setings() {
+        let settings: Settings = GitGlobalConfig::get_parsed_config().unwrap();
+        println!("Deserialized Settings to:");
+        println!("{:?}", settings);
     }
 }
