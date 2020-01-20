@@ -25,3 +25,8 @@ script = [
 	"echo Moving _$APP_NAME to $SHELL_COMPLETIONS",
 	"mv _${APP_NAME} ${SHELL_COMPLETIONS}"
 ]
+
+[tasks.test-config]
+description = "run (some) test GitGlobalConfig tests"
+command = "cargo"
+args = ["test", "config", "--", "--nocapture"]
