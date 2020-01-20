@@ -109,15 +109,15 @@ impl RepoTagCache {
 pub struct Settings {
     // BEGINNING: String,
     // OUT: i32,
-    IGNORED_PATHS: Vec<HashMap<String, String>>,
-    PATH_SHORTCUTS: HashMap<String, String>,
-    ignored_patterns: Option<Vec<String>>,
+    ignored_paths: Option<Vec<HashMap<String, String>>>,
     // ignored_paths: Option<Vec<String>>,
-    // ignored_repos: Option<Vec<Repo>>,
-    // default_repos: Option<Vec<Repo>>,
-    // default_tags: Option<Vec<RepoTag>>,
-    // actions: Option<Vec<Action>>,
+    ignored_patterns: Option<Vec<String>>,
+    path_shortcuts: Option<HashMap<String, String>>,
     // path_shortcuts: HashMap<String, String>,
+    ignored_repos: Option<Vec<Repo>>,
+    default_repos: Option<Vec<Repo>>,
+    default_tags: Option<Vec<RepoTag>>,
+    actions: Option<Vec<Action>>,
 }
 
 impl GitGlobalConfig {
@@ -205,7 +205,7 @@ impl GitGlobalConfig {
         //     .unwrap()
         //     .iter()
         //     // .iter()
-        //     .find(|(k, v)| k.as_str() == "IGNORED_PATHS")
+        //     .find(|(k, v)| k.as_str() == "ignored_paths")
         //     .unwrap();
         let settings: std::result::Result<Settings, _> =
             GitGlobalConfig::get_parsed_config();
@@ -621,7 +621,7 @@ mod tests {
         //     // .unwrap()
         //     .into_iter()
         //     // .iter()
-        //     .find(|(k, v)| k.as_str() == "IGNORED_PATHS")
+        //     .find(|(k, v)| k.as_str() == "ignored_paths")
         //     .map(|(k, v)| {
         //         v.into_array()
         //             .unwrap()
@@ -643,7 +643,7 @@ mod tests {
         // println!("ignored paths {:#?}", ignored_paths);
         let more_paths = GitGlobalConfig::get_raw_config()
             .unwrap()
-            .get_array("IGNORED_PATHS")
+            .get_array("ignored_paths")
             .unwrap();
         println!("more paths {:#?}", more_paths);
         let further: Vec<_> = more_paths
@@ -668,7 +668,7 @@ mod tests {
         // unimplemented!();
         let ignored: Vec<Value> = GitGlobalConfig::get_raw_config()
             .unwrap()
-            .get_array("IGNORED_PATHS")
+            .get_array("ignored_paths")
             .unwrap();
         let ignored_deserial: Vec<HashMap<String, String>> = ignored
             // let ignored_deserial: Vec<String> = ignored
@@ -676,19 +676,19 @@ mod tests {
             .map(|v| v.try_into().expect("We tried to convert but"))
             // .map(|v| serde_json::from_value(ignored).unwrap())
             .collect();
-        println!("Deserialized IGNORED_PATHS to:");
+        println!("Deserialized ignored_paths to:");
         for v in ignored_deserial {
             println!("Config: {:#?}", v);
         }
         let short_paths: HashMap<String, String> =
             GitGlobalConfig::get_raw_config()
                 .unwrap()
-                .get_table("PATH_SHORTCUTS")
+                .get_table("path_shortcuts")
                 .unwrap()
                 .into_iter()
                 .map(|(k, v)| (k, v.into_str().unwrap()))
                 .collect();
-        println!("Deserialized PATH_SHORTCUTS to:");
+        println!("Deserialized path_shortcuts to:");
         for (k, v) in short_paths {
             println!("Config: {}: {}", k, v);
         }

@@ -1,12 +1,24 @@
 
 BEGINNING = "FORE!!!"
 OUT  = 34
-[[IGNORED_PATHS]]
+[[ignored_paths]]
 path = "~/code/python"
-[[IGNORED_PATHS]]
+[[ignored_paths]]
 path = "~/code/swift"
 
-[PATH_SHORTCUTS]
+[[ignored_repos]]
+path = "~/code/swift"
+tags = []
+[[ignored_repos]]
+path = "~/code/python"
+tags = []
+
+[[default_tags]]
+name = "functional programming"
+[[default_tags]]
+name = "machine learning"
+
+[path_shortcuts]
 haskell = "~/code/haskell"
 swift = "~/code/swift"
 ml = "~/code/ml"
