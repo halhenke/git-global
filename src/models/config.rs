@@ -25,6 +25,7 @@ use crate::models::{
     repo::Updatable,
     repo_tag::RepoTag,
     result::GitGlobalResult,
+    settings::{Settings, SettingsRaw},
     utils::new_find_repos,
 };
 use git2;
@@ -33,7 +34,7 @@ use std::fs::{remove_file, File};
 use std::io::{Error, ErrorKind};
 use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
-use std::result::Result as StdResult;
+// use std::result::Result as StdResult;
 use walkdir::DirEntry;
 
 const APP: AppInfo = AppInfo {
@@ -103,21 +104,6 @@ impl RepoTagCache {
             tags: tags.clone(),
         }
     }
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct Settings {
-    // BEGINNING: String,
-    // OUT: i32,
-    ignored_paths: Option<Vec<HashMap<String, String>>>,
-    // ignored_paths: Option<Vec<String>>,
-    ignored_patterns: Option<Vec<String>>,
-    path_shortcuts: Option<HashMap<String, String>>,
-    // path_shortcuts: HashMap<String, String>,
-    ignored_repos: Option<Vec<Repo>>,
-    default_repos: Option<Vec<Repo>>,
-    default_tags: Option<Vec<RepoTag>>,
-    actions: Option<Vec<Action>>,
 }
 
 impl GitGlobalConfig {
@@ -274,7 +260,8 @@ impl GitGlobalConfig {
     pub fn get_parsed_config() -> Result<Settings> {
         // GitGlobalConfig::get_raw_config().map(|c| c.try_into().unwrap())
         GitGlobalConfig::get_raw_config()?
-            .try_into()
+            .try_into::<SettingsRaw>()
+            .map(|sr| Settings::from(sr))
             .context("Parse config into Settings")
     }
 

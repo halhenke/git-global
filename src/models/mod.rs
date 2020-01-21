@@ -8,4 +8,5 @@ pub mod light_table;
 pub mod repo;
 pub mod repo_tag;
 pub mod result;
+pub mod settings;
 pub mod utils;
