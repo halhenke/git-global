@@ -7,12 +7,15 @@ extern crate cursive;
 
 // use self::cursive::align::HAlign;
 use self::cursive::event::{Callback, Event, EventResult, Key};
-use self::cursive::views::{
-    Dialog, EditView, LinearLayout, OnEventView, SelectView, TextContent,
-    TextView,
-};
 use self::cursive::Cursive;
 use self::cursive::{traits::*, view::Selector};
+use self::cursive::{
+    view::Margins,
+    views::{
+        Dialog, EditView, LinearLayout, OnEventView, SelectView, TextContent,
+        TextView,
+    }
+};
 use crate::models::errors::Result as WeirdResult;
 use crate::models::{config::GitGlobalConfig, result::GitGlobalResult};
 use take_mut;
@@ -106,7 +109,7 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
             .child(
                 Dialog::new()
                     .title("Add a Tag...")
-                    .padding((1, 1, 1, 0))
+                    .padding(Margins::lrtb(1, 1, 1, 0))
                     .content(e_view)
                     .button("q", move |s: &mut Cursive| {
                         debug!("q was called...");

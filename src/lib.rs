@@ -83,6 +83,7 @@ extern crate quickcheck;
 #[cfg(test)]
 #[macro_use(quickcheck)]
 extern crate quickcheck_macros;
+extern crate precision;
 #[cfg(test)]
 extern crate rand;
 

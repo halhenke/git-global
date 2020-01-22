@@ -72,6 +72,7 @@ pub async fn get_results(
     let result: Arc<Mutex<GitGlobalResult>> = Arc::new(Mutex::new(result));
 
     let thread_count = threads.unwrap_or(n_repos);
+    // threads.map_or(n_repos, |t| if n_repos > t { t } else { n_repos });
     // let thread_count = n_repos;
     // let thread_count = 24;
 

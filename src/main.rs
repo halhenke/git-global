@@ -1,5 +1,6 @@
 #![feature(async_closure)]
 #![feature(try_blocks)]
+#![feature(backtrace)]
 //! Entry point for the binary.
 
 extern crate git_global;

@@ -95,11 +95,11 @@ pub fn go<'a>(path_filter: Option<String>) -> WeirdResult<GitGlobalResult> {
 
     // VIEWS
     let error_view_inner = DebugView::new();
-    let error_view_id = error_view_inner.with_id(DEBUG_VIEW);
+    let error_view_id = error_view_inner.with_name(DEBUG_VIEW);
     let _error_view = error_view_id.max_height(20);
 
     let text_view_inner = TextView::new("Begin...");
-    let text_view_id = text_view_inner.with_id("text-view");
+    let text_view_id = text_view_inner.with_name("text-view");
     let text_view = text_view_id;
 
     // =================================================
@@ -115,18 +115,18 @@ pub fn go<'a>(path_filter: Option<String>) -> WeirdResult<GitGlobalResult> {
             let new_tag = RepoTag::new(new_text);
             if light_table.add_tag(&new_tag) {
                 let mut dd: ViewRef<SelectView<usize>> =
-                    s.find_id(&td).unwrap();
+                    s.find_name(&td).unwrap();
                 &dd.clear();
                 &dd.add_all(light_table.selectify_tags(light_table.repo_index));
 
                 let mut ee: ViewRef<SelectView<usize>> =
-                    s.find_id(&tp).unwrap();
+                    s.find_name(&tp).unwrap();
                 &ee.clear();
                 // &dd.add_all(light_table.selectify_tags(_current_repo));
                 &ee.add_all(light_table.retags());
 
                 let mut s_view: ViewRef<EditView> =
-                    s.find_id(&nt).expect("Could not find view");
+                    s.find_name(&nt).expect("Could not find view");
                 // let content = (*s_view).get_content().clone();
                 s_view.set_content("");
             }
@@ -136,7 +136,7 @@ pub fn go<'a>(path_filter: Option<String>) -> WeirdResult<GitGlobalResult> {
         Color::parse("#444").unwrap(),
     ));
     let nt = NEW_TAG.clone();
-    let new_tag_id = (new_tag_style).with_id(&nt);
+    let new_tag_id = (new_tag_style).with_name(&nt);
     let new_tag = new_tag_id.max_height(10);
 
     // =================================================
@@ -149,14 +149,14 @@ pub fn go<'a>(path_filter: Option<String>) -> WeirdResult<GitGlobalResult> {
         .on_select(move |s: &mut Cursive, ss: &usize| {
             (*repo_ref).borrow_mut().repo_index = *ss;
 
-            let mut dd: ViewRef<SelectView<usize>> = s.find_id(&td).unwrap();
+            let mut dd: ViewRef<SelectView<usize>> = s.find_name(&td).unwrap();
             &dd.clear();
             &dd.add_all((*repo_ref).borrow().selectify_tags(*ss));
 
             let mut _light_table = (*repo_ref).borrow_mut();
             _light_table.retags();
         });
-    let repo_selector_id = repo_selector_inner.with_id(&rp);
+    let repo_selector_id = repo_selector_inner.with_name(&rp);
     let repo_selector_tmp = foci1.make_event_layer(
         &mut siv,
         vec![Event::Key(Key::Left), Event::Key(Key::Right)],
@@ -175,7 +175,7 @@ pub fn go<'a>(path_filter: Option<String>) -> WeirdResult<GitGlobalResult> {
         let _current_repo = (*rr).borrow().repo_index;
         (*rr).borrow().selectify_tags(_current_repo)
     });
-    let tags_displayer_id = tags_displayer_inner.with_id(&td);
+    let tags_displayer_id = tags_displayer_inner.with_name(&td);
     let tags_displayer_tmp = foci2.make_event_layer(
         &mut siv,
         vec![Event::Key(Key::Left), Event::Key(Key::Right)],
@@ -188,7 +188,8 @@ pub fn go<'a>(path_filter: Option<String>) -> WeirdResult<GitGlobalResult> {
         })
         .on_event(Event::Key(Key::Backspace), move |s| {
             // note: we can find our own view here but maybe because we are wrapped in an `OnEventView`
-            let mut this: ViewRef<SelectView<usize>> = s.find_id(&td).unwrap();
+            let mut this: ViewRef<SelectView<usize>> =
+                s.find_name(&td).unwrap();
             let i: usize = this.selected_id().expect("Couldnt get selected id");
             let deleted_tag: String = String::from(
                 (*this)
@@ -219,12 +220,12 @@ pub fn go<'a>(path_filter: Option<String>) -> WeirdResult<GitGlobalResult> {
 
             // UPDATE ALL TAGS
             let mut all_tag_view: ViewRef<SelectView<usize>> =
-                s.find_id(&tp).unwrap();
+                s.find_name(&tp).unwrap();
             (*all_tag_view).clear();
             (*all_tag_view).add_all(_light_table.retags());
 
             // LOG STUFF
-            // let mut tt: ViewRef<TextView> = s.find_id("text-view").unwrap();
+            // let mut tt: ViewRef<TextView> = s.find_name("text-view").unwrap();
             // let mut content = String::new();
             // let _content = vec![
             //     format!("Deleted Tag:\n{:#?}", deleted_tag),
@@ -271,7 +272,7 @@ pub fn go<'a>(path_filter: Option<String>) -> WeirdResult<GitGlobalResult> {
             // note: Cant get our own view without a panic...
             // this is either because the id view is defined later in the file or we have to call from an `OnEventView` wrapper
             // let mut this: ViewRef<SelectView<usize>> =
-            //     s.find_id("tag_pool").expect("Could not find myself");
+            //     s.find_name("tag_pool").expect("Could not find myself");
             // let _current_tag_name = this.get_item(*ss).unwrap().0;
             // let _current_tag = RepoTag::new(_current_tag_name);
 
@@ -284,12 +285,12 @@ pub fn go<'a>(path_filter: Option<String>) -> WeirdResult<GitGlobalResult> {
 
             current_repo.tags.push(_current_tag.clone());
 
-            let mut dd: ViewRef<SelectView<usize>> = s.find_id(&td).unwrap();
+            let mut dd: ViewRef<SelectView<usize>> = s.find_name(&td).unwrap();
             &dd.clear();
             &dd.add_all(_light_table.selectify_tags(_current_repo));
         });
 
-    let tags_pool_id = tags_pool_inner.with_id(&(&TAG_POOL).clone());
+    let tags_pool_id = tags_pool_inner.with_name(&(&TAG_POOL).clone());
     let tags_pool_tmp = foci3.make_event_layer(
         &mut siv,
         vec![Event::Key(Key::Left), Event::Key(Key::Right)],
@@ -346,7 +347,7 @@ pub fn go<'a>(path_filter: Option<String>) -> WeirdResult<GitGlobalResult> {
     //     // );
 
     //     let mut dd: ViewRef<SelectView<RepoTag>> =
-    //         siv.find_id(TAG_DISPLAY).unwrap();
+    //         siv.find_name(TAG_DISPLAY).unwrap();
     //     &dd.clear();
     //     // &dd.add_all(selectify_rc_things(&rs_tags, |t| (t.name.clone(), t)));
     //     // let t_tags: Vec<RepoTag> = r.get_tags();

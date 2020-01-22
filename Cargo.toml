@@ -35,16 +35,16 @@ harness = false
 app_dirs = "1.2.1"
 clap = "2.33.0"
 chrono = "0.4.10"
-colored = "1.9.0"
-crossbeam-channel = "0.3.9"
+colored = "1.9.2"
+crossbeam-channel = "0.4.0"
 futures = "0.3.1"
 itertools = "0.8.2"
-json = "0.12.0"
+json = "0.12.1"
 lazy_static = "1.4.0"
 mut_static = "5.0.0"
 tui = "0.8.0"
-termion = "1.5.4"
-walkdir = "2.2.9"
+termion = "1.5.5"
+walkdir = "2.3.1"
 jwalk = "0.4.0"
 github-rs = "0.7.0"
 ring_queue = "0.2.0"
@@ -52,23 +52,24 @@ serde = "1.0.104"
 serde_derive = "1.0.104"
 serde_json = "1.0.44"
 strfmt = "0.1.6"
-subprocess = "0.1.18"
+subprocess = "0.1.20"
 pipeline = "0.5.0"
-rustfix = "0.4.6"
+rustfix = "0.5.0"
 dirs = "2.0.2"
 pretty_env_logger = "0.3.1"
 log = "0.4.8"
 take_mut = "0.2.2"
 icecream = "0.1.0"
 config = "0.10.1"
-anyhow = "1.0.25"
+anyhow = "1.0.26"
 thiserror = "1.0.9"
-tokio = { version = "0.2.6", features = ["full"] }
+tokio = { version = "0.2.10", features = ["full"] }
+precision = "0.1.9"
 
 [dependencies.cursive]
-version = "0.13.0"
+version = "0.14.0"
 default-features = false
-features = ["termion-backend"]
+features = ["termion-backend", "toml"]
 
 [dependencies.git2]
 version = "0.11.0"
@@ -76,11 +77,11 @@ default-features = false  # don't want SSH/HTTPS/Curl
 
 [dev-dependencies]
 tempdir = "0.3.7"
-proptest = "0.9.4"
-quickcheck = "0.9.0"
-quickcheck_macros = "0.8.0"
-rand = "0.7.2"
-criterion = { version = "0.3.0", features=['real_blackbox'] }
+proptest = "0.9.5"
+quickcheck = "0.9.2"
+quickcheck_macros = "0.9.1"
+rand = "0.7.3"
+criterion = { version = "0.3.0", features = ['real_blackbox'] }
 
 [build-dependencies]
 clap = "2.33.0"
