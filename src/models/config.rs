@@ -119,51 +119,62 @@ impl GitGlobalConfig {
             .to_str()
             .expect("Could not convert home directory path to string.")
             .to_string();
-        let (basedir, basedirs, patterns, default_tags, default_actions) =
-            match git2::Config::open_default() {
-            Ok(config) => {
-                (config.get_string(SETTING_BASEDIR).unwrap_or(home_dir.clone()),
-                 config.get_string(SETTING_BASEDIR)
-                    .unwrap_or(home_dir.clone())
-                    .split(",")
-                    .map(|p| p.trim().to_string())
-                    .collect(),
-                 config.get_string(SETTING_IGNORED)
-                     .unwrap_or(String::new())
-                     .split(",")
-                     .map(|p| p.trim().to_string())
-                     .collect(),
-                 config.get_string(SETTINGS_DEFAULT_TAGS)
-                     .unwrap_or(String::new())
-                     .split(",")
-                     .map(|p| p.trim().to_string())
-                     .map(|rt| RepoTag::new(&rt))
-                    //  .map(|rt| RepoTag::new(&rt.to_owned()))
-                     .collect::<Vec<RepoTag>>(),
-                 config.get_string(SETTINGS_DEFAULT_GIT_ACTIONS)
-                     .unwrap_or(String::new())
-                     .split(",")
-                     .map(|p| p.trim().to_string())
-                    //  TODO: Figure out how to handle an Action without a path
-                     .map(|ga| Action::NeedsAPathAction(ga.to_owned(), ga.clone(), vec![]))
-                     .collect::<Vec<Action>>()
-                )
-            }
-            Err(_) => {
-                println!("Hey - you need to setup your git config so I can find stuff");
-                panic!("ARRRGH");
-            }
-            // Err(_) => (home_dir.clone(), vec![home_dir.clone()], Vec::new()),
-            // Err(_) => (home_dir, vec![&home_dir], Vec::new()),
-        };
+
+        let settings: Settings = GitGlobalConfig::get_parsed_config()
+            .expect("Parsing of your Settings file failed");
+
+        // let (basedir, basedirs, patterns, default_tags, default_actions) =
+        //     match git2::Config::open_default() {
+        //     Ok(config) => {
+        //         (
+        //             config.get_string(SETTING_BASEDIR)
+        //             .unwrap_or(home_dir.clone()),
+        //          config.get_string(SETTING_BASEDIR)
+        //             .unwrap_or(home_dir.clone())
+        //             .split(",")
+        //             .map(|p| p.trim().to_string())
+        //             .collect(),
+        //          config.get_string(SETTING_IGNORED)
+        //              .unwrap_or(String::new())
+        //              .split(",")
+        //              .map(|p| p.trim().to_string())
+        //              .collect(),
+        //          config.get_string(SETTINGS_DEFAULT_TAGS)
+        //              .unwrap_or(String::new())
+        //              .split(",")
+        //              .map(|p| p.trim().to_string())
+        //              .map(|rt| RepoTag::new(&rt))
+        //             //  .map(|rt| RepoTag::new(&rt.to_owned()))
+        //              .collect::<Vec<RepoTag>>(),
+        //          config.get_string(SETTINGS_DEFAULT_GIT_ACTIONS)
+        //              .unwrap_or(String::new())
+        //              .split(",")
+        //              .map(|p| p.trim().to_string())
+        //             //  TODO: Figure out how to handle an Action without a path
+        //              .map(|ga| Action::NeedsAPathAction(ga.to_owned(), ga.clone(), vec![]))
+        //              .collect::<Vec<Action>>()
+        //         )
+        //     }
+        //     Err(_) => {
+        //         println!("Hey - you need to setup your git config so I can find stuff");
+        //         panic!("ARRRGH");
+        //     }
+
+        // Err(_) => (home_dir.clone(), vec![home_dir.clone()], Vec::new()),
+        // Err(_) => (home_dir, vec![&home_dir], Vec::new()),
+        // };
         assert!(
-            Path::exists(Path::new(&basedir)),
-            "Your provided basedir: {} does not exist",
-            basedir
+            &settings.basedir.is_some(),
+            "You must provide a basedir in the settings."
         );
-        if !Path::exists(Path::new(&basedir)) {
-            panic!("Your provided basedir: {} does not exist", basedir);
-        }
+        assert!(
+            Path::exists(Path::new(&settings.basedir.as_ref().unwrap())),
+            "Your provided basedir: {} does not exist",
+            &settings.basedir.as_ref().unwrap()
+        );
+        // if !Path::exists(Path::new(&basedir)) {
+        //     panic!("Your provided basedir: {} does not exist", basedir);
+        // }
         let cache_file =
             match get_app_dir(AppDataType::UserCache, &APP, "cache") {
                 Ok(mut dir) => {
@@ -193,22 +204,20 @@ impl GitGlobalConfig {
         //     // .iter()
         //     .find(|(k, v)| k.as_str() == "ignored_paths")
         //     .unwrap();
-        let settings: std::result::Result<Settings, _> =
-            GitGlobalConfig::get_parsed_config();
 
         let ggc = GitGlobalConfig {
-            basedir: basedir,
-            basedirs: basedirs,
+            basedir: settings.basedir.unwrap(),
+            basedirs: settings.basedirs,
             current: CurrentState::new(),
             repos: vec![],
             tags: vec![],
-            default_tags,
-            default_repos: vec![],
+            default_tags: settings.default_tags,
+            default_repos: settings.default_repos,
             // default_paths: vec![],
-            ignored_repos: vec![],
-            ignored_paths: vec![],
-            actions: default_actions,
-            ignored_patterns: patterns,
+            ignored_repos: settings.ignored_repos,
+            ignored_paths: settings.ignored_paths,
+            actions: settings.actions,
+            ignored_patterns: settings.ignored_patterns,
             cache_file: cache_file,
             // tags_file,
         };
@@ -657,8 +666,8 @@ mod tests {
             .unwrap()
             .get_array("ignored_paths")
             .unwrap();
-        let ignored_deserial: Vec<HashMap<String, String>> = ignored
-            // let ignored_deserial: Vec<String> = ignored
+        // let ignored_deserial: Vec<HashMap<String, String>> = ignored
+        let ignored_deserial: Vec<String> = ignored
             .into_iter()
             .map(|v| v.try_into().expect("We tried to convert but"))
             // .map(|v| serde_json::from_value(ignored).unwrap())

@@ -1,10 +1,20 @@
 
-BEGINNING = "FORE!!!"
-OUT  = 34
-[[ignored_paths]]
-path = "~/code/python"
-[[ignored_paths]]
-path = "~/code/swift"
+# BEGINNING = "FORE!!!"
+# OUT  = 34
+basedir = "~/code"
+basedirs = [
+    "~/code",
+    "~/Google Drive/colab"
+]
+
+ignored_paths = [
+    "~/code/python",
+    "~/code/swift"
+]
+# [[ignored_paths]]
+# path = "~/code/python"
+# [[ignored_paths]]
+# path = "~/code/swift"
 
 [[ignored_repos]]
 path = "~/code/swift"
