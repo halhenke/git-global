@@ -43,11 +43,25 @@ const APP: AppInfo = AppInfo {
 };
 const CACHE_FILE: &'static str = "repos.txt";
 // const TAG_CACHE_FILE: &'static str = "tags.txt";
-const SETTING_BASEDIR: &'static str = "global.basedir";
-const SETTING_IGNORED: &'static str = "global.ignore";
-const SETTINGS_DEFAULT_TAGS: &'static str = "global.default-tags";
-const SETTINGS_DEFAULT_GIT_ACTIONS: &'static str = "global.default-git-actions";
+// const SETTING_BASEDIR: &'static str = "global.basedir";
+// const SETTING_IGNORED: &'static str = "global.ignore";
+// const SETTINGS_DEFAULT_TAGS: &'static str = "global.default-tags";
+// const SETTINGS_DEFAULT_GIT_ACTIONS: &'static str = "global.default-git-actions";
 const CONFIG_FILE_NAME: &'static str = ".git_global_config_simple";
+const CONFIG_FILE_PROPER: &'static str = "/.git_global_config";
+// const ANOTHER: &'static str = dirs::home_dir()
+//     .expect("Could not determine home directory.")
+//     .to_str()
+//     .expect("Could not convert home directory path to string.");
+// .to_string();
+
+// const fn goooo() -> String {
+//     dirs::home_dir()
+//         .expect("Could not determine home directory.")
+//         .to_str()
+//         .expect("Could not convert home directory path to string.")
+//         .to_string()
+// }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CurrentState {
@@ -123,46 +137,6 @@ impl GitGlobalConfig {
         let settings: Settings = GitGlobalConfig::get_parsed_config()
             .expect("Parsing of your Settings file failed");
 
-        // let (basedir, basedirs, patterns, default_tags, default_actions) =
-        //     match git2::Config::open_default() {
-        //     Ok(config) => {
-        //         (
-        //             config.get_string(SETTING_BASEDIR)
-        //             .unwrap_or(home_dir.clone()),
-        //          config.get_string(SETTING_BASEDIR)
-        //             .unwrap_or(home_dir.clone())
-        //             .split(",")
-        //             .map(|p| p.trim().to_string())
-        //             .collect(),
-        //          config.get_string(SETTING_IGNORED)
-        //              .unwrap_or(String::new())
-        //              .split(",")
-        //              .map(|p| p.trim().to_string())
-        //              .collect(),
-        //          config.get_string(SETTINGS_DEFAULT_TAGS)
-        //              .unwrap_or(String::new())
-        //              .split(",")
-        //              .map(|p| p.trim().to_string())
-        //              .map(|rt| RepoTag::new(&rt))
-        //             //  .map(|rt| RepoTag::new(&rt.to_owned()))
-        //              .collect::<Vec<RepoTag>>(),
-        //          config.get_string(SETTINGS_DEFAULT_GIT_ACTIONS)
-        //              .unwrap_or(String::new())
-        //              .split(",")
-        //              .map(|p| p.trim().to_string())
-        //             //  TODO: Figure out how to handle an Action without a path
-        //              .map(|ga| Action::NeedsAPathAction(ga.to_owned(), ga.clone(), vec![]))
-        //              .collect::<Vec<Action>>()
-        //         )
-        //     }
-        //     Err(_) => {
-        //         println!("Hey - you need to setup your git config so I can find stuff");
-        //         panic!("ARRRGH");
-        //     }
-
-        // Err(_) => (home_dir.clone(), vec![home_dir.clone()], Vec::new()),
-        // Err(_) => (home_dir, vec![&home_dir], Vec::new()),
-        // };
         assert!(
             &settings.basedir.is_some(),
             "You must provide a basedir in the settings."
@@ -172,9 +146,6 @@ impl GitGlobalConfig {
             "Your provided basedir: {} does not exist",
             &settings.basedir.as_ref().unwrap()
         );
-        // if !Path::exists(Path::new(&basedir)) {
-        //     panic!("Your provided basedir: {} does not exist", basedir);
-        // }
         let cache_file =
             match get_app_dir(AppDataType::UserCache, &APP, "cache") {
                 Ok(mut dir) => {
@@ -196,14 +167,6 @@ impl GitGlobalConfig {
         // if basedir == "" {
         //     unimplemented!();
         // }
-
-        // let config = GitGlobalConfig::get_config();
-        // let ignored_paths = config
-        //     .unwrap()
-        //     .iter()
-        //     // .iter()
-        //     .find(|(k, v)| k.as_str() == "ignored_paths")
-        //     .unwrap();
 
         let ggc = GitGlobalConfig {
             basedir: settings.basedir.unwrap(),
@@ -243,23 +206,34 @@ impl GitGlobalConfig {
         gcc
     }
 
-    fn get_config() -> std::result::Result<HashMap<String, Value>, ConfigError>
-    {
+    fn get_config() -> Result<HashMap<String, Value>> {
         // fn get_config() -> HashMap<String, Value> {
+        let mut HOME_CONFIG = dirs::home_dir()
+            .expect("Could not determine home directory.")
+            .to_str()
+            .expect("Could not convert home directory path to string.")
+            .to_string();
+        HOME_CONFIG.push_str(CONFIG_FILE_PROPER);
         let mut c = Config::default();
-        c.merge(CFile::with_name(CONFIG_FILE_NAME))?
+        c.merge(CFile::with_name(HOME_CONFIG.as_mut_str()))?
             // .expect("Merge of Configuration File Values failed")
             // .or_else(|e| return Err(e))
             .merge(Environment::with_prefix("GIT_GLOBAL"))?
             // .expect("Merge of Environment Configuration Values failed")
             .collect()
+            .context("couldnt get your config file")
         // .expect("Config: Conversion to hashMap Failed")
     }
 
     fn get_raw_config() -> Result<Config> {
-        // fn get_raw_config() -> Config {
+        let mut HOME_CONFIG = dirs::home_dir()
+            .expect("Could not determine home directory.")
+            .to_str()
+            .expect("Could not convert home directory path to string.")
+            .to_string();
+        HOME_CONFIG.push_str(CONFIG_FILE_PROPER);
         let mut c = Config::default();
-        c.merge(CFile::with_name(CONFIG_FILE_NAME))?
+        c.merge(CFile::with_name(HOME_CONFIG.as_mut_str()))?
             .merge(Environment::with_prefix("GIT_GLOBAL"))?;
         // .unwrap();
         // .context("Trying to read config from .config filee")
