@@ -47,7 +47,10 @@ pub fn get_results(raw_arg: bool) -> Result<GitGlobalResult> {
         underline.push('=');
     }
     result.add_message(format!("git-global {}", version));
-    result.add_message(underline);
+    result.add_message(underline.clone());
+    result
+        .add_message(GitGlobalConfig::get_parsed_config().unwrap().to_string());
+    result.add_message(underline.clone());
     result.add_message(format!("Number of repos: {}", repos.len()));
     result.add_message(format!("Base directory: {}", config.basedir));
     result.add_message(format!(

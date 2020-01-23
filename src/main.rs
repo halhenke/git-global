@@ -7,6 +7,7 @@ extern crate git_global;
 extern crate pretty_env_logger;
 // #[macro_use] extern crate log;
 
+use anyhow::Result;
 use git_global::cli::run_from_command_line_nested;
 use std::process::exit;
 
@@ -41,8 +42,8 @@ use std::process::exit;
 // exit(git_global::cli::run_from_command_line())
 // }
 
-fn main() -> Result<(), std::io::Error> {
+fn main() -> Result<()> {
     pretty_env_logger::init();
-    run_from_command_line_nested();
-    exit(0)
+    run_from_command_line_nested()
+    // exit(0)
 }

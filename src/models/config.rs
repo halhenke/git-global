@@ -594,7 +594,7 @@ mod tests {
 
     #[test]
     fn test_config() {
-        let hm: std::result::Result<HashMap<String, Value>, ConfigError>;
+        let hm: Result<HashMap<String, Value>>;
         // let hm: HashMap<String, Value>;
         hm = GitGlobalConfig::get_config();
         // hm = GitGlobalConfig::get_config();
@@ -695,5 +695,7 @@ mod tests {
         let settings: Settings = GitGlobalConfig::get_parsed_config().unwrap();
         println!("Deserialized Settings to:");
         println!("{:?}", settings);
+        println!("Deserialized Settings With Format:");
+        println!("{}", settings);
     }
 }

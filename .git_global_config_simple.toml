@@ -1,7 +1,7 @@
 
 # BEGINNING = "FORE!!!"
 # OUT  = 34
-basedir = "~/code"
+basedir = "/Users/hal/code"
 basedirs = [
     "~/code",
     "~/Google Drive/colab"

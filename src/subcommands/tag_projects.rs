@@ -122,12 +122,10 @@ pub fn go<'a>(path_filter: Option<String>) -> WeirdResult<GitGlobalResult> {
                 let mut ee: ViewRef<SelectView<usize>> =
                     s.find_name(&tp).unwrap();
                 &ee.clear();
-                // &dd.add_all(light_table.selectify_tags(_current_repo));
                 &ee.add_all(light_table.retags());
 
                 let mut s_view: ViewRef<EditView> =
                     s.find_name(&nt).expect("Could not find view");
-                // let content = (*s_view).get_content().clone();
                 s_view.set_content("");
             }
         });
@@ -201,7 +199,6 @@ pub fn go<'a>(path_filter: Option<String>) -> WeirdResult<GitGlobalResult> {
             (*this).remove_item(i);
             // NOTE: Do I need to reindex either list here?
 
-            // let _light_table = (*repo_tag_ref).borrow_mut();
             let _light_table: &mut LightTable = &mut (*repo_tag_ref)
                 .try_borrow_mut()
                 .expect("Mut Borrow 3 failed");
