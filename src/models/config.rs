@@ -587,46 +587,27 @@ mod tests {
     fn inspect_config() {
         println!("INSPECT CONFIG");
         let config = GitGlobalConfig::get_config().unwrap();
-        // let ignored_paths: Vec<_> = config
-        //     // .unwrap()
-        //     .into_iter()
-        //     // .iter()
-        //     .find(|(k, v)| k.as_str() == "ignored_paths")
-        //     .map(|(k, v)| {
-        //         v.into_array()
-        //             .unwrap()
-        //             .into_iter()
-        //             .map(|a| a.into_table().unwrap())
-        //             .collect::<HashMap>()
-        //             .into_iter()
-        //             .map(|v| {
-        //                 v.into_iter()
-        //                     .map(|(k, v)| v.into_str().unwrap())
-        //                     .collect()
-        //                 // .unwrap()
-        //                 // .collect::<Vec<String>>()
-        //             })
-        //     })
-        //     // .unwrap::<Option<>>()
-        //     // .map(|v| v.into_iter().map(|(k, v)| v.into_str().unwrap()))
-        //     .collect();
-        // println!("ignored paths {:#?}", ignored_paths);
         let more_paths = GitGlobalConfig::get_raw_config()
             .unwrap()
             .get_array("ignored_paths")
             .unwrap();
-        println!("more paths {:#?}", more_paths);
-        let further: Vec<_> = more_paths
+        // println!("more paths {:#?}", more_paths);
+        // let further: Vec<_> = more_paths
+        //     .into_iter()
+        //     .map(|v| v.into_table().unwrap())
+        //     .collect();
+        // println!("further {:#?}", further);
+        // let mooofe: Vec<String> = more_paths
+        //     // let mooofe: Vec<String> = further
+        //     .into_iter()
+        //     // .into_iter()
+        //     .map(|v| {
+        //         v.into_iter().map(|(k, v)| v.into_str().unwrap()).collect()
+        //     })
+        //     .collect();
+        let mooofe: Vec<String> = more_paths
             .into_iter()
-            .map(|v| v.into_table().unwrap())
-            .collect();
-        println!("further {:#?}", further);
-        let mooofe: Vec<String> = further
-            .into_iter()
-            // .into_iter()
-            .map(|v| {
-                v.into_iter().map(|(k, v)| v.into_str().unwrap()).collect()
-            })
+            .map(|v| v.into_str().unwrap())
             .collect();
         println!("mooofe {:#?}", mooofe);
     }

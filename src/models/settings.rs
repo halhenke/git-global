@@ -91,6 +91,19 @@ impl Display for Settings {
         write_vec_str(f, "basedirs", &self.basedirs);
         write_vec_str(f, "ignored_paths", &self.ignored_paths);
         write_vec_str(f, "ignored_patterns", &self.ignored_patterns);
+        f.write_fmt(format_args!(
+            "{}",
+            "path_shortcuts:\n".green().underline()
+        ));
+        self.path_shortcuts.iter().for_each(|(k, v)| {
+            f.write_fmt(format_args!(
+                "\t{}\t{}\n",
+                k.to_string().yellow().underline(),
+                v.to_string().yellow()
+            ))
+            .unwrap();
+        });
+
         // pub path_shortcuts: HashMap<String, String>,
         // // path_shortcuts: HashMap<String, String>,
         write_vec_str(f, "ignored_repos", &self.ignored_repos);
