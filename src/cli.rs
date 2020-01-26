@@ -44,8 +44,8 @@ pub fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
                 .arg(Arg::with_name("raw").required(false).takes_value(false)),
         )
         .subcommand(
-            SubCommand::with_name("bullshit")
-                .about("Just mucking around with stuff"),
+            SubCommand::with_name("github")
+                .about("Logging into github GraphQL API"),
         )
         .subcommand(
             SubCommand::with_name("action")
@@ -93,12 +93,12 @@ pub fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
                     .help("Remove the cache file")
         ))
         .subcommand(
-            SubCommand::with_name("prompt")
-                .about("demo the TUI Terminal UI library")
+            SubCommand::with_name("prompt-tui")
+                .about("demo the TUI Terminal UI library - pretty useless")
         )
         .subcommand(
             SubCommand::with_name("prompt-cursive")
-                .about("demo the Cursive Terminal UI library"),
+                .about("demo the Cursive Terminal UI library - also generally does nothing"),
         )
         .subcommand(
             SubCommand::with_name("list")
@@ -117,7 +117,7 @@ pub fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
         )
         .subcommand(
             SubCommand::with_name("add-tags")
-                .about("add tags on your machine [the default]"),
+                .about("add tags and save them to cache - not sure how/why..."),
         )
         .subcommand(
             SubCommand::with_name("tag-projects")
@@ -136,13 +136,6 @@ pub fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
                         .takes_value(true)
                         .required(false),
                 )
-        )
-        .subcommand(
-            SubCommand::with_name("tag")
-                .about("tag a single git repo")
-                .arg(
-                    Arg::with_name("tag_arg").required(true).takes_value(true),
-                ),
         )
         // NOTE: This seems superfluous with list
         .subcommand(
@@ -215,7 +208,7 @@ pub fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
 // pub fn run_from_command_line() -> impl futures::Future<Output = i32> {
 pub async fn run_from_command_line_scoped() -> Result<()> {
     trace!("run_from_command_line__scoped");
-    println!("I am in async land\n\n");
+    debug!("I am in async land\n\n");
     let (modified, path_filter, ignore_untracked) = {
         let clap_app = get_clap_app();
         let matches: ArgMatches<'static> = clap_app.get_matches();
@@ -223,7 +216,7 @@ pub async fn run_from_command_line_scoped() -> Result<()> {
         let path_filter;
         let ignore_untracked;
         if let Some("new-status") = matches.subcommand_name() {
-            println!("We matched!!");
+            debug!("We matched!!");
             let (m, pf, iu) = {
                 let modified =
                     matches.subcommand_matches("new-status").is_some()
@@ -245,7 +238,7 @@ pub async fn run_from_command_line_scoped() -> Result<()> {
         (modified, path_filter, ignore_untracked)
     };
 
-    println!("Another debug message!!");
+    debug!("Another debug message!!");
     let l = subcommands::new_status::get_results(
         modified,
         ignore_untracked,
@@ -268,7 +261,7 @@ pub fn run_from_command_line_nested() -> Result<()> {
     let use_json = matches.is_present("json");
 
     let results = match matches.subcommand_name() {
-        Some("bullshit") => subcommands::bullshit::get_results(),
+        Some("github") => subcommands::github::get_results(),
         Some("info") => {
             let raw_info = matches
                 .subcommand_matches("info")
@@ -348,14 +341,8 @@ pub fn run_from_command_line_nested() -> Result<()> {
             let gc = crate::models::config::GitGlobalConfig::new();
             gc.print_cache()
         }
-        Some("prompt") => subcommands::prompt::go(),
+        Some("prompt-tui") => subcommands::prompt_tui::go(),
         Some("prompt-cursive") => subcommands::prompt_cursive::go(),
-        Some("tag") => {
-            let sub_com =
-                matches.subcommand_matches("tag").expect("filter panic");
-            let tag = sub_com.values_of("tag_arg").unwrap().collect();
-            subcommands::tag::get_results(tag)
-        }
         Some("tag-projects") => {
             let pf = get_path_filter(&matches, "tag-projects");
             subcommands::tag_projects::go(pf)
@@ -379,7 +366,7 @@ pub fn run_from_command_line_nested() -> Result<()> {
                 .threaded_scheduler()
                 .enable_io()
                 .build()?;
-            println!("Runtime is built\n\n");
+            debug!("Runtime is built\n\n");
             let _modified = matches.subcommand_matches("new-status").is_some()
                 && matches.is_present("modified");
             let _path_filter = get_path_filter(&matches, "new-status");
@@ -511,7 +498,7 @@ fn get_subcommand_values(
         .values_of(value)
         .unwrap()
         .fold(String::new(), |a, b| [a, b.to_owned()].concat());
-    println!("values is {}", result);
+    debug!("values is {}", result);
     Some(result)
 
     // .map(|s| String::from(s))
@@ -533,7 +520,7 @@ fn show_results(results: GitGlobalResult, use_json: bool) -> i32 {
     trace!("show_results");
     let r = results;
     // let r: GitGlobalResult = results.await;
-    println!("We showed!!");
+    debug!("We showed!!");
 
     if use_json {
         r.print_json();

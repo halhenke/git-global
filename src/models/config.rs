@@ -304,7 +304,6 @@ impl GitGlobalConfig {
     }
 
     pub fn print_tags(&self) {
-        println!("Tags:");
         if self.tags.is_empty() {
             println!("You have no tags defined as yet");
             return;
@@ -577,8 +576,6 @@ mod tests {
         println!("\n\nCONFIG VALS:");
         for (k, v) in hm.unwrap() {
             ic!((k, v));
-            // ic!(v);
-            // println!("key: {}, val: {}", k, v);
         }
         println!("CONFIG VALS END\n\n");
     }
@@ -591,20 +588,6 @@ mod tests {
             .unwrap()
             .get_array("ignored_paths")
             .unwrap();
-        // println!("more paths {:#?}", more_paths);
-        // let further: Vec<_> = more_paths
-        //     .into_iter()
-        //     .map(|v| v.into_table().unwrap())
-        //     .collect();
-        // println!("further {:#?}", further);
-        // let mooofe: Vec<String> = more_paths
-        //     // let mooofe: Vec<String> = further
-        //     .into_iter()
-        //     // .into_iter()
-        //     .map(|v| {
-        //         v.into_iter().map(|(k, v)| v.into_str().unwrap()).collect()
-        //     })
-        //     .collect();
         let mooofe: Vec<String> = more_paths
             .into_iter()
             .map(|v| v.into_str().unwrap())
