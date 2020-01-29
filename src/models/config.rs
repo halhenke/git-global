@@ -216,10 +216,7 @@ impl GitGlobalConfig {
         HOME_CONFIG.push_str(CONFIG_FILE_PROPER);
         let mut c = Config::default();
         c.merge(CFile::with_name(HOME_CONFIG.as_mut_str()))?
-            // .expect("Merge of Configuration File Values failed")
-            // .or_else(|e| return Err(e))
             .merge(Environment::with_prefix("GIT_GLOBAL"))?
-            // .expect("Merge of Environment Configuration Values failed")
             .collect()
             .context("couldnt get your config file")
         // .expect("Config: Conversion to hashMap Failed")
@@ -235,8 +232,6 @@ impl GitGlobalConfig {
         let mut c = Config::default();
         c.merge(CFile::with_name(HOME_CONFIG.as_mut_str()))?
             .merge(Environment::with_prefix("GIT_GLOBAL"))?;
-        // .unwrap();
-        // .context("Trying to read config from .config filee")
         Ok(c)
     }
 
@@ -272,21 +267,23 @@ impl GitGlobalConfig {
     }
 
     /// Append Vec of Strings as tags
-    pub fn append_tags(&mut self, tags: Vec<String>) -> () {
-        let new_repos = &mut tags
-            .into_iter()
-            .map(|t| t.into())
-            // .map(|t| RepoTag::from(t))
-            .collect();
-        debug!("new_repos is {:?}", new_repos);
-        debug!("Before add tags - self.tags is {:?}", self.tags);
-        self.tags.append(new_repos);
-        self.tags.dedup_by(|a, b| {
-            a.name.as_str().eq_ignore_ascii_case(b.name.as_str())
-        });
-    }
+    // TODO: DELETE THIS - Not how things should work
+    // pub fn append_tags(&mut self, tags: Vec<String>) -> () {
+    //     let new_repos = &mut tags
+    //         .into_iter()
+    //         .map(|t| t.into())
+    //         // .map(|t| RepoTag::from(t))
+    //         .collect();
+    //     debug!("new_repos is {:?}", new_repos);
+    //     debug!("Before add tags - self.tags is {:?}", self.tags);
+    //     self.tags.append(new_repos);
+    //     self.tags.dedup_by(|a, b| {
+    //         a.name.as_str().eq_ignore_ascii_case(b.name.as_str())
+    //     });
+    // }
 
     /// Replace current tags with [`Vec<RepoTag>`] given a [`Vec`] of [`String`]s as input
+    // TODO: DELETE THIS - Not how things should work
     pub fn replace_tags(&mut self, tags: Vec<String>) -> () {
         let new_tags = tags.into_iter().map(|t| t.into()).collect();
         self.tags = new_tags;

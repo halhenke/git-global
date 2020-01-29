@@ -96,9 +96,11 @@ pub fn go() -> WeirdResult<GitGlobalResult> {
                 }
                 event::Key::Up => {
                     sel.dec();
+                    // draw(&mut terminal, &sel).expect("Failed to draw");
                 }
                 event::Key::Down => {
                     sel.inc();
+                    // draw(&mut terminal, &sel).expect("Failed to draw");
                 }
                 // event::Key::Char(c) => {
                 //     // app.input.push(c);

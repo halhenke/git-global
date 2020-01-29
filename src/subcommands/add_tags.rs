@@ -14,7 +14,7 @@ use self::cursive::{
     views::{
         Dialog, EditView, LinearLayout, OnEventView, SelectView, TextContent,
         TextView,
-    }
+    },
 };
 use crate::models::errors::Result as WeirdResult;
 use crate::models::{config::GitGlobalConfig, result::GitGlobalResult};
@@ -51,15 +51,9 @@ pub fn delete_tag(sel: &mut SelectView) -> Option<EventResult> {
 }
 
 pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
-    // pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult<'a>> {
     let user_config = GitGlobalConfig::new();
 
-    // trace!("go");
-
-    // debug!("ADD TAGS -  GOOOO: did we get here - 0");
     let mut siv = Cursive::default();
-    // debug!("ADD TAGS -  GOOOO: did we get here - 1");
-    // debug!("ADD TAGS -  GOOOO: did we get here - 1");
 
     siv.load_theme_file("assets/style.toml").unwrap();
 
@@ -81,8 +75,6 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     // let m2_con = &mut_con.clone();
     let _m3_con = Rc::clone(&mut_con);
     let m4_con = Rc::clone(&mut_con);
-
-    // debug!("ADD TAGS: did we get here - 3");
 
     // Need to wrap this to make it usable in the static closures/callbacks
     // Need to keep a list of new tags as i have to display both pre-existing tags and new ones so i need to store these separately
@@ -116,7 +108,6 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
                         save_tags_and_quit(s, &m4_con).expect(
                             "There was a problem with saving tags ¯\\(°_o)/¯",
                         );
-                        // save_tags_and_quit(s, &mut user_config, &m4_con);
                     })
                     .button("Ok", move |s: &mut Cursive| {
                         let name = s
@@ -139,8 +130,6 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
                 OnEventView::new(
                     SelectView::new().with_all(sel_tags).with_id("tag_list"),
                 )
-                // .on_event(Event::Key::Del).has_callback()
-                // .on_event_inner('p', |mut s1| {
                 .on_event_inner(Event::Key(Key::Backspace), |s1, _k| {
                     delete_tag(&mut s1.get_mut())
                 }),
@@ -150,7 +139,6 @@ pub fn go<'a, 'b>() -> WeirdResult<GitGlobalResult> {
     siv.run();
     debug!("ADD TAGS: called - 33");
 
-    // println!("new tags is {:?}", &fake_tags);
     Ok(GitGlobalResult::new(&vec![]))
 }
 
@@ -158,8 +146,6 @@ fn save_tags_and_quit(
     s: &mut Cursive,
     tags: &RMut,
 ) -> Result<(), SendError<impl FnOnce(&mut Cursive) + Send>> {
-    // ) -> Result<(), SendError<Box<dyn FnOnce(&mut Cursive) + Send>>> {
-    // fn save_tags_and_quit(s: &mut Cursive, user_config: &mut GitGlobalConfig, tags: &RMut) {
     let mut user_config = GitGlobalConfig::new();
     trace!("save_tags_and_quit");
     debug!("wtf???");
@@ -181,9 +167,6 @@ fn save_tags_and_quit(
     let tag_list_list = t_list;
     debug!("About to print tags");
     debug!("tags are: {:?}", &tag_list_list);
-    // user_config.add_tags(
-    //     tag_list_list
-    // );
     user_config.replace_tags(tag_list_list);
     user_config.write_tags();
     s.cb_sink().send(Box::new(|siv: &mut Cursive| siv.quit()))
@@ -204,7 +187,6 @@ fn show_next_screen(s: &mut Cursive, name: &str, _c: &mut TextContent) {
             // view.set_cursor(0)
         })
         .expect("failure");
-        // // s.focus_id("tag").unwrap();
         s.focus(&Selector::Id("tag")).expect("thing");
     }
 }
