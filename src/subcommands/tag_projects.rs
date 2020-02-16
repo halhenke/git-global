@@ -162,6 +162,7 @@ pub fn go<'a>(path_filter: Option<String>) -> WeirdResult<GitGlobalResult> {
     );
     let repo_selector =
         repo_selector_tmp.scrollable().min_width(20).max_height(10);
+
     // =================================================
     //  TAGS DISPLAYER
     // =================================================
@@ -304,17 +305,35 @@ pub fn go<'a>(path_filter: Option<String>) -> WeirdResult<GitGlobalResult> {
         .scrollable();
 
     let top_layout = LinearLayout::horizontal()
-        .child(Panel::new(repo_selector))
-        .child(Panel::new(tags_displayer));
+        .child(
+            LinearLayout::vertical()
+                .child(TextView::new("Files"))
+                .child(Panel::new(repo_selector)),
+        )
+        .child(
+            LinearLayout::vertical()
+                .child(TextView::new("Tags for Current File"))
+                .child(Panel::new(tags_displayer)),
+        );
 
     let first_layer = LinearLayout::vertical()
         .child(top_layout)
-        .child(Panel::new(tags_pool))
-        .child(Panel::new(new_tag))
+        .child(
+            LinearLayout::vertical()
+                .child(TextView::new("Available Tags"))
+                .child(Panel::new(tags_pool)),
+        )
+        .child(
+            LinearLayout::vertical()
+                .child(TextView::new("New Tag"))
+                .child(Panel::new(new_tag)),
+        )
         // .child(Panel::new(error_view))
         .child(Panel::new(text_view));
 
-    // Main Window
+    // =================================================
+    // MAIN WINDOW
+    // =================================================
     siv.add_layer(first_layer);
     // siv.add_layer(CircularFocus::new(first_layer, false, true));
     // #[rock]
