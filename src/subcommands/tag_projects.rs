@@ -305,29 +305,13 @@ pub fn go<'a>(path_filter: Option<String>) -> WeirdResult<GitGlobalResult> {
         .scrollable();
 
     let top_layout = LinearLayout::horizontal()
-        .child(
-            LinearLayout::vertical()
-                .child(TextView::new("Files"))
-                .child(Panel::new(repo_selector)),
-        )
-        .child(
-            LinearLayout::vertical()
-                .child(TextView::new("Tags for Current File"))
-                .child(Panel::new(tags_displayer)),
-        );
+        .child(Panel::new(repo_selector).title("Files"))
+        .child(Panel::new(tags_displayer).title("File Tags"));
 
     let first_layer = LinearLayout::vertical()
         .child(top_layout)
-        .child(
-            LinearLayout::vertical()
-                .child(TextView::new("Available Tags"))
-                .child(Panel::new(tags_pool)),
-        )
-        .child(
-            LinearLayout::vertical()
-                .child(TextView::new("New Tag"))
-                .child(Panel::new(new_tag)),
-        )
+        .child(Panel::new(tags_pool).title("Available Tags"))
+        .child(Panel::new(new_tag).title("New Tag"))
         // .child(Panel::new(error_view))
         .child(Panel::new(text_view));
 
