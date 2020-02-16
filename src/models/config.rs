@@ -47,21 +47,13 @@ const CACHE_FILE: &'static str = "repos.txt";
 // const SETTING_IGNORED: &'static str = "global.ignore";
 // const SETTINGS_DEFAULT_TAGS: &'static str = "global.default-tags";
 // const SETTINGS_DEFAULT_GIT_ACTIONS: &'static str = "global.default-git-actions";
-const CONFIG_FILE_NAME: &'static str = ".git_global_config_simple";
+// const CONFIG_FILE_NAME: &'static str = ".git_global_config_simple";
 const CONFIG_FILE_PROPER: &'static str = "/.git_global_config";
 // const ANOTHER: &'static str = dirs::home_dir()
 //     .expect("Could not determine home directory.")
 //     .to_str()
 //     .expect("Could not convert home directory path to string.");
 // .to_string();
-
-// const fn goooo() -> String {
-//     dirs::home_dir()
-//         .expect("Could not determine home directory.")
-//         .to_str()
-//         .expect("Could not convert home directory path to string.")
-//         .to_string()
-// }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CurrentState {
@@ -206,31 +198,36 @@ impl GitGlobalConfig {
         gcc
     }
 
-    fn get_config() -> Result<HashMap<String, Value>> {
-        // fn get_config() -> HashMap<String, Value> {
-        let mut HOME_CONFIG = dirs::home_dir()
-            .expect("Could not determine home directory.")
-            .to_str()
-            .expect("Could not convert home directory path to string.")
-            .to_string();
-        HOME_CONFIG.push_str(CONFIG_FILE_PROPER);
-        let mut c = Config::default();
-        c.merge(CFile::with_name(HOME_CONFIG.as_mut_str()))?
-            .merge(Environment::with_prefix("GIT_GLOBAL"))?
-            .collect()
-            .context("couldnt get your config file")
-        // .expect("Config: Conversion to hashMap Failed")
-    }
+    // fn get_config() -> Result<HashMap<String, Value>> {
+    //     // fn get_config() -> HashMap<String, Value> {
+    //     let mut HOME_CONFIG = dirs::home_dir()
+    //         .expect("Could not determine home directory.")
+    //         .to_str()
+    //         .expect("Could not convert home directory path to string.")
+    //         .to_string();
+    //     HOME_CONFIG.push_str(CONFIG_FILE_PROPER);
+    //     let mut c = Config::default();
+    //     c.merge(CFile::with_name(HOME_CONFIG.as_mut_str()))?
+    //         .merge(Environment::with_prefix("GIT_GLOBAL"))?
+    //         .collect()
+    //         .context("couldnt get your config file")
+    //     // .expect("Config: Conversion to hashMap Failed")
+    // }
 
     fn get_raw_config() -> Result<Config> {
+        // Reimplement with Paths
         let mut HOME_CONFIG = dirs::home_dir()
             .expect("Could not determine home directory.")
             .to_str()
             .expect("Could not convert home directory path to string.")
             .to_string();
+        HOME_CONFIG.push_str("/.config");
         HOME_CONFIG.push_str(CONFIG_FILE_PROPER);
+        // let mut PWD_CONFIG = ".".to_string();
+        // PWD_CONFIG.push_str(CONFIG_FILE_PROPER);
         let mut c = Config::default();
         c.merge(CFile::with_name(HOME_CONFIG.as_mut_str()))?
+            // .merge(CFile::with_name(PWD_CONFIG.as_str()))?
             .merge(Environment::with_prefix("GIT_GLOBAL"))?;
         Ok(c)
     }
@@ -562,25 +559,25 @@ trait Cached {
 mod tests {
     use super::*;
 
-    #[test]
-    fn test_config() {
-        let hm: Result<HashMap<String, Value>>;
-        // let hm: HashMap<String, Value>;
-        hm = GitGlobalConfig::get_config();
-        // hm = GitGlobalConfig::get_config();
-        assert!(hm.is_ok());
-        // let hmu = hm.unwrap()
-        println!("\n\nCONFIG VALS:");
-        for (k, v) in hm.unwrap() {
-            ic!((k, v));
-        }
-        println!("CONFIG VALS END\n\n");
-    }
+    // #[test]
+    // fn test_config() {
+    //     let hm: Result<HashMap<String, Value>>;
+    //     // let hm: HashMap<String, Value>;
+    //     hm = GitGlobalConfig::get_config();
+    //     // let hm = GitGlobalConfig::get_raw_config()?;
+    //     assert!(hm.is_ok());
+    //     // let hmu = hm.unwrap()
+    //     println!("\n\nCONFIG VALS:");
+    //     for (k, v) in hm.unwrap() {
+    //         ic!((k, v));
+    //     }
+    //     println!("CONFIG VALS END\n\n");
+    // }
 
     #[test]
     fn inspect_config() {
         println!("INSPECT CONFIG");
-        let config = GitGlobalConfig::get_config().unwrap();
+        // let config = GitGlobalConfig::get_config().unwrap();
         let more_paths = GitGlobalConfig::get_raw_config()
             .unwrap()
             .get_array("ignored_paths")

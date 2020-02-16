@@ -1,14 +1,14 @@
 //! A Useful struct when dealing with cursive callbacks and Selectviews
 //! [`SelectView`]: ../../../cursive/views/select_view/struct.SelectView.html
 
-use crate::models::{
-    config::GitGlobalConfig, repo::Repo, repo_tag::RepoTag,
-    result::GitGlobalResult,
-};
+use crate::models::{config::GitGlobalConfig, repo::Repo, repo_tag::RepoTag};
 use itertools::Itertools;
 use std::ops::Deref;
 use std::{cell::RefCell, rc::Rc};
 
+/// Used to pass around info in PromptCursive
+/// where we must use a shared struct with
+/// Interior Mutability to model UI state
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub struct LightTable {
     pub repos: Vec<Repo>,
@@ -19,6 +19,7 @@ pub struct LightTable {
 }
 
 impl LightTable {
+    /// Standard init function
     pub fn new(
         repos: Vec<Repo>,
         repo_index: usize,
@@ -35,7 +36,9 @@ impl LightTable {
         }
     }
 
-    /// Returns a LightTable wrapped in an <Rc<RefCell>>
+    /// Returns a [`LightTable`] wrapped in an <Rc<RefCell>>
+    /// This is the most useful form for the purposes of working
+    /// with the Cursive library
     pub fn new_from_rc(
         repos: Vec<Repo>,
         repo_index: usize,
@@ -68,8 +71,9 @@ impl LightTable {
         Self::new_from_rc(reps, 0, 0, vec![], gc.default_tags)
     }
 
-    /// chainable function to apply a simple filter to the [`Repo`] paths so that the `tags` field
-    /// now contains only those repos tht match
+    /// chainable function to apply a simple filter to
+    /// the [`Repo`] paths so that the `tags` field
+    /// now contains only those repos matching the filter
     pub fn filter_repos(&mut self, path_filter: String) -> &mut Self {
         self.repos = self
             .repos
@@ -115,14 +119,7 @@ impl LightTable {
             .iter()
             .flat_map(|r| r.tags.iter().map(|t| t.name.clone()))
             .chain::<Vec<String>>(
-                self.default_tags
-                    // vec!["haskell", "ml", "rust", "apple", "web dev"]
-                    .iter()
-                    // .clone()
-                    .map(|r| r.name.clone())
-                    // .map(String::from)
-                    // .map(RepoTag::new)
-                    .collect(),
+                self.default_tags.iter().map(|r| r.name.clone()).collect(),
             )
             .unique()
             .enumerate()
@@ -197,22 +194,8 @@ impl From<GitGlobalConfig> for LightTable {
     }
 }
 
-// type RMut = Rc<RefCell<TextContent>>;
-type RcResult = Rc<GitGlobalResult>;
-type RcRcResult = Rc<RefCell<GitGlobalResult>>;
-
-type RcRef<V> = Rc<RefCell<V>>;
-type RcRepo = Rc<RefCell<Repo>>;
-type RcRepoTag = Rc<RefCell<RepoTag>>;
 pub type RcVecRepoTag = Rc<RefCell<Vec<RepoTag>>>;
 pub type RcVecRepo = Rc<RefCell<Vec<Repo>>>;
-
-#[allow(dead_code)]
-type SelRepoList<'a> =
-    std::iter::Zip<std::vec::IntoIter<&'a str>, std::vec::IntoIter<Repo>>;
-
-#[allow(dead_code)]
-type SelRepoList2 = std::iter::Zip<String, Repo>;
 
 type SelTagList<'a> =
     std::iter::Zip<std::vec::IntoIter<&'a str>, std::vec::IntoIter<String>>;
@@ -221,97 +204,90 @@ type SelTagList<'a> =
 //  Selectify  Functions
 // =================================================
 
-fn selectify_strings<'a>(tags_1: &'a Vec<String>) -> SelTagList<'a> {
-    let tags_2: Vec<&'a str> = tags_1.iter().map(AsRef::as_ref).collect();
-    return tags_2.into_iter().zip(tags_1.to_vec());
-}
+// fn selectify_strings<'a>(tags_1: &'a Vec<String>) -> SelTagList<'a> {
+//     let tags_2: Vec<&'a str> = tags_1.iter().map(AsRef::as_ref).collect();
+//     return tags_2.into_iter().zip(tags_1.to_vec());
+// }
 
-fn selectify_rc_tags<'a>(rctags: &'a RcVecRepoTag) -> Vec<String> {
-    return rc_borr!(rctags)
-        .iter()
-        .map(|r| r.name.clone())
-        .collect::<Vec<String>>();
-}
+// fn selectify_rc_tags<'a>(rctags: &'a RcVecRepoTag) -> Vec<String> {
+//     return rc_borr!(rctags)
+//         .iter()
+//         .map(|r| r.name.clone())
+//         .collect::<Vec<String>>();
+// }
 
-fn selectify_repos(repos: &RcVecRepo) -> Vec<(String, Repo)> {
-    return RefCell::borrow_mut(&repos)
-        .clone()
-        .into_iter()
-        .map(|r| (r.path.clone(), r))
-        .collect();
-}
+// fn selectify_repos(repos: &RcVecRepo) -> Vec<(String, Repo)> {
+//     return RefCell::borrow_mut(&repos)
+//         .clone()
+//         .into_iter()
+//         .map(|r| (r.path.clone(), r))
+//         .collect();
+// }
 
-/// General selectifier for RC types
-fn selectify_rc_things<R>(
-    // fn selectify_rc_things<R, T>(
-    things: &Rc<RefCell<Vec<R>>>,
-    map_fn: impl Fn(R) -> (String, R), // note: This gives a Sized error when used with `dyn` instead of `impl`
-) -> Vec<(String, R)>
-where
-    R: Clone,
-    // T: IntoIterator<
-    //     Item = (String, R),
-    //     // IntoIter = ::std::vec::IntoIter<(String, R)>,
-    // >,
-{
-    return RefCell::borrow_mut(&things)
-        .clone()
-        .into_iter()
-        .map(map_fn)
-        // .collect::<T>();
-        .collect();
-    // let strs: Vec<String> = RefCell::borrow_mut(things.deref())
-    //     .iter()
-    //     .map(|f| format!("{:?}", f))
-    //     .collect();
-    // return strs.into_iter().zip(things.into_iter()).collect();
-}
+// /// General selectifier for RC types
+// fn selectify_rc_things<R>(
+//     // fn selectify_rc_things<R, T>(
+//     things: &Rc<RefCell<Vec<R>>>,
+//     map_fn: impl Fn(R) -> (String, R), // note: This gives a Sized error when used with `dyn` instead of `impl`
+// ) -> Vec<(String, R)>
+// where
+//     R: Clone,
+//     // T: IntoIterator<
+//     //     Item = (String, R),
+//     //     // IntoIter = ::std::vec::IntoIter<(String, R)>,
+//     // >,
+// {
+//     return RefCell::borrow_mut(&things)
+//         .clone()
+//         .into_iter()
+//         .map(map_fn)
+//         // .collect::<T>();
+//         .collect();
+//     // let strs: Vec<String> = RefCell::borrow_mut(things.deref())
+//     //     .iter()
+//     //     .map(|f| format!("{:?}", f))
+//     //     .collect();
+//     // return strs.into_iter().zip(things.into_iter()).collect();
+// }
 
-fn selectify_rc_things_backwards<R>(
-    things: &Rc<RefCell<Vec<R>>>,
-    map_fn: impl Fn(R) -> (R, String), // note: This gives a Sized error when used with `dyn` instead of `impl`
-) -> Vec<(R, String)>
-where
-    R: Clone,
-{
-    return RefCell::borrow_mut(&things)
-        .clone()
-        .into_iter()
-        .map(map_fn)
-        .collect();
-    // let strs: Vec<String> = RefCell::borrow_mut(things.deref())
-    //     .iter()
-    //     .map(|f| format!("{:?}", f))
-    //     .collect();
-    // return strs.into_iter().zip(things.into_iter()).collect();
-}
+// fn selectify_rc_things_backwards<R>(
+//     things: &Rc<RefCell<Vec<R>>>,
+//     map_fn: impl Fn(R) -> (R, String), // note: This gives a Sized error when used with `dyn` instead of `impl`
+// ) -> Vec<(R, String)>
+// where
+//     R: Clone,
+// {
+//     return RefCell::borrow_mut(&things)
+//         .clone()
+//         .into_iter()
+//         .map(map_fn)
+//         .collect();
+//     // let strs: Vec<String> = RefCell::borrow_mut(things.deref())
+//     //     .iter()
+//     //     .map(|f| format!("{:?}", f))
+//     //     .collect();
+//     // return strs.into_iter().zip(things.into_iter()).collect();
+// }
 
-fn selectify_things_two<T>(
-    things: Vec<T>,
-    map_fn: impl Fn(T) -> (String, T),
-) -> Vec<(String, T)>
-where
-    T: std::fmt::Debug,
-{
-    // let strs: Vec<String> = things.into_iter().map(map_fn).collect();
-    let strs = things.into_iter().map(map_fn).collect();
-    // let strs: Vec<String> = things.iter().map(|f| format!("{:?}", f)).collect();
-    // return strs.into_iter().zip(things.into_iter()).collect();
-    return strs;
-}
+// fn selectify_things_two<T>(
+//     things: Vec<T>,
+//     map_fn: impl Fn(T) -> (String, T),
+// ) -> Vec<(String, T)>
+// where
+//     T: std::fmt::Debug,
+// {
+//     // let strs: Vec<String> = things.into_iter().map(map_fn).collect();
+//     let strs = things.into_iter().map(map_fn).collect();
+//     // let strs: Vec<String> = things.iter().map(|f| format!("{:?}", f)).collect();
+//     // return strs.into_iter().zip(things.into_iter()).collect();
+//     return strs;
+// }
 
-fn selectify_things<T>(things: Vec<T>) -> Vec<(String, T)>
-where
-    T: std::fmt::Debug,
-{
-    let strs: Vec<String> = things.iter().map(|f| format!("{:?}", f)).collect();
-    return strs.into_iter().zip(things.into_iter()).collect();
-    // return things.into_iter().zip(strs.iter()).collect();
-
-    // return RefCell::borrow_mut(&repos)
-    //     .clone()
-    //     .into_iter()
-    //     .map(|r| (r.path.clone(), r))
-    //     // .map(|r| (r.path.clone(), Rc::new(RefCell::new(r))))
-    //     .collect();
-}
+// fn selectify_things<T>(things: Vec<T>) -> Vec<(String, T)>
+// where
+//     T: std::fmt::Debug,
+// {
+//     let strs: Vec<String> = things.iter().map(|f| format!("{:?}", f)).collect();
+//     return strs.into_iter().zip(things.into_iter()).collect();
+//     // return things.into_iter().zip(strs.iter()).collect();
+// }
