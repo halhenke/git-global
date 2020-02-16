@@ -9,6 +9,7 @@ pub mod list;
 pub mod list_tags;
 pub mod new_status;
 pub mod prompt_cursive;
+pub mod prompt_iced;
 pub mod prompt_tui;
 pub mod scan;
 pub mod sync_status;

@@ -101,6 +101,10 @@ pub fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
                 .about("demo the Cursive Terminal UI library - also generally does nothing"),
         )
         .subcommand(
+            SubCommand::with_name("prompt-iced")
+                .about("demo the iced UI library - see how it works out"),
+        )
+        .subcommand(
             SubCommand::with_name("list")
                 .about("lists all git repos on your machine [the default]")
                 .arg(
@@ -343,6 +347,7 @@ pub fn run_from_command_line_nested() -> Result<()> {
         }
         Some("prompt-tui") => subcommands::prompt_tui::go(),
         Some("prompt-cursive") => subcommands::prompt_cursive::go(),
+        Some("prompt-iced") => subcommands::prompt_iced::go(),
         Some("tag-projects") => {
             let pf = get_path_filter(&matches, "tag-projects");
             subcommands::tag_projects::go(pf)
