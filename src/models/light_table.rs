@@ -11,10 +11,10 @@ use std::{cell::RefCell, rc::Rc};
 /// where we must use a shared struct with
 /// Interior Mutability to model UI state
 #[derive(PartialEq, Eq, Clone, Debug)]
-pub struct LightTable {
+pub struct LightTable<'a> {
     pub repos: Vec<Repo>,
     // TODO: - Should this just be a reference?
-    pub filtered_repos: Vec<Repo>,
+    pub filtered_repos: Vec<&'a Repo>,
     pub repo_index: usize,
     pub tag_index: usize,
     pub tags: Vec<RepoTag>,
@@ -22,11 +22,12 @@ pub struct LightTable {
     pub repo_filter: String,
 }
 
-impl LightTable {
+impl LightTable<'_> {
+    // impl<'a> LightTable<'a> {
     /// Standard init function
     pub fn new(
         repos: Vec<Repo>,
-        filtered_repos: Vec<Repo>,
+        filtered_repos: Vec<&Repo>,
         repo_index: usize,
         tag_index: usize,
         tags: Vec<RepoTag>,
@@ -48,14 +49,15 @@ impl LightTable {
     /// This is the most useful form for the purposes of working
     /// with the Cursive library
     pub fn new_from_rc(
+        // pub fn new_from_rc<'a>(
         repos: Vec<Repo>,
-        filtered_repos: Vec<Repo>,
+        filtered_repos: Vec<&Repo>,
         repo_index: usize,
         tag_index: usize,
         tags: Vec<RepoTag>,
         default_tags: Vec<RepoTag>,
         repo_filter: String,
-    ) -> Rc<RefCell<LightTable>> {
+    ) -> Rc<RefCell<LightTable<'_>>> {
         Rc::new(RefCell::new(Self::new(
             repos,
             filtered_repos,
@@ -68,10 +70,12 @@ impl LightTable {
     }
 
     /// Construct a LightTable from a [`GitGlobalConfig`] (LightTable is probably slightly superfluous as a new data structure actually...)
-    pub fn new_from_ggc(
+    pub fn new_from_ggc<'a>(
         gc: GitGlobalConfig,
         path_filter: Option<String>,
-    ) -> Rc<RefCell<LightTable>> {
+    ) -> Rc<RefCell<LightTable<'a>>> {
+        // ) -> Rc<RefCell<LightTable<'_>>> {
+        // ) -> Rc<RefCell<LightTable<'a>>> {
         let reps: Vec<Repo> = if let Some(pf) = path_filter {
             // NOTE: Adds an extra clone to use filter_paths ¯\_(ツ)_/¯
             gc.get_cached_repos().filter_paths(&pf)
@@ -82,9 +86,10 @@ impl LightTable {
             gc.get_cached_repos()
         };
         Self::new_from_rc(
-            reps.clone(),
+            // reps.clone(),
             // TODO: - Should this just be a reference?
             reps,
+            reps.iter().collect(),
             0,
             0,
             vec![],
@@ -93,17 +98,28 @@ impl LightTable {
         )
     }
 
-    /// chainable function to apply a simple filter to
-    /// the [`Repo`] paths so that the `tags` field
-    /// now contains only those repos matching the filter
-    pub fn filter_repos(&mut self, path_filter: &str) -> &mut Self {
-        self.filtered_repos = self.repos.filter_paths(path_filter);
-        // .clone()
-        // .into_iter()
-        // .filter(|r| r.path.contains(&path_filter))
-        // .collect();
-        self
-    }
+    // /// chainable function to apply a simple filter to
+    // /// the [`Repo`] paths so that the `tags` field
+    // /// now contains only those repos matching the filter
+    // pub fn filter_repos<'b: 'c, 'c>(
+    //     &'b mut self,
+    //     path_filter: &'c str,
+    // ) -> &'b mut Self {
+    //     // self.filtered_repos = self.repos.filter_paths(path_filter);
+
+    //     self.filtered_repos = self
+    //         // let filtered_repos: Vec<&'a Repo> = self
+    //         .repos
+    //         .iter()
+    //         .filter(|r| r.path.contains(&path_filter))
+    //         // .collect::<Vec<&'a Repo>>();
+    //         .collect();
+    //     // .clone()
+    //     // .into_iter()
+    //     // .filter(|r| r.path.contains(&path_filter))
+    //     // .collect();
+    //     self
+    // }
 
     /// Helper function for the Cursive [`SelectView`](../../../cursive/views/select_view/struct.SelectView.html).
     ///
@@ -157,12 +173,14 @@ impl LightTable {
         self.tags_as_list()
     }
 
-    pub fn rerepos(&mut self) -> Vec<(String, usize)> {
+    pub fn rerepos<'b>(&mut self) -> Vec<(String, usize)> {
         let s = self.repo_filter.clone();
         // TODO: Try to figure out a sensible way to leave the
         // index the same if possible
         // let old_repos = self.filtered_repos.clone()
-        self.filter_repos(&s);
+
+        // self.filter_repos(&s);
+
         // TODO: Should this be in filter_repos?
         self.repo_index = 0;
         // self.repos
@@ -227,12 +245,12 @@ impl LightTable {
 
 use std::convert::From;
 
-impl From<GitGlobalConfig> for LightTable {
+impl<'a> From<GitGlobalConfig> for LightTable<'a> {
     fn from(gc: GitGlobalConfig) -> Self {
         let repos = gc.get_cached_repos();
         LightTable::new(
-            repos.clone(),
             repos,
+            repos.iter().collect(),
             0,
             0,
             gc.tags,
