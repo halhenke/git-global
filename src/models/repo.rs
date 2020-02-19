@@ -158,7 +158,7 @@ pub trait Filterable {
     // let repos: Vec<Repo>;
     // type repos
     fn filter_tags(&self, tags: Vec<RepoTag>) -> Vec<Repo>;
-    fn filter_paths(&self, path: String) -> Vec<Repo>;
+    fn filter_paths(&self, path: &str) -> Vec<Repo>;
     // fn filter_tags(&self, tags: Vec<RepoTag>) -> Vec<Repo> {
     //     self.repos
     //         .iter()
@@ -174,10 +174,10 @@ impl Filterable for Vec<Repo> {
             .filter(|r| r.tags.iter().any(|rt| tags.contains(rt)))
             .collect()
     }
-    fn filter_paths(&self, path: String) -> Vec<Repo> {
+    fn filter_paths(&self, path: &str) -> Vec<Repo> {
         self.clone()
             .into_iter()
-            .filter(|r| r.path.contains(&path))
+            .filter(|r| r.path.contains(path))
             // .filter(|r| r.tags.iter().any(|rt| tags.contains(rt)))
             .collect()
     }

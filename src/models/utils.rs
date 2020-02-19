@@ -174,6 +174,5 @@ pub fn new_find_repos() -> Vec<Repo> {
         }
     }
     repos.sort_by(|a, b| a.path().cmp(&b.path()));
-    // future::ok::<Vec<Repo>, ()>(repos)
     repos
 }

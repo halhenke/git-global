@@ -1,6 +1,7 @@
 //! A Useful struct when dealing with cursive callbacks and Selectviews
 //! [`SelectView`]: ../../../cursive/views/select_view/struct.SelectView.html
 
+use crate::models::repo::Filterable;
 use crate::models::{config::GitGlobalConfig, repo::Repo, repo_tag::RepoTag};
 use itertools::Itertools;
 use std::ops::Deref;
@@ -12,27 +13,34 @@ use std::{cell::RefCell, rc::Rc};
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub struct LightTable {
     pub repos: Vec<Repo>,
+    // TODO: - Should this just be a reference?
+    pub filtered_repos: Vec<Repo>,
     pub repo_index: usize,
     pub tag_index: usize,
     pub tags: Vec<RepoTag>,
     pub default_tags: Vec<RepoTag>,
+    pub repo_filter: String,
 }
 
 impl LightTable {
     /// Standard init function
     pub fn new(
         repos: Vec<Repo>,
+        filtered_repos: Vec<Repo>,
         repo_index: usize,
         tag_index: usize,
         tags: Vec<RepoTag>,
         default_tags: Vec<RepoTag>,
+        repo_filter: String,
     ) -> LightTable {
         LightTable {
             repos,
+            filtered_repos,
             repo_index,
             tag_index,
             tags,
             default_tags,
+            repo_filter,
         }
     }
 
@@ -41,17 +49,21 @@ impl LightTable {
     /// with the Cursive library
     pub fn new_from_rc(
         repos: Vec<Repo>,
+        filtered_repos: Vec<Repo>,
         repo_index: usize,
         tag_index: usize,
         tags: Vec<RepoTag>,
         default_tags: Vec<RepoTag>,
+        repo_filter: String,
     ) -> Rc<RefCell<LightTable>> {
         Rc::new(RefCell::new(Self::new(
             repos,
+            filtered_repos,
             repo_index,
             tag_index,
             tags,
             default_tags,
+            repo_filter,
         )))
     }
 
@@ -61,26 +73,35 @@ impl LightTable {
         path_filter: Option<String>,
     ) -> Rc<RefCell<LightTable>> {
         let reps: Vec<Repo> = if let Some(pf) = path_filter {
-            gc.get_cached_repos()
-                .into_iter()
-                .filter(|r| r.path.contains(&pf))
-                .collect()
+            // NOTE: Adds an extra clone to use filter_paths ¯\_(ツ)_/¯
+            gc.get_cached_repos().filter_paths(&pf)
+        // .into_iter()
+        // .filter(|r| r.path.contains(&pf))
+        // .collect()
         } else {
             gc.get_cached_repos()
         };
-        Self::new_from_rc(reps, 0, 0, vec![], gc.default_tags)
+        Self::new_from_rc(
+            reps.clone(),
+            // TODO: - Should this just be a reference?
+            reps,
+            0,
+            0,
+            vec![],
+            gc.default_tags,
+            "".to_owned(),
+        )
     }
 
     /// chainable function to apply a simple filter to
     /// the [`Repo`] paths so that the `tags` field
     /// now contains only those repos matching the filter
-    pub fn filter_repos(&mut self, path_filter: String) -> &mut Self {
-        self.repos = self
-            .repos
-            .clone()
-            .into_iter()
-            .filter(|r| r.path.contains(&path_filter))
-            .collect();
+    pub fn filter_repos(&mut self, path_filter: &str) -> &mut Self {
+        self.filtered_repos = self.repos.filter_paths(path_filter);
+        // .clone()
+        // .into_iter()
+        // .filter(|r| r.path.contains(&path_filter))
+        // .collect();
         self
     }
 
@@ -136,6 +157,24 @@ impl LightTable {
         self.tags_as_list()
     }
 
+    pub fn rerepos(&mut self) -> Vec<(String, usize)> {
+        let s = self.repo_filter.clone();
+        // TODO: Try to figure out a sensible way to leave the
+        // index the same if possible
+        // let old_repos = self.filtered_repos.clone()
+        self.filter_repos(&s);
+        // TODO: Should this be in filter_repos?
+        self.repo_index = 0;
+        // self.repos
+        //     .filter_paths(&self.repo_filter)
+        self.filtered_repos
+            .iter()
+            .enumerate()
+            .map(|(i, r)| (r.path.clone(), i))
+            // .collect::<Vec<(&str, usize)>>()
+            .collect::<Vec<(String, usize)>>()
+    }
+
     /// Take our current list of tags and put them into the form of a `Vec` of (tag name, index) pairs.
     pub fn tags_as_list(&self) -> Vec<(String, usize)> {
         self.tags
@@ -162,14 +201,14 @@ impl LightTable {
     }
 
     /// This should go - it just returns a bunch of fake tags
-    pub fn all_tags(&self) -> Vec<(String, usize)> {
-        vec!["haskell", "ml", "rust", "apple", "web dev"]
-            .iter()
-            .map(|t| RepoTag::new(t))
-            .enumerate()
-            .map(|(i, t)| (t.name, i))
-            .collect::<Vec<(String, usize)>>()
-    }
+    // pub fn all_tags(&self) -> Vec<(String, usize)> {
+    //     vec!["haskell", "ml", "rust", "apple", "web dev"]
+    //         .iter()
+    //         .map(|t| RepoTag::new(t))
+    //         .enumerate()
+    //         .map(|(i, t)| (t.name, i))
+    //         .collect::<Vec<(String, usize)>>()
+    // }
 
     /// Will add a tag to the current_repo *only if it is not already there*, and will recalculate the total tag list.
     pub fn add_tag(&mut self, rt: &RepoTag) -> bool {
@@ -190,7 +229,16 @@ use std::convert::From;
 
 impl From<GitGlobalConfig> for LightTable {
     fn from(gc: GitGlobalConfig) -> Self {
-        LightTable::new(gc.get_cached_repos(), 0, 0, gc.tags, gc.default_tags)
+        let repos = gc.get_cached_repos();
+        LightTable::new(
+            repos.clone(),
+            repos,
+            0,
+            0,
+            gc.tags,
+            gc.default_tags,
+            "".to_owned(),
+        )
     }
 }
 

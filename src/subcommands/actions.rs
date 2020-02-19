@@ -36,7 +36,7 @@ pub fn perform(
         repos = repos.filter_tags(tags);
     }
     if let Some(path) = path {
-        repos = repos.filter_paths(path);
+        repos = repos.filter_paths(&path);
     }
     for r in &repos {
         println!("Doing {}", r.path);
