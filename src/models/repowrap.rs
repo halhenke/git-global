@@ -1,9 +1,11 @@
 use crate::models::{repo::Repo, repo_tag::RepoTag};
 use itertools::Itertools;
-use std::hash::Hash;
+use std::collections::{hash_map::RandomState, hash_set::HashSet};
+use std::hash::{Hash, Hasher};
+use std::iter::{Extend, FromIterator};
 use std::path::Path;
 
-#[derive(Serialize, Deserialize, Debug, PartialOrd, Ord, Hash, Clone)]
+#[derive(Serialize, Deserialize, Debug, PartialOrd, Ord, Clone)]
 pub struct RepoWrap(Repo);
 
 impl From<Repo> for RepoWrap {
@@ -19,6 +21,14 @@ impl PartialEq for RepoWrap {
 }
 
 impl Eq for RepoWrap {}
+
+/// I need Hash to only rely on path and not tags for
+/// equality/difference/union etc of Sets to work
+impl Hash for RepoWrap {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.0.path.hash(state);
+    }
+}
 
 // Because of orphan trait rule i have to either
 // - define my own trait
@@ -41,9 +51,18 @@ pub trait Mergeable {
     fn merge_other(&mut self, other: Self) -> Self;
 }
 
-impl Mergeable for RepoWrap {
+impl Mergeable for Vec<RepoWrap> {
     fn merge_other(&mut self, other: Self) -> Self {
-        return other;
+        let me: HashSet<RepoWrap, RandomState> =
+            HashSet::from_iter(self.clone());
+        let notme: HashSet<RepoWrap, RandomState> = HashSet::from_iter(other);
+        let mut keepers: HashSet<RepoWrap, RandomState> =
+            me.difference(&notme).cloned().collect();
+        // keepers.exte
+        keepers.extend(notme);
+        // return other;
+        // return vec![];
+        return keepers.into_iter().collect();
         // unimplemented!
         // ANCHOR Hey - this is where we go
     }
