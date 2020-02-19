@@ -34,3 +34,21 @@ impl MyFrom<Vec<Repo>> for Vec<RepoWrap> {
         repos.into_iter().map(RepoWrap).collect()
     }
 }
+
+// pub trait Mergeable<T> // where
+//     Self = T,
+pub trait Mergeable {
+    fn merge_other(&mut self, other: Self) -> Self;
+}
+
+impl Mergeable for RepoWrap {
+    fn merge_other(&mut self, other: Self) -> Self {
+        return other;
+        // unimplemented!
+        // ANCHOR Hey - this is where we go
+    }
+}
+
+// impl RepoWrap {
+//     pub merge_wraps()
+// }
