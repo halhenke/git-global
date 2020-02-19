@@ -39,7 +39,7 @@ use std::borrow::BorrowMut;
 // use std::vec::IntoIter;
 use std::iter::Iterator;
 
-fn fetch_all_tags<'a>(light_table: &'a mut LightTable) -> &mut Vec<RepoTag> {
+fn fetch_all_tags<'a>(light_table: &'a mut LightTable) -> &'a mut Vec<RepoTag> {
     let _current_repo: usize = light_table.repo_index;
     let current_repo: &mut Repo = light_table
         .repos
@@ -61,17 +61,20 @@ pub fn go<'a>(path_filter: Option<String>) -> WeirdResult<GitGlobalResult> {
     let TAG_DISPLAY: String = String::from("tag-display");
     let TAG_POOL: String = String::from("tag-pool");
     let NEW_TAG: String = String::from("new-tag");
+    let FILE_FILTER: String = String::from("file-filter");
 
     let focus_ring: Ring<String> = ring![
         REPO_FIELD.clone(),
         TAG_DISPLAY.clone(),
         TAG_POOL.clone(),
-        NEW_TAG.clone()
+        NEW_TAG.clone(),
+        FILE_FILTER.clone()
     ];
     let foci: Foci = Foci::new(focus_ring);
     let foci1 = Rc::new(foci);
     let foci2 = Rc::clone(&foci1);
     let foci3 = Rc::clone(&foci1);
+    let foci4 = Rc::clone(&foci1);
 
     let gc = GitGlobalConfig::new();
     let global_table = LightTable::new_from_ggc(gc, path_filter);
@@ -82,6 +85,7 @@ pub fn go<'a>(path_filter: Option<String>) -> WeirdResult<GitGlobalResult> {
     let repo_ref = Rc::clone(&global_table);
     let repo_tag_ref = Rc::clone(&global_table);
     let all_tags_ref = Rc::clone(&global_table);
+    let repo_filter_ref = Rc::clone(&global_table);
     let final_ref = Rc::clone(&global_table);
     // =================================================
     //  TAKE 2
@@ -183,7 +187,7 @@ pub fn go<'a>(path_filter: Option<String>) -> WeirdResult<GitGlobalResult> {
     let tags_displayer_outer = tags_displayer_tmp.min_width(20).max_height(10);
     let tags_displayer = OnEventView::new(tags_displayer_outer)
         .on_event(Event::Key(Key::Esc), |s| {
-            s.focus_id("repo-field").expect("...")
+            s.focus_name("repo-field").expect("...")
         })
         .on_event(Event::Key(Key::Backspace), move |s| {
             // note: we can find our own view here but maybe because we are wrapped in an `OnEventView`
@@ -297,12 +301,41 @@ pub fn go<'a>(path_filter: Option<String>) -> WeirdResult<GitGlobalResult> {
     let tags_pool = tags_pool_tmp
         .on_event_inner(Event::Key(Key::Esc), |_s1, _k| {
             let cb = Callback::from_fn(|siv: &mut Cursive| {
-                siv.focus_id("repo-field")
+                siv.focus_name("repo-field")
                     .expect("failed to focus on 'repo-field'");
             });
             return Some(EventResult::Consumed(Some(cb)));
         })
         .scrollable();
+
+    // =================================================
+    // FILE FILTER
+    // =================================================
+    let rf = REPO_FIELD.clone();
+    let file_filter_inner =
+        EditView::new().on_submit(move |s: &mut Cursive, ss: &str| {
+            let _light_table: &mut LightTable = &mut (*repo_filter_ref)
+                .try_borrow_mut()
+                .expect("Mut Borrow 4 failed");
+            _light_table.repo_filter = ss.to_owned();
+            let filtered = _light_table.rerepos();
+            let mut repo_box: ViewRef<SelectView<usize>> = s
+                .find_name(&rf)
+                .expect(&format!("name find failed for {}", &rf));
+            repo_box.clear();
+            repo_box.add_all(filtered);
+        });
+    let file_filter_id = file_filter_inner.with_name(FILE_FILTER.clone());
+    let file_filter_tmp = foci4.make_event_layer(
+        &mut siv,
+        vec![Event::Key(Key::Left), Event::Key(Key::Right)],
+        file_filter_id,
+    );
+    let file_filter = file_filter_tmp;
+
+    // =================================================
+    // MAIN LAYOUT
+    // =================================================
 
     let top_layout = LinearLayout::horizontal()
         .child(Panel::new(repo_selector).title("Files"))
@@ -312,6 +345,7 @@ pub fn go<'a>(path_filter: Option<String>) -> WeirdResult<GitGlobalResult> {
         .child(top_layout)
         .child(Panel::new(tags_pool).title("Available Tags"))
         .child(Panel::new(new_tag).title("New Tag"))
+        .child(Panel::new(file_filter).title("File Filter"))
         // .child(Panel::new(error_view))
         .child(Panel::new(text_view));
 
