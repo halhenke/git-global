@@ -183,6 +183,7 @@ impl Filterable for Vec<Repo> {
     }
 }
 
+/// A trait to help me merge Repos and Tags such that i could take a subset, alter some of those Repos/Tags and then merge them back into the original Vec
 pub trait Updatable {
     fn tags_from_repos(&self, repos: Vec<Repo>) -> Vec<RepoTag>;
     fn recalculate_tags(&self) -> Vec<RepoTag>;
@@ -272,6 +273,7 @@ impl Updatable for crate::models::config::GitGlobalConfig {
         self.tags = self.recalculate_tags();
     }
 
+    /// Takes two Vecs, concats them, drops duplicates and returns the sorted results
     fn merge_things<T>(&self, things_one: Vec<T>, things_two: Vec<T>) -> Vec<T>
     where
         T: Clone + Eq + Hash + Ord,
@@ -286,6 +288,8 @@ impl Updatable for crate::models::config::GitGlobalConfig {
         new_things
     }
 
+    /// takes two Vecs, deletes all elements of the second Vec from the first, drops duplicates and returns the sorted result
+    /// Basically could be done way bettwe with a HashSet?
     fn delete_things<T>(&self, things_one: Vec<T>, things_two: Vec<T>) -> Vec<T>
     where
         T: Clone + Eq + Hash + Ord,

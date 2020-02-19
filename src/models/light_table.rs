@@ -4,6 +4,8 @@
 use crate::models::repo::Filterable;
 use crate::models::{config::GitGlobalConfig, repo::Repo, repo_tag::RepoTag};
 use itertools::Itertools;
+use std::collections::{hash_map::RandomState, hash_set::HashSet};
+use std::iter::FromIterator;
 use std::ops::Deref;
 use std::{cell::RefCell, rc::Rc};
 
@@ -103,6 +105,32 @@ impl LightTable {
         // .filter(|r| r.path.contains(&path_filter))
         // .collect();
         self
+    }
+
+    /// We want to find the new Vec of filtered_repos but also have to assume that there is an old set that has information we need to add to our complete set of repos (the first time the function is called this should just be an empty set)
+    /// OK This is fucked - much easier to just copy tags across to original Vector list...
+    pub fn set_filter_repos(&mut self, path_filter: &str) -> Vec<Repo> {
+        let old_filtered: HashSet<Repo, RandomState> =
+            HashSet::from_iter(self.filtered_repos.clone());
+        let old_no_filter: HashSet<Repo, RandomState> =
+            HashSet::from_iter(self.repos.clone());
+        let old_filtered_paths: Vec<String> = self
+            .filtered_repos
+            .clone()
+            .into_iter()
+            .map(|r| r.path)
+            .collect();
+        let unfiltered_og: Vec<Repo> = self
+            .repos
+            .clone()
+            .into_iter()
+            .filter(|r| !old_filtered_paths.contains(&r.path))
+            .collect();
+        // let merged = old_no_filter
+        let filtered = self.repos.filter_paths(path_filter);
+        let repo_hash: HashSet<Repo, RandomState> =
+            HashSet::from_iter(filtered);
+        return vec![];
     }
 
     /// Helper function for the Cursive [`SelectView`](../../../cursive/views/select_view/struct.SelectView.html).
