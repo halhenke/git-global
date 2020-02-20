@@ -2,7 +2,9 @@
 #![feature(async_closure)]
 #![feature(termination_trait_lib)]
 #![feature(test)]
+#![feature(const_fn)]
 // #![feature(custom_attribute)]
+
 //! Keep track of all your git repositories.
 //!
 //! This crate houses the binary and library for the git-global subcommand, a
