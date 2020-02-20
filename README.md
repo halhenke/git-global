@@ -57,8 +57,9 @@ git config --global global.ignore .cargo,.vim,Library
 ### Bugs
 
 - [ ] What if we scan for repos again - do we lose all our existing tag info?
+  - [ ] Should have an "update repos" scan by default that will keep existing tags info...
   - [ ] We need to store tags separately maybe?
-- [ ] When we tag-projects after filtering by path/tag and save them we are overwriting our repos with a subset of all our repos
+- [x] When we tag-projects after filtering by path/tag and save them we are overwriting our repos with a subset of all our repos
 
 ### Bigger Changes
 
