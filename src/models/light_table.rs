@@ -2,6 +2,7 @@
 //! [`SelectView`]: ../../../cursive/views/select_view/struct.SelectView.html
 
 use crate::models::repo::Filterable;
+use crate::models::repowrap::{Mergeable, MyFrom, MyInto, RepoWrap};
 use crate::models::{config::GitGlobalConfig, repo::Repo, repo_tag::RepoTag};
 use itertools::Itertools;
 use std::collections::{hash_map::RandomState, hash_set::HashSet};
@@ -95,6 +96,16 @@ impl LightTable {
         )
     }
 
+    /// We want to find the new Vec of filtered_repos but also have to assume that there is an old set that has information we need to add to our complete set of repos (the first time the function is called this should just be an empty set)
+    /// This should also be called before we save tags in order to merge any changes from the filtered_list into the repo list that will be saved
+    pub fn repo_filter_update(&mut self) {
+        let mut old_repos: Vec<RepoWrap> = MyFrom::from(self.repos.clone());
+        let old_filtered_repos: Vec<RepoWrap> =
+            MyFrom::from(self.filtered_repos.clone());
+        self.repos = MyInto::into(old_repos.merge_other(old_filtered_repos));
+        self.filtered_repos = self.repos.filter_paths(&self.repo_filter);
+    }
+
     /// chainable function to apply a simple filter to
     /// the [`Repo`] paths so that the `tags` field
     /// now contains only those repos matching the filter
@@ -107,37 +118,38 @@ impl LightTable {
         self
     }
 
-    /// We want to find the new Vec of filtered_repos but also have to assume that there is an old set that has information we need to add to our complete set of repos (the first time the function is called this should just be an empty set)
-    /// OK This is fucked - much easier to just copy tags across to original Vector list...
-    pub fn set_filter_repos(&mut self, path_filter: &str) -> Vec<Repo> {
-        let old_filtered: HashSet<Repo, RandomState> =
-            HashSet::from_iter(self.filtered_repos.clone());
-        let old_no_filter: HashSet<Repo, RandomState> =
-            HashSet::from_iter(self.repos.clone());
-        let old_filtered_paths: Vec<String> = self
-            .filtered_repos
-            .clone()
-            .into_iter()
-            .map(|r| r.path)
-            .collect();
-        let unfiltered_og: Vec<Repo> = self
-            .repos
-            .clone()
-            .into_iter()
-            .filter(|r| !old_filtered_paths.contains(&r.path))
-            .collect();
-        // let merged = old_no_filter
-        let filtered = self.repos.filter_paths(path_filter);
-        let repo_hash: HashSet<Repo, RandomState> =
-            HashSet::from_iter(filtered);
-        return vec![];
-    }
+    // /// We want to find the new Vec of filtered_repos but also have to assume that there is an old set that has information we need to add to our complete set of repos (the first time the function is called this should just be an empty set)
+    // /// OK This is fucked - much easier to just copy tags across to original Vector list...
+    // pub fn set_filter_repos(&mut self, path_filter: &str) -> Vec<Repo> {
+    //     let old_filtered: HashSet<Repo, RandomState> =
+    //         HashSet::from_iter(self.filtered_repos.clone());
+    //     let old_no_filter: HashSet<Repo, RandomState> =
+    //         HashSet::from_iter(self.repos.clone());
+    //     let old_filtered_paths: Vec<String> = self
+    //         .filtered_repos
+    //         .clone()
+    //         .into_iter()
+    //         .map(|r| r.path)
+    //         .collect();
+    //     let unfiltered_og: Vec<Repo> = self
+    //         .repos
+    //         .clone()
+    //         .into_iter()
+    //         .filter(|r| !old_filtered_paths.contains(&r.path))
+    //         .collect();
+    //     // let merged = old_no_filter
+    //     let filtered = self.repos.filter_paths(path_filter);
+    //     let repo_hash: HashSet<Repo, RandomState> =
+    //         HashSet::from_iter(filtered);
+    //     return vec![];
+    // }
 
     /// Helper function for the Cursive [`SelectView`](../../../cursive/views/select_view/struct.SelectView.html).
     ///
-    /// Return the `repos` field as a [`Vec`] of label, index tuples suitable for input to a [`SelectView`](../../../cursive/views/select_view/struct.SelectView.html) in `Cursive`
+    /// Return the `filtered_repos` field as a [`Vec`] of label, index tuples suitable for input to a [`SelectView`](../../../cursive/views/select_view/struct.SelectView.html) in `Cursive`
+    /// NOTE We use filtered_repos as it is the UI version of repo state
     pub fn selectify_repos(&self) -> Vec<(&str, usize)> {
-        self.repos
+        self.filtered_repos
             .iter()
             .enumerate()
             .map(|(i, r)| (r.path.as_str(), i))
@@ -147,8 +159,11 @@ impl LightTable {
     /// Helper function for the Cursive [`SelectView`](../../../cursive/views/select_view/struct.SelectView.html)
     ///
     /// Return a `Vec` of (label, index) pairs from the tags associated with the currently selected [`Repo`]
+    /// NOTE We use filtered_repos as it is the UI version of repo state
     pub fn selectify_tags(&self, index: usize) -> Vec<(&str, usize)> {
-        self.repos
+        self
+            // .repos
+            .filtered_repos
             .iter()
             .nth(index)
             .expect("ERROR - index requested outside of repos bounds")
@@ -159,9 +174,11 @@ impl LightTable {
             .collect::<Vec<(&str, usize)>>()
     }
 
+    // FIXME - How is this different from `reset_all_tags`?
     /// Helper function for the Cursive `SelectView`.
     ///
     /// Returns a [`Vec`] of (label, index) pairs from all the tags currently assigned to one or more Repos *plus* the set of `default_tags` that are globally assigned by [`GitGlobalConfig`]
+    /// NOTE We use repos as well as filtered_repos in order to ensure we display all tags
     pub fn all_the_tags(&self) -> Vec<(String, usize)> {
         let mut r = self
             .repos
@@ -169,6 +186,11 @@ impl LightTable {
             .flat_map(|r| r.tags.iter().map(|t| t.name.clone()))
             .chain::<Vec<String>>(
                 self.default_tags.iter().map(|r| r.name.clone()).collect(),
+            )
+            .chain(
+                self.filtered_repos
+                    .iter()
+                    .flat_map(|r| r.tags.iter().map(|t| t.name.clone())),
             )
             .unique()
             .enumerate()
@@ -186,12 +208,13 @@ impl LightTable {
     }
 
     pub fn rerepos(&mut self) -> Vec<(String, usize)> {
-        let s = self.repo_filter.clone();
+        // let s = self.repo_filter.clone();
         // TODO: Try to figure out a sensible way to leave the
         // index the same if possible
         // let old_repos = self.filtered_repos.clone()
-        self.filter_repos(&s);
+        // self.filter_repos(&s);
         // TODO: Should this be in filter_repos?
+        self.repo_filter_update();
         self.repo_index = 0;
         // self.repos
         //     .filter_paths(&self.repo_filter)
@@ -216,32 +239,27 @@ impl LightTable {
     /// Helper function for the Cursive [`SelectView`](../../../cursive/views/select_view/struct.SelectView.html).
     ///
     /// Recalculate the list of tags available to choose from based on the list of `repos` and the prepopulated `default_tags`
+    // TODO - common methods for getting list of tags from a Vec of Repos
+    /// NOTE We use repos as well as filtered_repos in order to ensure we display all tags
+
     pub fn reset_all_tags(&mut self) {
         let mut _tmp: Vec<RepoTag> = self
             .repos
             .iter()
             .flat_map(|r| r.tags.clone())
             .chain::<Vec<RepoTag>>(self.default_tags.clone())
+            .chain(self.filtered_repos.iter().flat_map(|r| r.tags.clone()))
             .unique()
             .collect::<Vec<RepoTag>>();
         _tmp.sort();
         self.tags = _tmp;
     }
 
-    /// This should go - it just returns a bunch of fake tags
-    // pub fn all_tags(&self) -> Vec<(String, usize)> {
-    //     vec!["haskell", "ml", "rust", "apple", "web dev"]
-    //         .iter()
-    //         .map(|t| RepoTag::new(t))
-    //         .enumerate()
-    //         .map(|(i, t)| (t.name, i))
-    //         .collect::<Vec<(String, usize)>>()
-    // }
-
     /// Will add a tag to the current_repo *only if it is not already there*, and will recalculate the total tag list.
     pub fn add_tag(&mut self, rt: &RepoTag) -> bool {
         let current_repo = self
-            .repos
+            // .repos
+            .filtered_repos
             .get_mut(self.repo_index)
             .expect("could not get current repo");
         if current_repo.tags.contains(rt) {
@@ -275,95 +293,3 @@ pub type RcVecRepo = Rc<RefCell<Vec<Repo>>>;
 
 type SelTagList<'a> =
     std::iter::Zip<std::vec::IntoIter<&'a str>, std::vec::IntoIter<String>>;
-
-// =================================================
-//  Selectify  Functions
-// =================================================
-
-// fn selectify_strings<'a>(tags_1: &'a Vec<String>) -> SelTagList<'a> {
-//     let tags_2: Vec<&'a str> = tags_1.iter().map(AsRef::as_ref).collect();
-//     return tags_2.into_iter().zip(tags_1.to_vec());
-// }
-
-// fn selectify_rc_tags<'a>(rctags: &'a RcVecRepoTag) -> Vec<String> {
-//     return rc_borr!(rctags)
-//         .iter()
-//         .map(|r| r.name.clone())
-//         .collect::<Vec<String>>();
-// }
-
-// fn selectify_repos(repos: &RcVecRepo) -> Vec<(String, Repo)> {
-//     return RefCell::borrow_mut(&repos)
-//         .clone()
-//         .into_iter()
-//         .map(|r| (r.path.clone(), r))
-//         .collect();
-// }
-
-// /// General selectifier for RC types
-// fn selectify_rc_things<R>(
-//     // fn selectify_rc_things<R, T>(
-//     things: &Rc<RefCell<Vec<R>>>,
-//     map_fn: impl Fn(R) -> (String, R), // note: This gives a Sized error when used with `dyn` instead of `impl`
-// ) -> Vec<(String, R)>
-// where
-//     R: Clone,
-//     // T: IntoIterator<
-//     //     Item = (String, R),
-//     //     // IntoIter = ::std::vec::IntoIter<(String, R)>,
-//     // >,
-// {
-//     return RefCell::borrow_mut(&things)
-//         .clone()
-//         .into_iter()
-//         .map(map_fn)
-//         // .collect::<T>();
-//         .collect();
-//     // let strs: Vec<String> = RefCell::borrow_mut(things.deref())
-//     //     .iter()
-//     //     .map(|f| format!("{:?}", f))
-//     //     .collect();
-//     // return strs.into_iter().zip(things.into_iter()).collect();
-// }
-
-// fn selectify_rc_things_backwards<R>(
-//     things: &Rc<RefCell<Vec<R>>>,
-//     map_fn: impl Fn(R) -> (R, String), // note: This gives a Sized error when used with `dyn` instead of `impl`
-// ) -> Vec<(R, String)>
-// where
-//     R: Clone,
-// {
-//     return RefCell::borrow_mut(&things)
-//         .clone()
-//         .into_iter()
-//         .map(map_fn)
-//         .collect();
-//     // let strs: Vec<String> = RefCell::borrow_mut(things.deref())
-//     //     .iter()
-//     //     .map(|f| format!("{:?}", f))
-//     //     .collect();
-//     // return strs.into_iter().zip(things.into_iter()).collect();
-// }
-
-// fn selectify_things_two<T>(
-//     things: Vec<T>,
-//     map_fn: impl Fn(T) -> (String, T),
-// ) -> Vec<(String, T)>
-// where
-//     T: std::fmt::Debug,
-// {
-//     // let strs: Vec<String> = things.into_iter().map(map_fn).collect();
-//     let strs = things.into_iter().map(map_fn).collect();
-//     // let strs: Vec<String> = things.iter().map(|f| format!("{:?}", f)).collect();
-//     // return strs.into_iter().zip(things.into_iter()).collect();
-//     return strs;
-// }
-
-// fn selectify_things<T>(things: Vec<T>) -> Vec<(String, T)>
-// where
-//     T: std::fmt::Debug,
-// {
-//     let strs: Vec<String> = things.iter().map(|f| format!("{:?}", f)).collect();
-//     return strs.into_iter().zip(things.into_iter()).collect();
-//     // return things.into_iter().zip(strs.iter()).collect();
-// }

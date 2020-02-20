@@ -45,6 +45,16 @@ impl MyFrom<Vec<Repo>> for Vec<RepoWrap> {
     }
 }
 
+pub trait MyInto<T> {
+    fn into(self) -> T;
+}
+
+impl MyInto<Vec<Repo>> for Vec<RepoWrap> {
+    fn into(self) -> Vec<Repo> {
+        self.into_iter().map(|rw| rw.0).collect()
+    }
+}
+
 // pub trait Mergeable<T> // where
 //     Self = T,
 pub trait Mergeable {
@@ -58,11 +68,10 @@ impl Mergeable for Vec<RepoWrap> {
         let notme: HashSet<RepoWrap, RandomState> = HashSet::from_iter(other);
         let mut keepers: HashSet<RepoWrap, RandomState> =
             me.difference(&notme).cloned().collect();
-        // keepers.exte
         keepers.extend(notme);
-        // return other;
-        // return vec![];
-        return keepers.into_iter().collect();
+        let mut keepers: Vec<RepoWrap> = keepers.into_iter().collect();
+        keepers.sort();
+        return keepers;
         // unimplemented!
         // ANCHOR Hey - this is where we go
     }

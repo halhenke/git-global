@@ -108,6 +108,7 @@ pub fn go<'a>(path_filter: Option<String>) -> WeirdResult<GitGlobalResult> {
 
     // =================================================
     //  NEW TAG EDITOR
+    // - Box where we can add new tags
     // =================================================
     let td = TAG_DISPLAY.clone();
     let tp = TAG_POOL.clone();
@@ -169,6 +170,7 @@ pub fn go<'a>(path_filter: Option<String>) -> WeirdResult<GitGlobalResult> {
 
     // =================================================
     //  TAGS DISPLAYER
+    // - Shows the tags associated with the currently selected file
     // =================================================
     let rr = Rc::clone(&repo_tag_ref);
     let _rf = REPO_FIELD.clone();
@@ -210,7 +212,8 @@ pub fn go<'a>(path_filter: Option<String>) -> WeirdResult<GitGlobalResult> {
 
             let _current_repo: usize = _light_table.repo_index;
             let current_repo: &mut Repo = _light_table
-                .repos
+                // .repos
+                .filtered_repos
                 .get_mut(_current_repo)
                 .expect("ERROR - repo index out of bounds");
             let _current_tags: &mut Vec<RepoTag> = &mut (current_repo).tags;
@@ -241,6 +244,8 @@ pub fn go<'a>(path_filter: Option<String>) -> WeirdResult<GitGlobalResult> {
 
     // =================================================
     //  TAGS POOL
+    // - Shows the "global tag pool" of all tags associated
+    // with all repos
     // =================================================
     let td = TAG_DISPLAY.clone();
     let tags_pool_inner: SelectView<usize> = SelectView::new()
@@ -260,7 +265,8 @@ pub fn go<'a>(path_filter: Option<String>) -> WeirdResult<GitGlobalResult> {
             debug!("**** - current repo index {}", _current_repo);
 
             let current_repo: &mut Repo = _light_table
-                .repos
+                // .repos
+                .filtered_repos
                 .get_mut(_current_repo)
                 .expect("ERROR - repo index out of bounds");
 
@@ -357,9 +363,11 @@ pub fn go<'a>(path_filter: Option<String>) -> WeirdResult<GitGlobalResult> {
     // #[rock]
     siv.add_global_callback('q', move |s1| {
         trace!("agg1");
-        let lighttable = (*final_ref)
+        let mut lighttable = (*final_ref)
             .try_borrow_mut()
             .expect("final lighttable failed");
+        // NOTE - Merge in any changes from filtered/display list of repos
+        lighttable.repo_filter_update();
         let more_reps = lighttable.repos.clone();
         let more_tags = lighttable.tags.clone();
         save_repos_and_quit(s1, more_reps, more_tags);
