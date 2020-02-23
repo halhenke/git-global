@@ -117,7 +117,14 @@ pub fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
         )
         .subcommand(
             SubCommand::with_name("list-tags")
-                .about("lists all tags on your machine [the default]"),
+                .about("lists all tags on your machine [the default]")
+                .arg(
+                    Arg::with_name("with_repos")
+                        .short("r")
+                        .long("repos")
+                        .takes_value(false)
+                        .required(false),
+                ),
         )
         .subcommand(
             SubCommand::with_name("add-tags")
@@ -282,7 +289,13 @@ pub fn run_from_command_line_nested() -> Result<()> {
             // let path_filter = get_path_filter(&matches, "list");
             subcommands::list::get_results(path_filter)
         }
-        Some("list-tags") => subcommands::list_tags::get_results(),
+        Some("list-tags") => {
+            let with_repos = matches
+                .subcommand_matches("list-tags")
+                .unwrap()
+                .is_present("with_repos");
+            subcommands::list_tags::get_results(with_repos)
+        }
         Some("action") => match matches
             .subcommand_matches("action")
             .unwrap()
