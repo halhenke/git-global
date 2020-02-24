@@ -34,11 +34,13 @@ pub fn run_from_command_line() -> Result<()> {
                 Some("print") => {
                     // let gc = crate::models::config::GitGlobalConfig::new();
                     let settings_path = GitGlobalConfig::get_settings_path();
+                    println!("\n⏢⏢⏢⏢⏢⏢⏢⏢⏢⏢⏢⏢");
                     println!(
-                        "{}: {}\n\n",
+                        "{}: {}",
                         "Settings located at".yellow(),
                         settings_path.red().underline()
                     );
+                    println!("⏢⏢⏢⏢⏢⏢⏢⏢⏢⏢⏢⏢\n");
                     let settings = GitGlobalConfig::get_parsed_config()?; //.unwrap();
                     println!("{}", settings);
                     Ok(GitGlobalResult::blank())
