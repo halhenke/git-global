@@ -34,6 +34,15 @@ impl GitGlobalResult {
         }
     }
 
+    pub fn blank() -> GitGlobalResult {
+        GitGlobalResult {
+            messages: Vec::new(),
+            repos: Vec::new(),
+            repo_messages: HashMap::new(),
+            flag_pad_repo_output: false,
+        }
+    }
+
     /// Declares desire to separate output when showing per-repo messages.
     ///
     /// Sets flag that indicates a blank line should be inserted between

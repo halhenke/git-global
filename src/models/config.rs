@@ -214,8 +214,9 @@ impl GitGlobalConfig {
     //     // .expect("Config: Conversion to hashMap Failed")
     // }
 
-    fn get_raw_config() -> Result<Config> {
-        // Reimplement with Paths
+    /// Get the path to the Settings file in the Home directory
+    /// TODO - Get other paths?
+    pub fn get_settings_path() -> String {
         let mut HOME_CONFIG = dirs::home_dir()
             .expect("Could not determine home directory.")
             .to_str()
@@ -223,10 +224,16 @@ impl GitGlobalConfig {
             .to_string();
         HOME_CONFIG.push_str("/.config");
         HOME_CONFIG.push_str(CONFIG_FILE_PROPER);
+        return HOME_CONFIG;
+    }
+
+    fn get_raw_config() -> Result<Config> {
+        // Reimplement with Paths
+        let mut settings_path = GitGlobalConfig::get_settings_path();
         // let mut PWD_CONFIG = ".".to_string();
         // PWD_CONFIG.push_str(CONFIG_FILE_PROPER);
         let mut c = Config::default();
-        c.merge(CFile::with_name(HOME_CONFIG.as_mut_str()))?
+        c.merge(CFile::with_name(settings_path.as_mut_str()))?
             // .merge(CFile::with_name(PWD_CONFIG.as_str()))?
             .merge(Environment::with_prefix("GIT_GLOBAL"))?;
         Ok(c)
