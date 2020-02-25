@@ -109,6 +109,7 @@ impl Display for Settings {
         write_vec_str(f, "ignored_repos", &self.ignored_repos);
         write_vec_str(f, "default_repos", &self.default_repos);
         write_vec_str(f, "default_tags", &self.default_tags);
+        write_vec_str(f, "actions", &self.actions);
         // pub actions: Vec<Action>,
         Ok(())
     }

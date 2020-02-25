@@ -37,6 +37,7 @@ enum ActionType {
 type RepoPath = String;
 type CommandName = String;
 type Command = String;
+type Args = Vec<String>;
 
 /// Represents an Action - intended to be used in a repo
 /// - possibly should be split into repo/path independent
@@ -44,9 +45,9 @@ type Command = String;
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum Action {
     // GitAction(RepoPath, CommandName, Command, Vec<String>),
-    PathAction(RepoPath, CommandName, Command, Vec<String>),
-    NeedsAPathAction(CommandName, Command, Vec<String>),
-    NonPathAction(CommandName, Command, Vec<String>),
+    PathAction(RepoPath, CommandName, Command, Args),
+    NeedsAPathAction(CommandName, Command, Args),
+    NonPathAction(CommandName, Command, Args),
 }
 
 #[derive(Clone, Debug)]
@@ -67,17 +68,17 @@ impl Display for Action {
         match self {
             // Action::GitAction(path, name, _, _) => {},
             Action::PathAction(path, name, _, _) => {
-                f.write_str(&format!("Action `{}` for path {}", name, path))
+                f.write_str(&format!("Action::PathAction `{}` for path {}", name, path))
             }
             Action::NeedsAPathAction(name, _, _) => {
                 f.write_str(&format!(
-                    "Action `{}` needs to be associated with a path before execution",
+                    "Action::NeedsAPathAction `{}` needs to be associated with a path before execution",
                     name
                 ))
             }
             Action::NonPathAction(name, _, _) => {
                 f.write_str(&format!(
-                    "Action `{}` not associated with a path",
+                    "Action::NonPathAction `{}` not associated with a path",
                     name
                 ))
             }
@@ -265,15 +266,35 @@ mod action_tests {
 //     }
 // }
 
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::models::repo::Repo;
+    use toml;
 
-//     #[test]
-//     fn action_do() {
-//         let action = Action("brew".to_owned(), vec!["update".to_owned()]);
-//         let repo = Repo::new("~/code".to_owned());
-//         let res = action.perform_action_for_repo(repo);
-//         assert_eq!(res, "Performing action brew for Repo ~/code");
-//     }
-// }
+    #[test]
+    fn action_do() {
+        // NonPathAction(CommandName, Command, Vec<String>)
+        let action = Action::NonPathAction(
+            "brew".to_owned(),
+            "brew update".to_owned(),
+            vec!["update".to_owned()],
+        );
+        // let action = Action("brew".to_owned(), vec!["update".to_owned()]);
+        let repo = Repo::new("~/code".to_owned());
+        let res = action.perform_action_for_repo();
+        assert_eq!(res.unwrap(), "Performing action brew for Repo ~/code");
+    }
+
+    #[test]
+    fn action_serialize() {
+        let action = Action::PathAction(
+            "~/code".to_owned(),
+            "list code".to_owned(),
+            "ls".to_owned(),
+            vec!["ls -la".to_owned()],
+        );
+        let toml = toml::to_string(&action).unwrap();
+        println!("{}", toml)
+    }
+}

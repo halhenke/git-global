@@ -37,13 +37,13 @@ pub fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
                 .about("Logging into github GraphQL API"),
         )
         .subcommand(
-            SubCommand::with_name("action")
+            SubCommand::with_name("actions")
                 .about("commands related to actions that can be performed in specific repositories")
                 .subcommand(
                     SubCommand::with_name("perform")
                         .about("perform one (or more?) actions for repositories filtered by tag/path")
                         .arg(
-                            Arg::with_name("action")
+                            Arg::with_name("actions")
                                 .help("perform this action")
                                 .takes_value(true)
                                 .required(true))

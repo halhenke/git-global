@@ -32,3 +32,14 @@ name = "machine learning"
 haskell = "~/code/haskell"
 swift = "~/code/swift"
 ml = "~/code/ml"
+
+[[actions]]
+# PathAction = [
+PathAction = [
+    "~/code",
+    "list code",
+    "ls",
+    [
+        "ls -la"
+    ]
+]
