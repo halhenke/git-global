@@ -15,9 +15,8 @@ use colored::Colorize;
 /// Forces the display of each repo path, without any extra output.
 pub fn list() -> Result<GitGlobalResult> {
     let gc = GitGlobalConfig::new();
-    gc.actions
-        .into_iter()
-        .for_each(|a| println!("Action:\t{}", a));
+    gc.actions.into_iter().for_each(|a| println!("{}", a));
+    // .for_each(|a| println!("Action:\t{}", a));
     // let result: Vec<GitGlobalResult> =
     let repos = vec![];
     let result = GitGlobalResult::new(&repos as &Vec<Repo>);

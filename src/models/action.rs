@@ -66,20 +66,23 @@ impl Display for Action {
         // *f = String::from("Booyah");
         // f.write_str(self.);
         match self {
-            // Action::GitAction(path, name, _, _) => {},
-            Action::PathAction(path, name, _, _) => {
-                f.write_str(&format!("Action::PathAction `{}` for path {}", name, path))
-            }
-            Action::NeedsAPathAction(name, _, _) => {
+            // Action::GitAction(path, name, command, _) => {},
+            Action::PathAction(path, name, command, _) => {
                 f.write_str(&format!(
-                    "Action::NeedsAPathAction `{}` needs to be associated with a path before execution",
-                    name
+                    "Action::PathAction: `{}`\npath: {}\ncommand: {}", name, path, command))
+            }
+            Action::NeedsAPathAction(name, command, _) => {
+                f.write_str(&format!(
+                    "Action::NeedsAPathAction: `{}` (needs to be associated with a path before execution)\ncommand: {}",
+                    name,
+                    command
                 ))
             }
-            Action::NonPathAction(name, _, _) => {
+            Action::NonPathAction(name, command, _) => {
                 f.write_str(&format!(
-                    "Action::NonPathAction `{}` not associated with a path",
-                    name
+                    "Action::NonPathAction: `{}` (not associated with a path)\ncommand: {}",
+                    name,
+                    command
                 ))
             }
         }
@@ -288,12 +291,12 @@ mod tests {
 
     #[test]
     fn action_serialize() {
-        let action = Action::PathAction(
-            "~/code".to_owned(),
-            "list code".to_owned(),
-            "ls".to_owned(),
-            vec!["ls -la".to_owned()],
-        );
+        let path = "~/code".to_owned();
+        let name = "list code".to_owned();
+        let command = "ls".to_owned();
+        let args = vec!["ls -la".to_owned()];
+
+        let action = Action::PathAction(path, name, command, args);
         let toml = toml::to_string(&action).unwrap();
         println!("{}", toml)
     }
