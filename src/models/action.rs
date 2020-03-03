@@ -45,9 +45,31 @@ type Args = Vec<String>;
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum Action {
     // GitAction(RepoPath, CommandName, Command, Vec<String>),
-    PathAction(RepoPath, CommandName, Command, Args),
-    NeedsAPathAction(CommandName, Command, Args),
-    NonPathAction(CommandName, Command, Args),
+    PathAction {
+        path: RepoPath,
+        cmd: Commander, // name: CommandName,
+                        // command: Command,
+                        // args: Args
+    },
+    NeedsAPathAction {
+        cmd: Commander, // name: CommandName,
+                        // command: Command,
+                        // args: Args
+    },
+    NonPathAction {
+        cmd: Commander, // name: CommandName,
+                        // command: Command,
+                        // args: Args
+    }, // PathAction(RepoPath, CommandName, Command, Args),
+       // NeedsAPathAction(CommandName, Command, Args),
+       // NonPathAction(CommandName, Command, Args)
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct Commander {
+    name: CommandName,
+    command: Command,
+    args: Args,
 }
 
 #[derive(Clone, Debug)]
@@ -67,24 +89,27 @@ impl Display for Action {
         // f.write_str(self.);
         match self {
             // Action::GitAction(path, name, command, _) => {},
-            Action::PathAction(path, name, command, _) => {
+            Action::PathAction{path, cmd } => {
+            // Action::PathAction(path, name, command, _) => {
                 f.write_str(&format!(
-                    "Action::PathAction: `{}`\npath: {}\ncommand: {}", name, path, command))
+                    "Action::PathAction: `{}`\npath: {}\ncommand: {}", cmd.name, path, cmd.command))
             }
-            Action::NeedsAPathAction(name, command, _) => {
+            // Action::NeedsAPathAction(name, command, _) => {
+            Action::NeedsAPathAction{cmd} => {
                 f.write_str(&format!(
                     "Action::NeedsAPathAction: `{}` (needs to be associated with a path before execution)\ncommand: {}",
-                    name,
-                    command
+                    cmd.name,
+                    cmd.command
                 ))
             }
-            Action::NonPathAction(name, command, _) => {
+            Action::NonPathAction{cmd} => {
+            // Action::NonPathAction(name, command, _) => {
                 f.write_str(&format!(
                     "Action::NonPathAction: `{}` (not associated with a path)\ncommand: {}",
-                    name,
-                    command
+                    cmd.name,
+                    cmd.command
                 ))
-            }
+            },
         }
     }
 }
@@ -115,25 +140,25 @@ impl Action {
     /// return Action name
     pub fn get_name(&self) -> &str {
         match self {
-            Action::PathAction(_, name, ..) => name,
-            Action::NeedsAPathAction(name, ..)
-            | Action::NonPathAction(name, ..) => name,
+            Action::PathAction { cmd, .. }
+            | Action::NeedsAPathAction { cmd, .. }
+            | Action::NonPathAction { cmd, .. } => &cmd.name,
         }
     }
 
     /// return Action command
     pub fn get_command(&self) -> &str {
         match self {
-            Action::PathAction(_, _, cmd, ..) => cmd,
-            Action::NeedsAPathAction(_, cmd, ..)
-            | Action::NonPathAction(_, cmd, ..) => cmd,
+            Action::PathAction { cmd, .. }
+            | Action::NeedsAPathAction { cmd, .. }
+            | Action::NonPathAction { cmd, .. } => &cmd.command,
         }
     }
 
     /// Indicates whether the action needs to be provided with a path in which to be executed - i.e. is it a [`Action::NeedsAPathAction`]
     pub fn needs_path(&self) -> bool {
         match self {
-            Action::NeedsAPathAction(..) => true,
+            Action::NeedsAPathAction { .. } => true,
             _ => false,
         }
     }
@@ -141,18 +166,18 @@ impl Action {
     /// Check if a given string matches the name of the action
     pub fn name_match(&self, act: &str) -> Option<Self> {
         match self {
-            Action::PathAction(_path, name, _cmd, _args) => {
-                if name == act {
+            Action::PathAction { cmd, .. } => {
+                if cmd.name == act {
                     return Some(self.clone());
                 }
             }
-            Action::NeedsAPathAction(name, _, _) => {
-                if name == &act {
+            Action::NeedsAPathAction { cmd, .. } => {
+                if cmd.name == act {
                     return Some(self.clone());
                 }
             }
-            Action::NonPathAction(name, _, _) => {
-                if name == &act {
+            Action::NonPathAction { cmd, .. } => {
+                if cmd.name == act {
                     return Some(self.clone());
                 }
             }
@@ -164,14 +189,10 @@ impl Action {
     /// Turn a [`NeedsAPathAction`] variant into a [`PathAction`]
     pub fn path_bind(&self, path: String) -> Result<Self, ActionError> {
         match self {
-            Action::NeedsAPathAction(name, cmd, args) => {
-                Ok(Action::PathAction(
-                    path,
-                    name.to_owned(),
-                    cmd.to_owned(),
-                    args.to_owned(),
-                ))
-            }
+            Action::NeedsAPathAction { cmd } => Ok(Action::PathAction {
+                path,
+                cmd: cmd.to_owned(),
+            }),
             // _ => Err(ActionError::NotANeedAPath(format!(
             // Action::NonPathAction(name, cmd, args) => {
             //     Err(ActionError::NotANeedAPath(format!(
@@ -179,11 +200,10 @@ impl Action {
             //         "self.name"
             //     )))
             // }
-            Action::NonPathAction(name, cmd, args)
-            | Action::PathAction(_, name, cmd, args) => {
+            Action::NonPathAction { cmd } | Action::PathAction { cmd, .. } => {
                 Err(ActionError::NotANeedAPath(format!(
                     "Action {} is not a Action::NeedsAPathAction",
-                    name
+                    cmd.name
                 )))
             }
         }
@@ -193,9 +213,9 @@ impl Action {
     /// If we have a [`Action::NeedsAPathAction`] then return an Error
     pub fn perform_action_for_repo(&self) -> ActionResult<String> {
         match self {
-            Action::PathAction(path, _name, cmd, args) => {
-                let r = Exec::shell(cmd)
-                    .args(args)
+            Action::PathAction { path, cmd } => {
+                let r = Exec::shell(&cmd.command)
+                    .args(&cmd.args)
                     .cwd(path)
                     .capture()
                     .unwrap()
@@ -203,24 +223,25 @@ impl Action {
                 // println!("Here is some r: {}", r);
                 Ok(r)
             }
-            Action::NonPathAction(_name, cmd, args) => {
-                let r =
-                    Exec::shell(cmd).args(args).capture().unwrap().stdout_str();
+            Action::NonPathAction { cmd } => {
+                let r = Exec::shell(&cmd.command)
+                    .args(&cmd.args)
+                    .capture()
+                    .unwrap()
+                    .stdout_str();
                 Ok(r)
             }
-            Action::NeedsAPathAction(name, _, _) => {
-                Err(ActionError::NeedAPath(
-                    format!(
-                        "The command {} needs a path to be performed in",
-                        name
-                    )
-                    .to_owned(),
-                ))
-            } // Action::NonGitAction(name, cmd, args) => {
-              //     let r = Exec::shell(cmd).args(args).capture().unwrap().stdout_str();
-              //     Ok(r)
-              //     // Ok("No".to_owned())
-              // }
+            Action::NeedsAPathAction { cmd } => Err(ActionError::NeedAPath(
+                format!(
+                    "The command {} needs a path to be performed in",
+                    cmd.name
+                )
+                .to_owned(),
+            )), // Action::NonGitAction(name, cmd, args) => {
+                //     let r = Exec::shell(cmd).args(args).capture().unwrap().stdout_str();
+                //     Ok(r)
+                //     // Ok("No".to_owned())
+                // }
         }
         // return format!("Performing action {} for Repo {}", self.0, repo.path);
         // // println!("Performing action {} for Repo :{}", self.0, repo.path);
@@ -234,15 +255,17 @@ mod action_tests {
     /// Not sure what this is supposed to test anymore
     #[test]
     pub fn enum_rep() {
-        let ga = Action::PathAction(
+        let ga = Action::PathAction {
             // let ga = Action::GitAction(
-            "/usr/local".to_owned(),
-            "nob".to_owned(),
-            "pwd".to_owned(),
-            vec![],
-        );
+            path: "/usr/local".to_owned(),
+            cmd: Commander {
+                name: "nob".to_owned(),
+                command: "pwd".to_owned(),
+                args: vec![],
+            },
+        };
         ga.perform_action_for_repo();
-        if let Action::PathAction(path, _, _, _) = ga {
+        if let Action::PathAction { path, .. } = ga {
             // if let Action::GitAction(path, _, _, _) = ga {
             assert_eq!(path, "/usr/local");
             // assert_eq!(format!("{:?}", path), "/usr/local");
@@ -278,11 +301,13 @@ mod tests {
     #[test]
     fn action_do() {
         // NonPathAction(CommandName, Command, Vec<String>)
-        let action = Action::NonPathAction(
-            "brew".to_owned(),
-            "brew update".to_owned(),
-            vec!["update".to_owned()],
-        );
+        let action = Action::NonPathAction {
+            cmd: Commander {
+                name: "brew".to_owned(),
+                command: "brew update".to_owned(),
+                args: vec!["update".to_owned()],
+            },
+        };
         // let action = Action("brew".to_owned(), vec!["update".to_owned()]);
         let repo = Repo::new("~/code".to_owned());
         let res = action.perform_action_for_repo();
@@ -296,8 +321,16 @@ mod tests {
         let command = "ls".to_owned();
         let args = vec!["ls -la".to_owned()];
 
-        let action = Action::PathAction(path, name, command, args);
-        let toml = toml::to_string(&action).unwrap();
-        println!("{}", toml)
+        let action = Action::PathAction {
+            path,
+            cmd: Commander {
+                name,
+                command,
+                args,
+            },
+        };
+        let toml = serde_json::to_string(&action).unwrap();
+        // let toml = toml::to_string(&action).unwrap();
+        println!("{}", toml);
     }
 }

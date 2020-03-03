@@ -34,12 +34,15 @@ swift = "~/code/swift"
 ml = "~/code/ml"
 
 [[actions]]
-# PathAction = [
-PathAction = [
-    "~/code",
-    "list code",
-    "ls",
-    [
-        "ls -la"
-    ]
-]
+[actions.Extra]
+path = "~/code"
+
+# Extra = {path = "~/code"}
+
+[[actions]]
+[actions.PathAction]
+path = "~/code"
+[actions.PathAction.cmd]
+name = "list code"
+command = "ls"
+args = [ "ls -la" ]
