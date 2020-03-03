@@ -89,27 +89,25 @@ impl Display for Action {
         // f.write_str(self.);
         match self {
             // Action::GitAction(path, name, command, _) => {},
-            Action::PathAction{path, cmd } => {
-            // Action::PathAction(path, name, command, _) => {
+            Action::PathAction { path, cmd } => {
+                // Action::PathAction(path, name, command, _) => {
                 f.write_str(&format!(
-                    "Action::PathAction: `{}`\npath: {}\ncommand: {}", cmd.name, path, cmd.command))
+                    "Action::PathAction: `{}`\npath: {}\ncommand: {}\nargs: {:#?}",
+                    cmd.name, path, cmd.command, cmd.args
+                ))
             }
             // Action::NeedsAPathAction(name, command, _) => {
-            Action::NeedsAPathAction{cmd} => {
+            Action::NeedsAPathAction { cmd } => f.write_str(&format!(
+                "Action::NeedsAPathAction: `{}`\ncommand: {}\nargs: {:#?}",
+                cmd.name, cmd.command, cmd.args
+            )),
+            Action::NonPathAction { cmd } => {
+                // Action::NonPathAction(name, command, _) => {
                 f.write_str(&format!(
-                    "Action::NeedsAPathAction: `{}` (needs to be associated with a path before execution)\ncommand: {}",
-                    cmd.name,
-                    cmd.command
+                    "Action::NonPathAction: `{}`\ncommand: {}\nargs: {:#?}",
+                    cmd.name, cmd.command, cmd.args
                 ))
             }
-            Action::NonPathAction{cmd} => {
-            // Action::NonPathAction(name, command, _) => {
-                f.write_str(&format!(
-                    "Action::NonPathAction: `{}` (not associated with a path)\ncommand: {}",
-                    cmd.name,
-                    cmd.command
-                ))
-            },
         }
     }
 }

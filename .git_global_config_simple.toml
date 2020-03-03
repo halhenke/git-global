@@ -33,10 +33,9 @@ haskell = "~/code/haskell"
 swift = "~/code/swift"
 ml = "~/code/ml"
 
-[[actions]]
-[actions.Extra]
-path = "~/code"
-
+# [[actions]]
+# [actions.Extra]
+# path = "~/code"
 # Extra = {path = "~/code"}
 
 [[actions]]
@@ -46,3 +45,17 @@ path = "~/code"
 name = "list code"
 command = "ls"
 args = [ "ls -la" ]
+
+[[actions]]
+[actions.NonPathAction]
+[actions.NonPathAction.cmd]
+name = "Where are you?"
+command = "/usr/local/bin/zsh"
+args = [ "ping google.com" ]
+
+[[actions]]
+[actions.NeedsAPathAction]
+[actions.NeedsAPathAction.cmd]
+name = "Where am I?"
+command = "/usr/local/bin/zsh"
+args = [ "pwd" ]
