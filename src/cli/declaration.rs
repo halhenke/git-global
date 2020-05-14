@@ -127,6 +127,17 @@ pub fn get_clap_app<'a, 'b>() -> App<'a, 'b> {
                                 .required(false),
                         ),
                 )
+                .subcommand(
+                    SubCommand::with_name("select")
+                    .about("interactively select repos so as to perform some action on them")
+                    .arg(
+                        Arg::with_name("path_filter")
+                            .short("p")
+                            .long("paths")
+                            .takes_value(true)
+                            .required(false),
+                    ),
+                )
                 // NOTE: This seems superfluous with list
                 .subcommand(
                     SubCommand::with_name("filter")

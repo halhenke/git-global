@@ -11,6 +11,7 @@ pub mod new_status;
 pub mod prompt_cursive;
 pub mod prompt_iced;
 pub mod prompt_tui;
+pub mod repos;
 pub mod scan;
 pub mod sync_status;
 pub mod tag_projects;

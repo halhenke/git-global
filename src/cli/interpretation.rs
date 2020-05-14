@@ -65,6 +65,10 @@ pub fn run_from_command_line() -> Result<()> {
                     // let path_filter = get_path_filter(&matches, "list");
                     subcommands::list::get_results(path_filter)
                 }
+                Some("select") => {
+                    let path_filter = get_path_filter(&matches, "select");
+                    subcommands::repos::select::go(path_filter)
+                }
                 Some("filter") => {
                     let sub_com = matches
                         .subcommand_matches("filter")
