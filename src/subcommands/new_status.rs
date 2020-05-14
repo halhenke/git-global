@@ -76,14 +76,14 @@ pub async fn get_results(
     // let thread_count = n_repos;
     // let thread_count = 24;
 
-    // TODO: Set thread_count so this is not violated:
-    assert!(n_repos > thread_count);
     debug!(
         "Thread Count is {}, n_repos is {}, and n_repos / thread_count is {}",
         thread_count,
         n_repos,
         n_repos / thread_count
     );
+    // TODO: Set thread_count so this is not violated:
+    assert!(n_repos >= thread_count);
 
     let mut repo_chunks = vec![];
     {
