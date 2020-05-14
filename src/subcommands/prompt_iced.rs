@@ -2,9 +2,9 @@ use crate::models::{config::GitGlobalConfig, result::GitGlobalResult};
 use anyhow::Result;
 // use iced::{button, Application, Button, Column, Command, Settings, Text};
 use iced::{
-    button, scrollable, settings::Window, Align, Application, Background,
-    Button, Color, Column, Command, Container, Element, Length, Scrollable,
-    Settings, Text,
+    button, executor, scrollable, settings::Settings,
+    window::Settings as Window, Align, Application, Background, Button, Color,
+    Column, Command, Container, Element, Length, Scrollable, Text,
 };
 
 #[derive(Debug, Clone, Copy)]
@@ -26,8 +26,10 @@ struct Counter {
 
 impl Application for Counter {
     type Message = Message;
+    type Executor = executor::Null;
+    type Flags = ();
 
-    fn new() -> (Self, Command<Message>) {
+    fn new(flags: ()) -> (Self, Command<Message>) {
         (Self::default(), Command::none())
     }
 
@@ -67,7 +69,7 @@ impl Application for Counter {
                 Button::new(&mut self.increment_button, Text::new("Increment"))
                     // .padding(100)
                     // .spacing(20)
-                    .background(b_bg)
+                    // .background(b_bg)
                     .on_press(Message::IncrementPressed),
             )
             .push(
@@ -94,14 +96,19 @@ impl Application for Counter {
     }
 }
 
-
 pub fn go() -> Result<GitGlobalResult> {
     let mut gc = GitGlobalConfig::new();
     let w = Window {
         size: (400, 800),
         resizable: true,
+        decorations: false,
     };
-    let s = Settings { window: w };
+    let s = Settings {
+        antialiasing: false,
+        default_font: None,
+        flags: (),
+        window: w,
+    };
     Counter::run(s);
     // Counter::run(Settings::default());
     let repos = gc.get_repos();
