@@ -4,7 +4,7 @@ use std::thread;
 
 use tui::backend::TermionBackend;
 use tui::layout::{Constraint::Percentage, Direction, Layout};
-use tui::widgets::{Block, Borders, SelectableList, Widget};
+use tui::widgets::{Block, Borders, List, ListState, Text, Widget};
 use tui::Terminal;
 // use tui::layout::{Group, Size, Direction};
 use tui::style::{Color, Modifier, Style};
@@ -147,25 +147,27 @@ fn draw(
             )
             .split(size);
         // .render(t, &size, |t, chunks| {
-        Block::default()
-            .title("Block")
-            .borders(Borders::ALL)
-            .render(&mut t, chunks[0]);
-        SelectableList::default()
-            .block(
-                Block::default()
-                    .title("Choose One of these")
-                    .borders(Borders::ALL),
-            )
-            .items(&sel.selections)
-            .select(Some(sel.selected))
+        Block::default().title("Block").borders(Borders::ALL);
+        // .render(chunks[0], chunks[0]);
+        // List::<Vec<Text>>.default()
+        let mut l_state = ListState::default();
+        let items = sel.selections.iter().map(|i| Text::raw(*i));
+        let list = List::new(items)
+            // let list = List::new(&sel.selections)
+            // .block(
+            //     Block::default()
+            //         .title("Choose One of these")
+            //         .borders(Borders::ALL),
+            // )
+            // .items(&sel.selections.iter().map(|i| Text::raw(*i)).collect())
+            // .items(&sel.selections)
+            // .select(Some(sel.selected))
             .style(Style::default().fg(Color::White))
             .highlight_style(Style::default().modifier(Modifier::ITALIC))
-            .highlight_symbol(">>")
-            .render(&mut t, chunks[1]);
-        Block::default()
-            .title("Block 2")
-            .borders(Borders::ALL)
-            .render(&mut t, chunks[2]);
+            .highlight_symbol(">>");
+        t.render_stateful_widget(list, chunks[0], &mut l_state);
+        // .render(&mut t, chunks[1]);
+        Block::default().title("Block 2").borders(Borders::ALL);
+        // .render(&mut t, chunks[2]);
     })
 }
