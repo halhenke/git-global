@@ -48,9 +48,9 @@ fn is_a_git(entry: &std::fs::DirEntry) -> bool {
 }
 
 /// Is this the path of a git repository?
-fn new_is_a_repo(entry: &jwalk::DirEntry) -> bool {
+fn new_is_a_repo(entry: &jwalk::DirEntry<((), ())>) -> bool {
     // debug!("entry is {}", entry.path().to_str().unwrap());
-    entry.file_type.as_ref().unwrap().is_dir()
+    entry.file_type.is_dir()
         && entry.path().read_dir().expect("read dir failed").any(|f| {
             let ff = f.expect("works");
             is_a_git(&ff)
@@ -58,7 +58,10 @@ fn new_is_a_repo(entry: &jwalk::DirEntry) -> bool {
 }
 
 /// Add repos to the list of repos
-fn my_new_repo_check(repos: &mut Vec<Repo>, entry: jwalk::DirEntry) -> () {
+fn my_new_repo_check(
+    repos: &mut Vec<Repo>,
+    entry: jwalk::DirEntry<((), ())>,
+) -> () {
     if new_is_a_repo(&entry) {
         debug!("A REPO IS {}", entry.path().to_str().unwrap());
         repos.push(Repo::new(entry.path().to_str().unwrap().to_string()));
@@ -75,11 +78,12 @@ async fn new_find_repos_async() -> future::Ready<Result<Vec<Repo>, ()>> {
     let walker = jwalk::WalkDir::new(basedir)
         .skip_hidden(false)
         // .num_threads(1)
-        .process_entries(|v| {
+        .process_read_dir(|_, v| {
             v.into_iter().for_each(|de| {
                 // debug!("In the map ");
-                let mut d: &mut jwalk::DirEntry = de.as_mut().unwrap();
-                if d.file_type.as_ref().unwrap().is_dir()
+                let mut d: &mut jwalk::DirEntry<((), ())> =
+                    de.as_mut().unwrap();
+                if d.file_type.is_dir()
                     && d.path().read_dir().unwrap().any(|f| {
                         let ff = f.unwrap();
                         // debug!(".git path is {}", ff.path().display());
@@ -87,8 +91,8 @@ async fn new_find_repos_async() -> future::Ready<Result<Vec<Repo>, ()>> {
                     })
                 {
                     debug!("A match! {}", d.path().display());
-                    d.content_spec = None;
-                    // debug!("d.content_spec {:?}", d.content_spec);
+                    d.read_children_path = None;
+                    // debug!("d.read_children_path {:?}", d.read_children_path);
                 }
             });
         })
@@ -101,18 +105,18 @@ async fn new_find_repos_async() -> future::Ready<Result<Vec<Repo>, ()>> {
 
     // debug!("You went through {} paths", walker.by_ref().count());
     // debug!(
-    //     "You set {} content_specs to zero",
+    //     "You set {} read_children_paths to zero",
     //     walker
     //         .by_ref()
-    //         .filter(|d| d.as_ref().unwrap().content_spec.is_none())
+    //         .filter(|d| d.as_ref().unwrap().read_children_path.is_none())
     //         .count()
     // );
 
     for entry in walker {
         match entry {
             Ok(entry) => {
-                if entry.file_type.as_ref().unwrap().is_dir()
-                    && entry.content_spec.is_none()
+                if entry.file_type.is_dir()
+                    && entry.read_children_path.is_none()
                 {
                     debug!("A GIT: {}", entry.file_name.to_str().unwrap());
                     my_new_repo_check(&mut repos, entry);
@@ -136,11 +140,12 @@ pub fn new_find_repos() -> Vec<Repo> {
     let walker = jwalk::WalkDir::new(basedir)
         .skip_hidden(false)
         // .num_threads(1)
-        .process_entries(|v| {
+        .process_read_dir(|_, v| {
             v.into_iter().for_each(|de| {
                 // debug!("In the map ");
-                let mut d: &mut jwalk::DirEntry = de.as_mut().unwrap();
-                if d.file_type.as_ref().unwrap().is_dir()
+                let mut d: &mut jwalk::DirEntry<((), ())> =
+                    de.as_mut().unwrap();
+                if d.file_type.is_dir()
                     && d.path().read_dir().unwrap().any(|f| {
                         let ff = f.unwrap();
                         // debug!(".git path is {}", ff.path().display());
@@ -148,8 +153,8 @@ pub fn new_find_repos() -> Vec<Repo> {
                     })
                 {
                     debug!("A match! {}", d.path().display());
-                    d.content_spec = None;
-                    // debug!("d.content_spec {:?}", d.content_spec);
+                    d.read_children_path = None;
+                    // debug!("d.read_children_path {:?}", d.read_children_path);
                 }
             });
         })
@@ -163,8 +168,8 @@ pub fn new_find_repos() -> Vec<Repo> {
     for entry in walker {
         match entry {
             Ok(entry) => {
-                if entry.file_type.as_ref().unwrap().is_dir()
-                    && entry.content_spec.is_none()
+                if entry.file_type.is_dir()
+                    && entry.read_children_path.is_none()
                 {
                     debug!("A GIT: {}", entry.file_name.to_str().unwrap());
                     my_new_repo_check(&mut repos, entry);
