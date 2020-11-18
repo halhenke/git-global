@@ -6,6 +6,8 @@ use iced::{
     window::Settings as Window, Align, Application, Background, Button, Color,
     Column, Command, Container, Element, Length, Scrollable, Text,
 };
+use iced_core::Rectangle;
+// use iced_native::Rectangle;
 use std::cell::{Ref, RefCell};
 use std::rc::Rc;
 
@@ -125,6 +127,11 @@ impl Application for RepoList {
         match message {
             Message::IncrementPressed => {
                 self.selected += 1;
+                // let b = Rectangle{
+
+                // }
+                // let l = self.list_of_things.offset(bounds, content_bounds)
+                // self.list_of_things.scroll_to(percentage, Re, content_bounds)
             }
             Message::DecrementPressed => {
                 self.selected -= 1;
@@ -142,8 +149,12 @@ impl Application for RepoList {
             b: 0.0,
             a: 1.0,
         });
-        let repos: Vec<String> = vec!["Haskell", "Swift", "Rust"].into_iter().map(|s| s.to_owned()).collect::<Vec<String>>();
-        let mut scroller : Scrollable<'_, Message> = Scrollable::new(&mut self.list_of_things);
+        let repos: Vec<String> = vec!["Haskell", "Swift", "Rust"]
+            .into_iter()
+            .map(|s| s.to_owned())
+            .collect::<Vec<String>>();
+        let mut scroller: Scrollable<'_, Message> =
+            Scrollable::new(&mut self.list_of_things);
         // scroller = scroller.push(Text::new(repos.get(0).unwrap()));
         // scroller.push(Text::new(repos.get(1).unwrap()));
         for r in repos {
@@ -181,7 +192,7 @@ impl Application for RepoList {
                 .on_press(Message::DecrementPressed),
             )
             .push(scroller);
-            // .push(rc3);
+        // .push(rc3);
         // .push(
         //     Scrollable::new(&mut self.list_of_things)
         //         .push(Text::new("A first thing"))
