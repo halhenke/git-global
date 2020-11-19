@@ -27,6 +27,7 @@ use self::cursive::{
     },
 };
 
+use crate::cursive::CursiveExt;
 use crate::models::errors::Result as WeirdResult;
 
 use crate::models::{

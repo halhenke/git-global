@@ -5,6 +5,7 @@ use std::rc::Rc;
 
 extern crate cursive;
 
+use crate::cursive::CursiveExt;
 // use self::cursive::align::HAlign;
 use self::cursive::event::{Callback, Event, EventResult, Key};
 use self::cursive::Cursive;

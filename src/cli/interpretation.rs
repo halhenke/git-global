@@ -192,9 +192,10 @@ pub fn run_from_command_line() -> Result<()> {
             match matches.subcommand_name() {
                 Some("status") => get_sync_status(matches),
                 Some("new-status") => {
-                    let mut rt = tokio::runtime::Builder::new()
+                    let mut rt = tokio::runtime::Builder::new_multi_thread()
                         // .basic_scheduler()
-                        .threaded_scheduler()
+                        // .threaded_scheduler()
+                        .worker_threads(4)
                         .enable_io()
                         .build()?;
                     debug!("Runtime is built\n\n");

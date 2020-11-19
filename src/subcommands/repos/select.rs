@@ -16,6 +16,8 @@ use std::io::Write;
 
 use self::cursive::event::{Callback, Event, EventResult, Key};
 
+use crate::cursive::CursiveExt;
+
 use self::cursive::traits::*;
 use self::cursive::Cursive;
 use self::cursive::{

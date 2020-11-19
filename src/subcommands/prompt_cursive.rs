@@ -6,6 +6,7 @@ use self::cursive::align::HAlign;
 use self::cursive::event::EventResult;
 use self::cursive::traits::*;
 use self::cursive::views::{Dialog, OnEventView, SelectView, TextView};
+use crate::cursive::CursiveExt;
 
 use crate::models::errors::Result as WeirdResult;
 
