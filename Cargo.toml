@@ -48,9 +48,9 @@ walkdir = "2.3.1"
 jwalk = "0.5.1"
 github-rs = "0.7.0"
 ring_queue = "0.2.0"
-serde = "1.0.117"
-serde_derive = "1.0.117"
-serde_json = "1.0.59"
+serde = "1.0.118"
+serde_derive = "1.0.118"
+serde_json = "1.0.60"
 strfmt = "0.1.6"
 subprocess = "0.2.6"
 pipeline = "0.5.0"
@@ -61,13 +61,13 @@ log = "0.4.11"
 take_mut = "0.2.2"
 icecream = "0.1.0"
 config = "0.10.1"
-anyhow = "1.0.34"
+anyhow = "1.0.36"
 thiserror = "1.0.22"
-tokio = { version = "0.3.3", features = ["full"] }
+tokio = { version = "1.0.0", features = ["full"] }
 precision = "0.1.11"
-iced = "0.1.1"
-iced_core = "0.2.1"
-toml = "0.5.7"
+iced = "0.2.0"
+iced_core = "0.3.0"
+toml = "0.5.8"
 
 [dependencies.cursive]
 version = "0.15.0"
@@ -75,7 +75,7 @@ default-features = false
 features = ["termion-backend", "toml"]
 
 [dependencies.git2]
-version = "0.13.12"
+version = "0.13.14"
 default-features = false  # don't want SSH/HTTPS/Curl
 
 [dev-dependencies]
@@ -83,7 +83,7 @@ tempdir = "0.3.7"
 proptest = "0.10.1"
 quickcheck = "0.9.2"
 quickcheck_macros = "0.9.1"
-rand = "0.7.3"
+rand = "0.8.0"
 criterion = { version = "0.3.3", features = ['real_blackbox'] }
 
 [build-dependencies]

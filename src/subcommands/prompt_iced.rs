@@ -30,7 +30,7 @@ struct Counter {
 
 impl Application for Counter {
     type Message = Message;
-    type Executor = executor::Null;
+    type Executor = executor::Default;
     type Flags = ();
 
     fn new(flags: ()) -> (Self, Command<Message>) {
@@ -112,7 +112,7 @@ struct RepoList {
 
 impl Application for RepoList {
     type Message = Message;
-    type Executor = executor::Null;
+    type Executor = executor::Default;
     type Flags = ();
 
     fn new(flags: ()) -> (Self, Command<Message>) {
@@ -212,13 +212,19 @@ impl Application for RepoList {
 pub fn go() -> Result<GitGlobalResult> {
     let mut gc = GitGlobalConfig::new();
     let w = Window {
+        always_on_top: false,
+        transparent: false,
         size: (400, 800),
+        icon: None,
+        min_size: None,
+        max_size: None,
         resizable: true,
         decorations: false,
     };
     let s = Settings {
         antialiasing: false,
         default_font: None,
+        default_text_size: 12,
         flags: (),
         window: w,
     };
