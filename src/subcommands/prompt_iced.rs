@@ -3,8 +3,9 @@ use anyhow::Result;
 // use iced::{button, Application, Button, Column, Command, Settings, Text};
 use iced::{
     button, executor, scrollable, settings::Settings,
-    window::Settings as Window, Align, Application, Background, Button, Color,
-    Column, Command, Container, Element, Length, Scrollable, Text,
+    window::Settings as Window, Align, Application, Background, Button,
+    Clipboard, Color, Column, Command, Container, Element, Length, Scrollable,
+    Text,
 };
 use iced_core::Rectangle;
 // use iced_native::Rectangle;
@@ -41,7 +42,11 @@ impl Application for Counter {
         String::from("A simple counter")
     }
 
-    fn update(&mut self, message: Message) -> Command<Message> {
+    fn update(
+        &mut self,
+        message: Message,
+        clipboard: &mut Clipboard,
+    ) -> Command<Message> {
         match message {
             Message::IncrementPressed => {
                 self.value += 1;
@@ -123,7 +128,11 @@ impl Application for RepoList {
         String::from("A simple counter")
     }
 
-    fn update(&mut self, message: Message) -> Command<Message> {
+    fn update(
+        &mut self,
+        message: Message,
+        clipboard: &mut Clipboard,
+    ) -> Command<Message> {
         match message {
             Message::IncrementPressed => {
                 self.selected += 1;
@@ -224,6 +233,7 @@ pub fn go() -> Result<GitGlobalResult> {
     let s = Settings {
         antialiasing: false,
         default_font: None,
+        exit_on_close_request: true,
         default_text_size: 12,
         flags: (),
         window: w,

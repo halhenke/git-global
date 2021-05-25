@@ -78,7 +78,7 @@ async fn new_find_repos_async() -> future::Ready<Result<Vec<Repo>, ()>> {
     let walker = jwalk::WalkDir::new(basedir)
         .skip_hidden(false)
         // .num_threads(1)
-        .process_read_dir(|_, v| {
+        .process_read_dir(|_, _, _, v| {
             v.into_iter().for_each(|de| {
                 // debug!("In the map ");
                 let mut d: &mut jwalk::DirEntry<((), ())> =
@@ -140,7 +140,7 @@ pub fn new_find_repos() -> Vec<Repo> {
     let walker = jwalk::WalkDir::new(basedir)
         .skip_hidden(false)
         // .num_threads(1)
-        .process_read_dir(|_, v| {
+        .process_read_dir(|_, _, _, v| {
             v.into_iter().for_each(|de| {
                 // debug!("In the map ");
                 let mut d: &mut jwalk::DirEntry<((), ())> =

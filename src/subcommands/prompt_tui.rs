@@ -4,6 +4,7 @@ use std::thread;
 
 use tui::backend::TermionBackend;
 use tui::layout::{Constraint::Percentage, Direction, Layout};
+use tui::terminal::CompletedFrame;
 use tui::text::Text;
 use tui::widgets::{Block, Borders, List, ListItem, ListState, Widget};
 use tui::Terminal;
@@ -133,10 +134,10 @@ fn init() -> Result<Terminal<TermionBackend<io::Stdout>>, io::Error> {
 }
 
 // fn draw(t: &mut Terminal<TermionBackend>) -> () {
-fn draw(
-    term: &mut Terminal<TermionBackend<io::Stdout>>,
+fn draw<'a>(
+    term: &'a mut Terminal<TermionBackend<io::Stdout>>,
     sel: &Selectable,
-) -> Result<(), io::Error> {
+) -> Result<CompletedFrame<'a>, io::Error> {
     let size = term.size()?;
 
     term.draw(|mut t| {

@@ -22,8 +22,9 @@ use self::cursive::{
     theme::{Color, ColorStyle},
     view::ViewWrapper,
     views::{
-        BoxView, CircularFocus, DebugView, EditView, IdView, LinearLayout,
-        OnEventView, Panel, SelectView, TextContent, TextView, ViewRef,
+        CircularFocus, DebugView, EditView, LinearLayout, NamedView,
+        OnEventView, Panel, ResizedView, SelectView, TextContent, TextView,
+        ViewRef,
     },
 };
 

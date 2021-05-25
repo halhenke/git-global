@@ -13,9 +13,10 @@
 // use std::env;
 use anyhow::Context;
 // use anyhow::{Context, Result};
-use app_dirs::{app_dir, get_app_dir, AppDataType, AppInfo};
+// use app_dirs::{app_dir, get_app_dir, AppDataType, AppInfo};
 use colored::*;
 use config::{Config, ConfigError, Environment, File as CFile, Source, Value};
+use directories::ProjectDirs;
 // use futures::executor::LocalPool;
 use crate::models::{
     action::Action,
@@ -37,10 +38,6 @@ use std::path::{Path, PathBuf};
 // use std::result::Result as StdResult;
 use walkdir::DirEntry;
 
-const APP: AppInfo = AppInfo {
-    name: "git-global",
-    author: "hal",
-};
 const CACHE_FILE: &'static str = "repos.txt";
 // const TAG_CACHE_FILE: &'static str = "tags.txt";
 // const SETTING_BASEDIR: &'static str = "global.basedir";
@@ -94,6 +91,7 @@ pub struct GitGlobalConfig {
     pub default_repos: Vec<Repo>,
     pub actions: Vec<Action>,
     pub cache_file: PathBuf,
+    // pub cache_dir: Path,
     // pub tags_file: PathBuf,
 }
 
@@ -138,14 +136,20 @@ impl GitGlobalConfig {
             "Your provided basedir: {} does not exist",
             &settings.basedir.as_ref().unwrap()
         );
-        let cache_file =
-            match get_app_dir(AppDataType::UserCache, &APP, "cache") {
-                Ok(mut dir) => {
-                    dir.push(CACHE_FILE);
-                    dir
-                }
-                Err(_) => panic!("TODO: work without XDG"),
-            };
+        let APP: ProjectDirs = ProjectDirs::from("", "hal", "git-global")
+            .expect("Project Directory IO Failure");
+        let mut cache_file = APP.cache_dir().to_path_buf();
+        cache_file.push(CACHE_FILE);
+        // .canonicalize()
+        // .expect("TODO: work without XDG");
+        // let cache_file =
+        //     match get_app_dir(AppDataType::UserCache, &APP, "cache") {
+        //         Ok(mut dir) => {
+        //             dir.push(CACHE_FILE);
+        //             dir
+        //         }
+        //         Err(_) => panic!("TODO: work without XDG"),
+        //     };
         // let tags_file = match get_app_dir(AppDataType::UserCache, &APP, "cache")
         // {
         //     Ok(mut dir) => {
@@ -225,6 +229,13 @@ impl GitGlobalConfig {
         HOME_CONFIG.push_str("/.config");
         HOME_CONFIG.push_str(CONFIG_FILE_PROPER);
         return HOME_CONFIG;
+    }
+
+    pub fn get_cache_path() -> PathBuf {
+        return ProjectDirs::from("", "hal", "git-global")
+            .expect("Project Directory IO Failure")
+            .cache_dir()
+            .to_path_buf();
     }
 
     fn get_raw_config() -> Result<Config> {
@@ -374,15 +385,16 @@ impl GitGlobalConfig {
         } else {
             // Try to create the cache directory if the cache *file* doesn't
             // exist; app_dir() handles an existing directory just fine.
-            match app_dir(AppDataType::UserCache, &APP, "cache") {
-                Ok(_) => {
+            match self.cache_file.exists() {
+                // match app_dir(AppDataType::UserCache, &APP, "cache") {
+                true => {
                     return Err(Error::new(
                         ErrorKind::NotFound,
                         "Cache Directory exists but no Cache file",
                     ))
                     .context("just trying to get anyhow to work");
                 }
-                Err(_e) => {
+                false => {
                     return Err(GitGlobalError::from(Error::new(
                         ErrorKind::NotFound,
                         "No Cache Directory exists",
@@ -425,9 +437,10 @@ impl GitGlobalConfig {
         if !self.has_cache() {
             // Try to create the cache directory if the cache *file* doesn't
             // exist; app_dir() handles an existing directory just fine.
-            match app_dir(AppDataType::UserCache, &APP, "cache") {
-                Ok(_) => (),
-                Err(e) => panic!("Could not create cache directory: {}", e),
+            // match app_dir(AppDataType::UserCache, &APP, "cache") {
+            match self.cache_file.exists() {
+                true => (),
+                false => panic!("Could not create cache directory"),
             }
         }
         debug!("WRITING TAGS: called - 2");
@@ -458,9 +471,9 @@ impl GitGlobalConfig {
         if !self.has_cache() {
             // Try to create the cache directory if the cache *file* doesn't
             // exist; app_dir() handles an existing directory just fine.
-            match app_dir(AppDataType::UserCache, &APP, "cache") {
-                Ok(_) => (),
-                Err(e) => panic!("Could not create cache directory: {}", e),
+            match self.cache_file.exists() {
+                true => (),
+                false => panic!("Could not create cache directory"),
             }
         }
         let mut f = File::create(&self.cache_file)
